@@ -1,4 +1,4 @@
-pipeline:
+steps:
   install-and-check:
     image: oven/bun:latest
     commands:
@@ -6,4 +6,3 @@ pipeline:
       - bun install
       - echo "🔍 Verificando tipagem TypeScript..."
       - bunx tsc --noEmit
-      # Se você adicionar ESLint depois, pode rodar: bun run lint
