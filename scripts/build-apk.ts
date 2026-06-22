@@ -1,3 +1,5 @@
+export {};
+
 const isProd = Bun.argv.includes('--prod');
 const appEnv = Bun.env.APP_ENV || (isProd ? 'production' : 'staging');
 
