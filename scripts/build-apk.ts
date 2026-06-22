@@ -8,7 +8,7 @@ console.log(`\n🚀 Iniciando build automatizado 100% Bun-Native para: [${appEnv
 try {
   console.log('⚙️ Passo 1: Gerando código nativo (Expo Prebuild)...');
   Bun.spawnSync(
-    ['bunx', 'cross-env', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'], 
+    [process.execPath, 'x', 'cross-env', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'], 
     { stdio: ['inherit', 'inherit', 'inherit'] }
   );
 
