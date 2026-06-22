@@ -1,11 +1,22 @@
+when:
+  - event: push
+    branch: main
+  - event: tag
+
+clone:
+  git:
+    image: woodpeckerci/plugin-git
+    extra_hosts:
+      - "gitea.brunnoserver.duckdns.org:192.168.31.215"
+
 steps:
-  # -----------------------------------------------------
-  # FLUXO 1: Validação de código (Roda apenas no Push da Main)
-  # -----------------------------------------------------
-  install-and-check:
+  # =========================================================
+  # FASE 1: Verificação (Apenas no Push da Main)
+  # =========================================================
+  - name: testar-codigo
     image: oven/bun:latest
     commands:
-      - echo "📦 Instalando dependências com Bun..."
+      - echo "📦 Instalando dependências..."
       - bun install
       - echo "🔍 Verificando tipagem TypeScript..."
       - bunx tsc --noEmit
@@ -13,10 +24,10 @@ steps:
       - event: push
         branch: main
 
-  # -----------------------------------------------------
-  # FLUXO 2: Release e APK (Roda apenas quando cria uma Tag)
-  # -----------------------------------------------------
-  build-apk:
+  # =========================================================
+  # FASE 2: Build do Android (Apenas na Tag)
+  # =========================================================
+  - name: build-apk
     image: reactnativecommunity/react-native-android:latest
     commands:
       - echo "🔧 Instalando o Bun no contêiner Android..."
@@ -26,21 +37,122 @@ steps:
       - echo "📦 Instalando dependências do projeto..."
       - bun install
       
-      - echo "🚀 Executando o script cross-platform de build..."
-      # Esse comando usa o script TypeScript que criamos anteriormente
+      - echo "🚀 Executando o script Bun-Native de build (Produção)..."
       - bun run build:apk:prod 
     when:
       - event: tag
 
-  publish-release:
-    image: woodpeckerci/plugin-gitea-release
-    settings:
-      api_key:
+  # =========================================================
+  # FASE 3: Release no Gitea Interno (Apenas na Tag)
+  # =========================================================
+  - name: gerar-release-notes
+    image: alpine
+    environment:
+      GITEA_TOKEN:
         from_secret: gitea_token
-      base_url: https://seu-gitea.local # ⚠️ Substitua pela URL real do seu Gitea
-      files:
-        - app-react-native-production.apk
-      title: "Versão ${CI_COMMIT_TAG} 🚀 Estável"
-      note: "🚀 Deploy automático do App Android (APK) realizado com sucesso pelo Woodpecker CI."
+    commands:
+      - apk add --no-cache curl git jq
+      - |
+        set -e
+        set -x
+        
+        git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+        git fetch --all --unshallow || git fetch --all
+        git fetch --tags
+        
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        
+        if [ -z "$PREV_TAG" ]; then
+          CHANGELOG=$(git log --pretty=format:"- %h %s")
+        else
+          CHANGELOG=$(git log --pretty=format:"- %h %s" $PREV_TAG..HEAD)
+        fi
+        
+        RELEASE_BODY="🚀 Deploy automático do APK realizado com sucesso pelo Woodpecker CI. 
+        
+        ---
+        
+        $CHANGELOG"
+        
+        echo "$RELEASE_BODY" > .release_body.txt
+        
+        JSON_PAYLOAD=$(jq -n --arg tag "${CI_COMMIT_TAG}" --arg name "Versão ${CI_COMMIT_TAG}" --arg body "$RELEASE_BODY" '{tag_name: $tag, name: $name, body: $body}')
+        
+        echo "=== ENVIANDO RELEASE PARA O GITEA ==="
+        RESPONSE=$(curl -s -X POST "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases" -H "accept: application/json" -H "Authorization: token $GITEA_TOKEN" -H "Content-Type: application/json" -d "$JSON_PAYLOAD")
+        
+        echo "Resposta da API do Gitea: $RESPONSE"
+        RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id')
+        
+        if [ "$RELEASE_ID" == "null" ] || [ -z "$RELEASE_ID" ]; then
+          echo "❌ ERRO: O Gitea não retornou um ID válido. Se a Tag já existir, apague-a no painel e tente novamente."
+          exit 1
+        fi
+        
+        echo "=== INICIANDO UPLOAD DO APK ==="
+        # Realiza o upload do APK gerado na FASE 2
+        curl -f -s -X POST "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/$RELEASE_ID/assets?name=app-react-native-production.apk" -H "Authorization: token $GITEA_TOKEN" -F "attachment=@./app-react-native-production.apk"
+        
+        echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
     when:
       - event: tag
+
+  # =========================================================
+  # FASE 4: Sincronização com GitHub (Apenas na Tag)
+  # =========================================================
+  #- name: espelhar-github
+  #  image: alpine/git
+  #  environment:
+  #    GITHUB_USER: Brunno13
+  #    GITHUB_TOKEN:
+  #      from_secret: github_token
+  #  commands:
+  #    - echo "=== SINCRONIZANDO COM O GITHUB ==="
+  #    - git config --global --add safe.directory '*'
+  #    # Repositório alterado de api-bun para app-react-native
+  #    - git remote add github https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/app-react-native.git
+  #    - git push github main --force
+  #    - git push github ${CI_COMMIT_TAG} --force
+  #  when:
+  #    - event: tag
+#
+  #- name: criar-release-github
+  #  image: alpine
+  #  environment:
+  #    GITHUB_USER: Brunno13
+  #    GITHUB_TOKEN:
+  #      from_secret: github_token
+  #  commands:
+  #    - apk add --no-cache curl jq
+  #    - |
+  #      set -e
+  #      echo "=== CRIANDO RELEASE NO GITHUB ==="
+  #      # Endpoint atualizado para o repositório do React Native
+  #      GITHUB_API_URL="https://api.github.com/repos/$GITHUB_USER/app-react-native/releases"
+  #      
+  #      if [ -f .release_body.txt ]; then
+  #        RELEASE_BODY=$(cat .release_body.txt)
+  #      else
+  #        RELEASE_BODY="🚀 Lançamento automatizado do App sincronizado a partir do servidor Gitea interno."
+  #      fi
+  #      
+  #      JSON_PAYLOAD=$(jq -n --arg tag "${CI_COMMIT_TAG}" --arg name "Versão ${CI_COMMIT_TAG}" --arg body "$RELEASE_BODY" '{tag_name: $tag, name: $name, body: $body}')
+  #      
+  #      RESPONSE=$(curl -s -X POST $GITHUB_API_URL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" -d "$JSON_PAYLOAD")
+  #      RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id')
+  #      
+  #      if [ "$RELEASE_ID" == "null" ] || [ -z "$RELEASE_ID" ]; then
+  #        echo "❌ ERRO: O GitHub não retornou um ID válido. Resposta: $RESPONSE"
+  #        exit 1
+  #      fi
+  #      
+  #      echo "=== INICIANDO UPLOAD DO APK NO GITHUB ==="
+  #      # URL de upload atualizada para o repositório do app
+  #      GH_UPLOAD_URL="https://uploads.github.com/repos/$GITHUB_USER/app-react-native/releases/$RELEASE_ID/assets"
+  #      
+  #      # Faz o upload binário do APK gerado pelo Bun
+  #      curl -f -s -X POST "$GH_UPLOAD_URL?name=app-react-native-production.apk" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/vnd.android.package-archive" --data-binary @"./app-react-native-production.apk"
+  #      
+  #      echo "✅ RELEASE NO GITHUB CRIADA COM SUCESSO!"
+  #  when:
+  #    - event: tag
