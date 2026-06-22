@@ -17,27 +17,42 @@ try {
     throw new Error('Falha crítica ao gerar o código nativo (Expo Prebuild).');
   }
 
-  console.log('\n🩹 Passo 1.5: Aplicando patch de compatibilidade (Gradle 9+ vs foojay-resolver)...');
+  // ---------------------------------------------------------------------
+  // NOVO PASSO: Correção automática do Bug do Gradle 9.0+ (IBM_SEMERU)
+  // ---------------------------------------------------------------------
+  console.log('\n🩹 Passo 1.5: Aplicando patch de compatibilidade agressivo...');
   const currentDir = process.cwd();
-  let settingsPath = `${currentDir}/android/settings.gradle`;
-  let settingsFile = Bun.file(settingsPath);
-  
-  if (!(await settingsFile.exists())) {
-    settingsPath = `${currentDir}/android/settings.gradle.kts`;
-    settingsFile = Bun.file(settingsPath);
+  const settingsPaths = [
+    `${currentDir}/android/settings.gradle`,
+    `${currentDir}/android/settings.gradle.kts`
+  ];
+
+  let patchApplied = false;
+
+  for (const settingsPath of settingsPaths) {
+    const settingsFile = Bun.file(settingsPath);
+    if (await settingsFile.exists()) {
+      let content = await settingsFile.text();
+      const originalContent = content;
+      
+      content = content.replace(
+        /(id\s*\(?['"]org\.gradle\.toolchains\.foojay-resolver-convention['"]\)?\s*version\s*\(?['"]).*?(['"]\)?)/g,
+        '$10.8.0$2'
+      );
+
+      if (content !== originalContent) {
+        await Bun.write(settingsPath, content);
+        console.log(`✅ Patch aplicado com sucesso no arquivo: ${settingsPath.split('/').pop()}`);
+        patchApplied = true;
+        break;
+      }
+    }
   }
 
-  if (await settingsFile.exists()) {
-    let content = await settingsFile.text();
-    content = content.replace(
-      /(foojay-resolver-convention.*?version\s*\(?['"])[^'"]+(['"]\)?)/, 
-      '$11.0.0$2'
-    );
-    await Bun.write(settingsPath, content);
-    console.log(`✅ Patch aplicado com sucesso no arquivo: ${settingsPath.split('/').pop()}`);
-  } else {
-    console.warn('⚠️ Arquivo settings.gradle não encontrado. O patch foi ignorado.');
+  if (!patchApplied) {
+    console.warn('⚠️ O patch não encontrou o plugin foojay-resolver para corrigir. O build pode falhar.');
   }
+  // ---------------------------------------------------------------------
 
   console.log('\n📝 Passo 2: Configurando local.properties...');
   
