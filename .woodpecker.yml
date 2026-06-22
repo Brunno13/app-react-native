@@ -30,7 +30,7 @@ steps:
   # FASE 2: Build do Android (Apenas na Tag)
   # =========================================================
   - name: build-apk
-    image: ghcr.io/cirruslabs/android-sdk:33
+    image: ghcr.io/cirruslabs/android-sdk:36
     commands:
       - echo "🔧 Instalando o Bun no contêiner Android..."
       - curl -fsSL https://bun.sh/install | bash
