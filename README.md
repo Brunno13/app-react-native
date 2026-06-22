@@ -4,6 +4,27 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 
 ---
 
+## 🗺️ Roadmap do Projeto
+
+### ✅ Concluído (Fundação e Automação)
+- [x] **Setup Inicial:** Inicialização com React Native, Expo e Bun.
+- [x] **Autenticação:** Integração robusta do cliente `@better-auth/expo`.
+- [x] **Arquitetura:** Reestruturação estrita para o padrão Feature-Sliced Design (FSD).
+- [x] **Gestão de Ambientes:** Flavors dinâmicos (Staging / Produção) sem sujeira nativa.
+- [x] **Tooling:** Script cross-platform 100% Bun-Native para build automatizado.
+- [x] **CI/CD:** Pipeline completa no Woodpecker (Geração de Release, APK e sincronização Gitea/GitHub).
+
+### ⏳ Em Andamento / Próximos Passos (Nível Enterprise)
+- [ ] **Tipagem Estrita e Formulários:** Implementação de `zod` e `react-hook-form` (+ resolvers) para validação end-to-end nas features.
+- [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM` (espelhando a stack do back-end).
+- [ ] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição global de estados/serviços.
+- [ ] **Resiliência e Dicionário:** Integração do `react-error-boundary` (para evitar crashes de UI) e `i18next` (para centralizar todas as strings do app).
+- [ ] **Documentação de UI:** Configuração do `Storybook` para mapear, visualizar e testar componentes da camada `shared/ui` isoladamente.
+- [ ] **Testes Unitários:** Cobertura de testes de componentes e regras de negócio utilizando `Jest` e `React Native Testing Library`.
+- [ ] **Observabilidade Global:** Integração do **Firebase Crashlytics** para rastreamento de falhas fatais e monitoramento de estabilidade em produção.
+
+---
+
 ## 🛠️ Tecnologias Utilizadas
 
 * **Framework:** React Native + Expo (SDK 56)
