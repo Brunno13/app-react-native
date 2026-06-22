@@ -18,8 +18,10 @@ steps:
     commands:
       - echo "📦 Instalando dependências..."
       - bun install
-      - echo "🔍 Verificando tipagem TypeScript..."
+      - echo "🔍 Verificando tipagem do App (React Native)..."
       - bunx tsc --noEmit
+      - echo "🔍 Verificando tipagem dos Scripts de Automação (Bun)..."
+      - bunx tsc --project scripts/tsconfig.json --noEmit
     when:
       - event: push
         branch: main
