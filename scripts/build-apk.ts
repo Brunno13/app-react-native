@@ -54,6 +54,20 @@ try {
   }
   // ---------------------------------------------------------------------
 
+  // ---------------------------------------------------------------------
+  // CORREÇÃO: Forçar Gradle a usar o sistema local e ignorar vendors específicos
+  // ---------------------------------------------------------------------
+  console.log('\n🩹 Passo 1.6: Blindando Gradle contra erros de Toolchain...');
+  const gradlePropsPath = `${currentDir}/android/gradle.properties`;
+  const gradlePropsContent = `
+# Ignorar auto-detecção de vendors que causa erro com Gradle 9+
+org.gradle.java.installations.auto-detect=false
+# Usar o Java instalado no container
+org.gradle.java.home=${process.env.JAVA_HOME || '/usr/lib/jvm/default-java'}
+`;
+  await Bun.write(gradlePropsPath, gradlePropsContent);
+  // ---------------------------------------------------------------------
+
   console.log('\n📝 Passo 2: Configurando local.properties...');
   
   let sdkDir = Bun.env.ANDROID_HOME || Bun.env.ANDROID_SDK_ROOT;
