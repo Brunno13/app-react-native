@@ -18,11 +18,12 @@
     "react-native": "0.85.3"
   },
   "devDependencies": {
+    "@types/node": "^26.0.0",
     "@types/react": "~19.2.2",
     "cross-env": "^10.1.0",
     "typescript": "~6.0.3"
   },
-"scripts": {
+  "scripts": {
     "start": "bun run start:staging",
     "start:staging": "cross-env APP_ENV=staging expo start",
     "start:prod": "cross-env APP_ENV=production expo start",
