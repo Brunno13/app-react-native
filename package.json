@@ -7,20 +7,29 @@
     "@better-fetch/fetch": "^1.3.1",
     "better-auth": "^1.6.20",
     "expo": "~56.0.12",
+    "expo-build-properties": "~56.0.19",
+    "expo-constants": "^56.0.18",
+    "expo-linking": "~56.0.14",
+    "expo-network": "~56.0.5",
     "expo-secure-store": "^56.0.4",
     "expo-status-bar": "~56.0.4",
+    "expo-system-ui": "~56.0.5",
     "react": "19.2.3",
     "react-native": "0.85.3"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "cross-env": "^10.1.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "bun run start:staging",
+    "start:staging": "cross-env APP_ENV=staging expo start",
+    "start:prod": "cross-env APP_ENV=production expo start",
+    "android": "cross-env APP_ENV=staging expo start --android",
+    "android:prod": "cross-env APP_ENV=production expo start --android",
+    "ios": "cross-env APP_ENV=staging expo start --ios",
+    "web": "cross-env APP_ENV=staging expo start --web"
   },
   "private": true
 }
