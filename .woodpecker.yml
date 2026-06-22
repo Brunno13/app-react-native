@@ -1,8 +1,7 @@
-when:
-  - event: push
-    branch: main
-
 steps:
+  # -----------------------------------------------------
+  # FLUXO 1: Validação de código (Roda apenas no Push da Main)
+  # -----------------------------------------------------
   install-and-check:
     image: oven/bun:latest
     commands:
@@ -10,3 +9,38 @@ steps:
       - bun install
       - echo "🔍 Verificando tipagem TypeScript..."
       - bunx tsc --noEmit
+    when:
+      - event: push
+        branch: main
+
+  # -----------------------------------------------------
+  # FLUXO 2: Release e APK (Roda apenas quando cria uma Tag)
+  # -----------------------------------------------------
+  build-apk:
+    image: reactnativecommunity/react-native-android:latest
+    commands:
+      - echo "🔧 Instalando o Bun no contêiner Android..."
+      - curl -fsSL https://bun.sh/install | bash
+      - export PATH="$HOME/.bun/bin:$PATH"
+      
+      - echo "📦 Instalando dependências do projeto..."
+      - bun install
+      
+      - echo "🚀 Executando o script cross-platform de build..."
+      # Esse comando usa o script TypeScript que criamos anteriormente
+      - bun run build:apk:prod 
+    when:
+      - event: tag
+
+  publish-release:
+    image: woodpeckerci/plugin-gitea-release
+    settings:
+      api_key:
+        from_secret: gitea_token
+      base_url: https://seu-gitea.local # ⚠️ Substitua pela URL real do seu Gitea
+      files:
+        - app-react-native-production.apk
+      title: "Versão ${CI_COMMIT_TAG} 🚀 Estável"
+      note: "🚀 Deploy automático do App Android (APK) realizado com sucesso pelo Woodpecker CI."
+    when:
+      - event: tag
