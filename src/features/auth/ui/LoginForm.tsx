@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
-// Aqui nós definimos o "contrato" deste componente
 interface LoginFormProps {
   onLogin: (email: string, pass: string) => void;
   loading: boolean;
