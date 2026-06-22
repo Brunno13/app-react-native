@@ -7,10 +7,15 @@ console.log(`\n🚀 Iniciando build automatizado 100% Bun-Native para: [${appEnv
 
 try {
   console.log('⚙️ Passo 1: Gerando código nativo (Expo Prebuild)...');
-  Bun.spawnSync(
-    [process.execPath, 'x', 'cross-env', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'], 
+  
+  const prebuild = Bun.spawnSync(
+    [process.execPath, 'x', 'cross-env', 'CI=1', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'], 
     { stdio: ['inherit', 'inherit', 'inherit'] }
   );
+
+  if (prebuild.exitCode !== 0) {
+    throw new Error('Falha crítica ao gerar o código nativo (Expo Prebuild).');
+  }
 
   console.log('\n📝 Passo 2: Configurando local.properties...');
   
@@ -18,13 +23,12 @@ try {
 
   if (!sdkDir) {
     const homeDir = Bun.env.HOME || Bun.env.USERPROFILE || '';
-    
     if (process.platform === 'win32') {
       sdkDir = `${homeDir}/AppData/Local/Android/Sdk`;
     } else if (process.platform === 'darwin') {
-      sdkDir = `${homeDir}/Library/Android/sdk`;
+      sdkDir = `${homeDir}/Library/Android/sdk`; 
     } else {
-      sdkDir = `${homeDir}/Android/Sdk`;
+      sdkDir = `${homeDir}/Android/Sdk`; 
     }
   }
 
@@ -40,13 +44,21 @@ try {
     ? `${currentDir}/android/gradlew.bat` 
     : `${currentDir}/android/gradlew`;
   
-  Bun.spawnSync(
+  if (process.platform !== 'win32') {
+    Bun.spawnSync(['chmod', '+x', gradleCmd]);
+  }
+
+  const build = Bun.spawnSync(
     [gradleCmd, 'assembleRelease'], 
     { 
       stdio: ['inherit', 'inherit', 'inherit'],
       cwd: `${currentDir}/android` 
     }
   );
+
+  if (build.exitCode !== 0) {
+    throw new Error('Falha crítica durante a compilação do APK no Gradle.');
+  }
 
   console.log('\n📦 Passo 4: Movendo o APK para a raiz...');
   const apkSource = `${currentDir}/android/app/build/outputs/apk/release/app-release.apk`;
@@ -63,7 +75,7 @@ try {
   }
 
 } catch (error) {
-  console.error('\n❌ Erro durante o processo de build:');
+  console.error('\n❌ O processo foi abortado devido a um erro:');
   console.error(error);
   process.exit(1);
 }
