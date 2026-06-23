@@ -1,0 +1,24 @@
+when:
+  - event: push
+    branch: main
+
+# Essa etiqueta garante que o Mac M1 nunca vai tocar nessa pipeline!
+labels:
+  platform: linux/arm64
+
+clone:
+  git:
+    image: woodpeckerci/plugin-git
+    extra_hosts:
+      - "gitea.brunnoserver.duckdns.org:192.168.31.215"
+
+steps:
+  - name: testar-codigo
+    image: oven/bun:latest
+    commands:
+      - echo "📦 Instalando dependências..."
+      - bun install
+      - echo "🔍 Verificando tipagem do App..."
+      - bunx tsc --noEmit
+      - echo "🔍 Verificando tipagem dos Scripts..."
+      - bunx tsc --project scripts/tsconfig.json --noEmit

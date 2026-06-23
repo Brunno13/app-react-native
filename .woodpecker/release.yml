@@ -1,0 +1,57 @@
+when:
+  - event: tag
+
+# Essa etiqueta garante que a Orange Pi nunca vai tocar nessa pipeline!
+labels:
+  platform: darwin/arm64
+
+steps:
+  - name: build-apk
+    image: bash # Apenas para satisfazer o linter, o Mac ignora isso
+    commands:
+      - echo "📦 Instalando dependências do projeto..."
+      - bun install
+      - echo "🚀 Executando o script Bun-Native de build (Produção)..."
+      - bun run build:apk:prod
+
+  - name: gerar-release-notes
+    image: bash
+    environment:
+      GITEA_TOKEN:
+        from_secret: gitea_token
+    commands:
+      - |
+        set -e
+        set -x
+        
+        git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+        git fetch --all --unshallow || git fetch --all
+        git fetch --tags
+        
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        
+        if [ -z "$PREV_TAG" ]; then
+          CHANGELOG=$(git log --pretty=format:"- %h %s")
+        else
+          CHANGELOG=$(git log --pretty=format:"- %h %s" $PREV_TAG..HEAD)
+        fi
+        
+        RELEASE_BODY="🚀 Deploy automático do APK realizado nativamente pelo Apple Silicon (M1).
+        
+        ---
+        
+        $CHANGELOG"
+        
+        echo "$RELEASE_BODY" > .release_body.txt
+        
+        JSON_PAYLOAD=$(jq -n --arg tag "${CI_COMMIT_TAG}" --arg name "Versão ${CI_COMMIT_TAG}" --arg body "$RELEASE_BODY" '{tag_name: $tag, name: $name, body: $body}')
+        
+        echo "=== ENVIANDO RELEASE PARA O GITEA ==="
+        RESPONSE=$(curl -s -X POST "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases" -H "accept: application/json" -H "Authorization: token $GITEA_TOKEN" -H "Content-Type: application/json" -d "$JSON_PAYLOAD")
+        
+        RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id')
+        
+        echo "=== INICIANDO UPLOAD DO APK ==="
+        curl -f -s -X POST "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/$RELEASE_ID/assets?name=app-react-native-production.apk" -H "Authorization: token $GITEA_TOKEN" -F "attachment=@./app-react-native-production.apk"
+        
+        echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
