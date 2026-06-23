@@ -5,13 +5,15 @@ labels:
   platform: darwin/arm64
 
 steps:
-  - name: build-apk
+  - name: build-artifacts
     image: bash
     commands:
       - echo "📦 Instalando dependências do projeto..."
       - bun install
-      - echo "🚀 Executando o script Bun-Native de build (Produção)..."
+      - echo "🤖 Compilando o APK Android (Produção)..."
       - bun run build:apk:prod
+      - echo "🍎 Compilando o pacote iOS (Produção)..."
+      - bun run build:ios:prod
 
   - name: gerar-release-notes
     image: bash
@@ -35,7 +37,7 @@ steps:
           CHANGELOG=$(git log --pretty=format:"- %h %s" $PREV_TAG..HEAD)
         fi
         
-        RELEASE_BODY="🚀 Deploy automático do APK realizado nativamente pelo Apple Silicon (M1).
+        RELEASE_BODY="🚀 Deploy automático multiplataforma (Android & iOS) realizado nativamente pelo Apple Silicon (M1).
         
         ---
         
@@ -50,8 +52,9 @@ steps:
         
         RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id')
         
-        echo "=== INICIANDO UPLOAD DO APK ==="
+        echo "=== INICIANDO UPLOAD DOS ARTEFATOS PARA O GITEA ==="
         curl -f -s -X POST "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/$RELEASE_ID/assets?name=app-react-native-production.apk" -H "Authorization: token $GITEA_TOKEN" -F "attachment=@./app-react-native-production.apk"
+        curl -f -s -X POST "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/$RELEASE_ID/assets?name=app-react-native-ios-production.zip" -H "Authorization: token $GITEA_TOKEN" -F "attachment=@./app-react-native-ios-production.zip"
         
         echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
 
@@ -67,6 +70,7 @@ steps:
     commands:
       - echo "=== SINCRONIZANDO COM O GITHUB ==="
       - git config --global --add safe.directory '*'
+      # O parâmetro '-c credential.helper=' desativa o Keychain do Mac para este push específico
       - git -c credential.helper= push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git main --force
       - git -c credential.helper= push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git ${CI_COMMIT_TAG} --force
 
@@ -98,9 +102,13 @@ steps:
           exit 1
         fi
         
-        echo "=== INICIANDO UPLOAD DO APK NO GITHUB ==="
+        echo "=== INICIANDO UPLOAD DOS ARTEFATOS NO GITHUB ==="
         GH_UPLOAD_URL="https://uploads.github.com/repos/$GITHUB_USER/${CI_REPO_NAME}/releases/$RELEASE_ID/assets"
         
+        # Upload do APK Android
         curl -f -s -X POST "$GH_UPLOAD_URL?name=app-react-native-production.apk" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/vnd.android.package-archive" --data-binary @"./app-react-native-production.apk"
+        
+        # Upload do App iOS (Compactado)
+        curl -f -s -X POST "$GH_UPLOAD_URL?name=app-react-native-ios-production.zip" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/zip" --data-binary @"./app-react-native-ios-production.zip"
         
         echo "✅ RELEASE NO GITHUB CRIADA COM SUCESSO!"

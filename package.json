@@ -27,12 +27,23 @@
     "start": "bun run start:staging",
     "start:staging": "cross-env APP_ENV=staging expo start",
     "start:prod": "cross-env APP_ENV=production expo start",
+    
     "android": "cross-env APP_ENV=staging expo start --android",
     "android:prod": "cross-env APP_ENV=production expo start --android",
+    
     "ios": "cross-env APP_ENV=staging expo start --ios",
+    "ios:prod": "cross-env APP_ENV=production expo start --ios",
+    
     "web": "cross-env APP_ENV=staging expo start --web",
+    
+    "run:android": "cross-env APP_ENV=staging expo run:android",
+    "run:ios": "cross-env APP_ENV=staging expo run:ios",
+    
     "build:apk": "bun run ./scripts/build-apk.ts",
-    "build:apk:prod": "bun run ./scripts/build-apk.ts --prod"
+    "build:apk:prod": "bun run ./scripts/build-apk.ts --prod",
+    
+    "build:ios": "bun run ./scripts/build-ios.ts",
+    "build:ios:prod": "bun run ./scripts/build-ios.ts --prod"
   },
   "private": true
 }
