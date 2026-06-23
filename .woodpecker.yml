@@ -32,6 +32,11 @@ steps:
   - name: build-apk
     image: ghcr.io/cirruslabs/android-sdk:34
     commands:
+      - echo "🔧 Instalando Node.js 20..."
+      - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+      - apt-get install -y nodejs
+      # -----------------------------------------------------------------
+      
       - echo "🔧 Instalando o Bun no contêiner Android..."
       - curl -fsSL https://bun.sh/install | bash
       - export PATH="$HOME/.bun/bin:$PATH"
@@ -40,7 +45,7 @@ steps:
       - bun install
       
       - echo "🚀 Executando o script Bun-Native de build (Produção)..."
-      - bun run build:apk:prod 
+      - bun run build:apk:prod
     when:
       - event: tag
 
