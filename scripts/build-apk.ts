@@ -10,7 +10,7 @@ try {
   
   const prebuild = Bun.spawnSync(
     [process.execPath, 'x', 'cross-env', 'CI=1', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'], 
-    { stdio: ['inherit', 'inherit', 'inherit'] }
+    { stdio: 'inherit' as any }
   );
 
   if (prebuild.exitCode !== 0) {
@@ -60,6 +60,7 @@ try {
   gradleProps += '\n# Limites de Memoria aplicados automaticamente para evitar crash na placa\n';
   gradleProps += 'org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\n';
   gradleProps += 'org.gradle.workers.max=2\n';
+  gradleProps += 'org.gradle.java.installations.auto-detect=false\n';
   await Bun.write(gradlePropsPath, gradleProps);
   console.log(`✅ SDK configurado e limites de memória ativados (Workers: 2, RAM: 2GB).`);
 
@@ -75,7 +76,7 @@ try {
   const build = Bun.spawnSync(
     [gradleCmd, 'assembleRelease'], 
     { 
-      stdio: ['inherit', 'inherit', 'inherit'],
+      stdio: 'inherit' as any,
       cwd: `${currentDir}/android`,
       env: {
         ...process.env,
@@ -105,5 +106,10 @@ try {
 } catch (error) {
   console.error('\n❌ O processo foi abortado devido a um erro:');
   console.error(error);
+
+  console.log('\n🔍 [RAIO-X] Buscando logs detalhados do compilador C++...');
+  const currentDir = process.cwd();
+  Bun.spawnSync(['sh', '-c', `find ${currentDir} -name "CMakeError.log" -exec echo "\\n--- CONTEÚDO DO {} ---\\n" \\; -exec cat {} \\;`], { stdio: 'inherit' as any });
+
   process.exit(1);
 }

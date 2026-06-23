@@ -35,18 +35,17 @@ steps:
       # -----------------------------------------------------------------
       # PREPARANDO O AMBIENTE NATIVO ARM64 (Orange Pi)
       # -----------------------------------------------------------------
-      - echo "🔧 Atualizando repositórios e instalando dependências base..."
-      - apt-get update && apt-get install -y curl cmake ninja-build
+      - echo "🔧 Atualizando repositórios e instalando Ninja..."
+      - apt-get update && apt-get install -y curl ninja-build
       
       - echo "🔧 Instalando Node.js 20 (Obrigatório para o React Native)..."
       - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
       - apt-get install -y nodejs
       
-      - echo "🔗 Criando ponte de arquitetura (Enganando o Android SDK para usar ARM64)..."
-      - mkdir -p /opt/android-sdk-linux/cmake/3.22.1/bin
-      - rm -f /opt/android-sdk-linux/cmake/3.22.1/bin/cmake
-      - rm -f /opt/android-sdk-linux/cmake/3.22.1/bin/ninja
-      - ln -sf /usr/bin/cmake /opt/android-sdk-linux/cmake/3.22.1/bin/cmake
+      - echo "🔗 Instalando pacote completo do CMake 3.22.1 Oficial ARM64..."
+      - rm -rf /opt/android-sdk-linux/cmake/3.22.1
+      - mkdir -p /opt/android-sdk-linux/cmake/3.22.1
+      - curl -L https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-aarch64.tar.gz | tar -xz -C /opt/android-sdk-linux/cmake/3.22.1 --strip-components=1
       - ln -sf /usr/bin/ninja /opt/android-sdk-linux/cmake/3.22.1/bin/ninja
       # -----------------------------------------------------------------
       
