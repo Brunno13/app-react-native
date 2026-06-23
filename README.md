@@ -135,6 +135,6 @@ Este repositório possui uma pipeline configurada no Woodpecker CI (.woodpecker/
 
 ## 🔐 Segurança e Tráfego Local
 
-Durante o desenvolvimento (Staging), o aplicativo está configurado via expo-build-properties para permitir tráfego HTTP em texto claro (usesCleartextTraffic: true), permitindo a comunicação fluida com a API local (ex: http://192.168.x.x). A versão de produção compila nativamente exigindo conexões HTTPS.
+Durante o desenvolvimento (Staging), o aplicativo está configurado via expo-build-properties para permitir tráfego HTTP em texto claro (usesCleartextTraffic: true), permitindo a comunicação fluida com a API local (ex: http://192.168.x.x). A versão de produção compila nativamente exigindo conexões HTTPS.   
 
 ---
