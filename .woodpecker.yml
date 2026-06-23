@@ -1,22 +1,18 @@
+# =========================================================
+# PIPELINE 1: TESTES (Roda na Orange Pi com Docker)
+# =========================================================
 when:
   - event: push
     branch: main
-  - event: tag
 
 clone:
   git:
     extra_hosts:
       - "gitea.brunnoserver.duckdns.org:192.168.31.215"
 
-# Etiqueta para garantir que apenas o agente do seu Mac pegue essa pipeline
-labels:
-  platform: macos
-
 steps:
-  # =========================================================
-  # FASE 1: Verificação (Apenas no Push da Main) 
-  # =========================================================
   - name: testar-codigo
+    image: oven/bun:latest
     commands:
       - echo "📦 Instalando dependências..."
       - bun install
@@ -24,26 +20,28 @@ steps:
       - bunx tsc --noEmit
       - echo "🔍 Verificando tipagem dos Scripts de Automação (Bun)..."
       - bunx tsc --project scripts/tsconfig.json --noEmit
-    when:
-      - event: push
-        branch: main
 
-  # =========================================================
-  # FASE 2: Build do Android (Apenas na Tag)
-  # =========================================================
+---
+# =========================================================
+# PIPELINE 2: BUILD MOBILE (Roda nativo no Mac M1)
+# =========================================================
+when:
+  - event: tag
+
+labels:
+  platform: macos
+
+steps:
   - name: build-apk
+    image: macos
     commands:
       - echo "📦 Instalando dependências do projeto..."
       - bun install
       - echo "🚀 Executando o script Bun-Native de build (Produção)..."
       - bun run build:apk:prod
-    when:
-      - event: tag
 
-  # =========================================================
-  # FASE 3: Release no Gitea Interno (Apenas na Tag)
-  # =========================================================
   - name: gerar-release-notes
+    image: macos
     environment:
       GITEA_TOKEN:
         from_secret: gitea_token
@@ -89,5 +87,3 @@ steps:
         curl -f -s -X POST "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/$RELEASE_ID/assets?name=app-react-native-production.apk" -H "Authorization: token $GITEA_TOKEN" -F "attachment=@./app-react-native-production.apk"
         
         echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
-    when:
-      - event: tag
