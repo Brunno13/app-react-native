@@ -50,12 +50,9 @@ steps:
       - ln -sf /usr/bin/ninja /opt/android-sdk-linux/cmake/3.22.1/bin/ninja
       
       # -----------------------------------------------------------------
-      # O "TRANSPLANTE" DO NDK (Baixando a versão exata do Expo 56)
+      # O "TRANSPLANTE" DO NDK (Refinado para resolver o Unwind)
       # -----------------------------------------------------------------
-      - echo "📦 Baixando NDK 27.1.12297006 exigido pelo Expo..."
-      - yes | sdkmanager "ndk;27.1.12297006"
-      
-      - echo "🔗 Fazendo transplante do compilador C++ (Clang) para ARM64..."
+      - echo "🔗 Fazendo transplante e blindagem do Linker para ARM64..."
       - export NDK_BIN=/opt/android-sdk-linux/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin
       - rm -f $NDK_BIN/clang $NDK_BIN/clang++ $NDK_BIN/ld.lld $NDK_BIN/llvm-ar $NDK_BIN/llvm-strip $NDK_BIN/llvm-objcopy $NDK_BIN/llvm-readelf
       - ln -sf /usr/bin/clang $NDK_BIN/clang
@@ -65,6 +62,11 @@ steps:
       - ln -sf /usr/bin/llvm-strip $NDK_BIN/llvm-strip
       - ln -sf /usr/bin/llvm-objcopy $NDK_BIN/llvm-objcopy
       - ln -sf /usr/bin/llvm-readelf $NDK_BIN/llvm-readelf
+      
+      # [NOVO] Adicionamos um wrapper para injetar automaticamente -lunwind
+      - mv $NDK_BIN/clang++ $NDK_BIN/clang++_real
+      - echo '#!/bin/sh\nexec '"$NDK_BIN"'/clang++_real -lunwind -lc++_shared "$@"' > $NDK_BIN/clang++
+      - chmod +x $NDK_BIN/clang++
 
       # -----------------------------------------------------------------
       # NOVO: RESOLVENDO O PHANTOM LINKER ERROR (Injeção do libgcc)
