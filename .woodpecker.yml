@@ -7,12 +7,13 @@ when:
 
 clone:
   git:
+    image: woodpeckerci/plugin-git
     extra_hosts:
       - "gitea.brunnoserver.duckdns.org:192.168.31.215"
 
 steps:
   - name: testar-codigo
-    image: oven/bun:latest
+    image: oven/bun:latest # Usa o contêiner real na Orange Pi
     commands:
       - echo "📦 Instalando dependências..."
       - bun install
