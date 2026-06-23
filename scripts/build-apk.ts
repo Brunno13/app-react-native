@@ -10,7 +10,7 @@ try {
   
   const prebuild = Bun.spawnSync(
     [process.execPath, 'x', 'cross-env', 'CI=1', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'], 
-    { stdio: 'inherit' as any }
+    { stdio: ['inherit', 'inherit', 'inherit'] as any }
   );
 
   if (prebuild.exitCode !== 0) {
@@ -76,7 +76,7 @@ try {
   const build = Bun.spawnSync(
     [gradleCmd, 'assembleRelease'], 
     { 
-      stdio: 'inherit' as any,
+      stdio: ['inherit', 'inherit', 'inherit'] as any,
       cwd: `${currentDir}/android`,
       env: {
         ...process.env,
@@ -109,7 +109,7 @@ try {
 
   console.log('\n🔍 [RAIO-X] Buscando logs detalhados do compilador C++...');
   const currentDir = process.cwd();
-  Bun.spawnSync(['sh', '-c', `find ${currentDir} -name "CMakeError.log" -exec echo "\\n--- CONTEÚDO DO {} ---\\n" \\; -exec cat {} \\;`], { stdio: 'inherit' as any });
+  Bun.spawnSync(['sh', '-c', `find ${currentDir} -name "CMakeError.log" -exec echo "\\n--- CONTEÚDO DO {} ---\\n" \\; -exec cat {} \\;`], { stdio: ['inherit', 'inherit', 'inherit'] as any });
 
   process.exit(1);
 }
