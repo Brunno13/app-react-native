@@ -55,6 +55,9 @@ steps:
         
         echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
 
+  # =========================================================
+  # FASE 2: ESPELHAMENTO PARA O GITHUB (Apenas na Tag)
+  # =========================================================
   - name: espelhar-github
     image: bash
     environment:
@@ -64,8 +67,8 @@ steps:
     commands:
       - echo "=== SINCRONIZANDO COM O GITHUB ==="
       - git config --global --add safe.directory '*'
-      - git push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git main --force
-      - git push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git ${CI_COMMIT_TAG} --force
+      - git -c credential.helper= push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git main --force
+      - git -c credential.helper= push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git ${CI_COMMIT_TAG} --force
 
   - name: criar-release-github
     image: bash
