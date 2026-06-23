@@ -30,7 +30,7 @@ steps:
   # FASE 2: Build do Android (Apenas na Tag)
   # =========================================================
   - name: build-apk
-    image: reactnativecommunity/react-native-android:latest
+    image: reactnativecommunity/react-native-android:v20.1
     commands:
       - echo "🔧 Instalando o Bun no contêiner Android..."
       - curl -fsSL https://bun.sh/install | bash
