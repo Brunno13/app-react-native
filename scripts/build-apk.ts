@@ -1,5 +1,9 @@
 export {};
 
+if (process.env.CI && process.env.CI !== 'true' && process.env.CI !== '1') {
+  process.env.CI = 'true';
+}
+
 const isProd = Bun.argv.includes('--prod');
 const appEnv = Bun.env.APP_ENV || (isProd ? 'production' : 'staging');
 
