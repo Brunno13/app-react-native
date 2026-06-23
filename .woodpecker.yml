@@ -11,7 +11,7 @@ clone:
 
 steps:
   # =========================================================
-  # FASE 1: Verificação (Apenas no Push da Main)
+  # FASE 1: Verificação (Apenas no Push da Main) 
   # =========================================================
   - name: testar-codigo
     image: oven/bun:latest
