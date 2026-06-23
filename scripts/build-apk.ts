@@ -17,9 +17,6 @@ try {
     throw new Error('Falha crítica ao gerar o código nativo (Expo Prebuild).');
   }
 
-// ---------------------------------------------------------------------
-  // NOVO PASSO: Ajuste Fino do Gradle (A Zona Perfeita: 8.13)
-  // ---------------------------------------------------------------------
   console.log('\n🩹 Passo 1.5: Ajustando Gradle para a versão 8.13 (Exigência do Expo 56)...');
   const currentDir = process.cwd();
   const wrapperPropPath = `${currentDir}/android/gradle/wrapper/gradle-wrapper.properties`;
@@ -27,19 +24,15 @@ try {
   
   if (await wrapperFile.exists()) {
     let content = await wrapperFile.text();
-    // Altera a URL de download para forçar a versão 8.13, que satisfaz o AGP e evita o bug do Gradle 9
     content = content.replace(
       /distributionUrl=.*/g,
       'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-all.zip'
     );
     await Bun.write(wrapperPropPath, content);
     console.log(`✅ gradle-wrapper.properties modificado com sucesso para a versão 8.13!`);
-  } else {
-    console.warn('⚠️ gradle-wrapper.properties não encontrado. O ajuste não pôde ser aplicado.');
   }
-  // ---------------------------------------------------------------------
 
-  console.log('\n📝 Passo 2: Configurando local.properties...');
+  console.log('\n📝 Passo 2: Configurando SDK e Otimizando RAM para a Orange Pi...');
   
   let sdkDir = Bun.env.ANDROID_HOME || Bun.env.ANDROID_SDK_ROOT;
 
@@ -56,11 +49,21 @@ try {
 
   const normalizedSdkDir = sdkDir.replace(/\\/g, '/');
   const localPropPath = `${currentDir}/android/local.properties`;
-  
   await Bun.write(localPropPath, `sdk.dir=${normalizedSdkDir}\n`);
-  console.log(`✅ SDK configurado com sucesso apontando para: ${normalizedSdkDir}`);
 
-  console.log('\n🔨 Passo 3: Compilando o APK...');
+  const gradlePropsPath = `${currentDir}/android/gradle.properties`;
+  let gradleProps = '';
+  const gradlePropsFile = Bun.file(gradlePropsPath);
+  if (await gradlePropsFile.exists()) {
+    gradleProps = await gradlePropsFile.text();
+  }
+  gradleProps += '\n# Limites de Memoria aplicados automaticamente para evitar crash na placa\n';
+  gradleProps += 'org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\n';
+  gradleProps += 'org.gradle.workers.max=2\n';
+  await Bun.write(gradlePropsPath, gradleProps);
+  console.log(`✅ SDK configurado e limites de memória ativados (Workers: 2, RAM: 2GB).`);
+
+  console.log('\n🔨 Passo 3: Compilando o APK (Com CPU Throttling no C++)...');
   const gradleCmd = process.platform === 'win32' 
     ? `${currentDir}/android/gradlew.bat` 
     : `${currentDir}/android/gradlew`;
@@ -73,7 +76,11 @@ try {
     [gradleCmd, 'assembleRelease'], 
     { 
       stdio: ['inherit', 'inherit', 'inherit'],
-      cwd: `${currentDir}/android` 
+      cwd: `${currentDir}/android`,
+      env: {
+        ...process.env,
+        CMAKE_BUILD_PARALLEL_LEVEL: '2' 
+      }
     }
   );
 
