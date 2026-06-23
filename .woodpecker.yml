@@ -30,7 +30,7 @@ steps:
   # FASE 2: Build do Android (Apenas na Tag)
   # =========================================================
   - name: build-apk
-    image: ghcr.io/cirruslabs/android-sdk:34-ndk  # Usando a imagem com NDK embutido!
+    image: ghcr.io/cirruslabs/android-sdk:34
     commands:
       # -----------------------------------------------------------------
       # PREPARANDO O AMBIENTE NATIVO ARM64 (Orange Pi)
@@ -47,13 +47,12 @@ steps:
       - mkdir -p /opt/android-sdk-linux/cmake/3.22.1
       - curl -L https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-aarch64.tar.gz | tar -xz -C /opt/android-sdk-linux/cmake/3.22.1 --strip-components=1
       - ln -sf /usr/bin/ninja /opt/android-sdk-linux/cmake/3.22.1/bin/ninja
+
+      - echo "📦 Baixando NDK 27.1.12297006 exigido pelo Expo..."
+      - yes | sdkmanager "ndk;27.1.12297006"
       
-      # -----------------------------------------------------------------
-      # O "TRANSPLANTE" DO NDK (Aproveitando a pasta da imagem 34-ndk)
-      # -----------------------------------------------------------------
       - echo "🔗 Fazendo transplante do compilador C++ (Clang) para ARM64..."
-      # Como a imagem é a 34-ndk, sabemos que a versão do NDK lá dentro é a padrão exigida
-      - export NDK_BIN=$(ls -d /opt/android-sdk-linux/ndk/*/toolchains/llvm/prebuilt/linux-x86_64/bin | head -n 1)
+      - export NDK_BIN=/opt/android-sdk-linux/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin
       - rm -f $NDK_BIN/clang $NDK_BIN/clang++ $NDK_BIN/ld.lld $NDK_BIN/llvm-ar $NDK_BIN/llvm-strip $NDK_BIN/llvm-objcopy $NDK_BIN/llvm-readelf
       - ln -sf /usr/bin/clang $NDK_BIN/clang
       - ln -sf /usr/bin/clang++ $NDK_BIN/clang++
