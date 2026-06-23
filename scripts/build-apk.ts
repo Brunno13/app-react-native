@@ -29,6 +29,32 @@ try {
 
   let patchApplied = false;
 
+  
+  // ---------------------------------------------------------------------
+
+  console.log('\n📝 Passo 2: Configurando local.properties...');
+  
+  let sdkDir = Bun.env.ANDROID_HOME || Bun.env.ANDROID_SDK_ROOT;
+
+  if (!sdkDir) {
+    const homeDir = Bun.env.HOME || Bun.env.USERPROFILE || '';
+    if (process.platform === 'win32') {
+      sdkDir = `${homeDir}/AppData/Local/Android/Sdk`;
+    } else if (process.platform === 'darwin') {
+      sdkDir = `${homeDir}/Library/Android/sdk`; 
+    } else {
+      sdkDir = `${homeDir}/Android/Sdk`; 
+    }
+  }
+
+  const normalizedSdkDir = sdkDir.replace(/\\/g, '/');
+  const localPropPath = `${currentDir}/android/local.properties`;
+  
+  await Bun.write(localPropPath, `sdk.dir=${normalizedSdkDir}\n`);
+  console.log(`✅ SDK configurado com sucesso apontando para: ${normalizedSdkDir}`);
+
+  // ------
+
   for (const settingsPath of settingsPaths) {
     const settingsFile = Bun.file(settingsPath);
     if (await settingsFile.exists()) {
@@ -52,28 +78,8 @@ try {
   if (!patchApplied) {
     console.warn('⚠️ O patch não encontrou o plugin foojay-resolver para corrigir. O build pode falhar.');
   }
-  // ---------------------------------------------------------------------
 
-  console.log('\n📝 Passo 2: Configurando local.properties...');
-  
-  let sdkDir = Bun.env.ANDROID_HOME || Bun.env.ANDROID_SDK_ROOT;
-
-  if (!sdkDir) {
-    const homeDir = Bun.env.HOME || Bun.env.USERPROFILE || '';
-    if (process.platform === 'win32') {
-      sdkDir = `${homeDir}/AppData/Local/Android/Sdk`;
-    } else if (process.platform === 'darwin') {
-      sdkDir = `${homeDir}/Library/Android/sdk`; 
-    } else {
-      sdkDir = `${homeDir}/Android/Sdk`; 
-    }
-  }
-
-  const normalizedSdkDir = sdkDir.replace(/\\/g, '/');
-  const localPropPath = `${currentDir}/android/local.properties`;
-  
-  await Bun.write(localPropPath, `sdk.dir=${normalizedSdkDir}\n`);
-  console.log(`✅ SDK configurado com sucesso apontando para: ${normalizedSdkDir}`);
+  //-------
 
   console.log('\n🔨 Passo 3: Compilando o APK...');
   const gradleCmd = process.platform === 'win32' 
