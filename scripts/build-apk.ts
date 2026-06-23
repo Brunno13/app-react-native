@@ -18,30 +18,24 @@ try {
   }
 
   // ---------------------------------------------------------------------
-  // NOVO PASSO: Remoção Cirúrgica do Foojay (A Solução Nuclear)
+  // NOVO PASSO: Downgrade Forçado do Gradle (Bypass do Gradle 9.3)
   // ---------------------------------------------------------------------
-  console.log('\n🩹 Passo 1.5: Removendo o plugin foojay problemático...');
+  console.log('\n🩹 Passo 1.5: Forçando downgrade do Gradle para 8.10.2...');
   const currentDir = process.cwd();
-  const settingsPaths = [
-    `${currentDir}/android/settings.gradle`,
-    `${currentDir}/android/settings.gradle.kts`
-  ];
-
-  for (const settingsPath of settingsPaths) {
-    const settingsFile = Bun.file(settingsPath);
-    if (await settingsFile.exists()) {
-      const content = await settingsFile.text();
-      
-      // Separa o texto linha por linha e joga fora qualquer linha que contenha "foojay"
-      const lines = content.split('\n');
-      const cleanLines = lines.filter(line => !line.includes('foojay'));
-      
-      // Se o tamanho mudou, é porque removemos a linha problemática. Salvamos o arquivo limpo.
-      if (lines.length !== cleanLines.length) {
-         await Bun.write(settingsPath, cleanLines.join('\n'));
-         console.log(`✅ Plugin foojay extirpado com sucesso do arquivo: ${settingsPath.split('/').pop()}`);
-      }
-    }
+  const wrapperPropPath = `${currentDir}/android/gradle/wrapper/gradle-wrapper.properties`;
+  const wrapperFile = Bun.file(wrapperPropPath);
+  
+  if (await wrapperFile.exists()) {
+    let content = await wrapperFile.text();
+    // Altera a URL de download para forçar a versão 8.10.2, que não tem o bug do IBM_SEMERU
+    content = content.replace(
+      /distributionUrl=.*/g,
+      'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.10.2-all.zip'
+    );
+    await Bun.write(wrapperPropPath, content);
+    console.log(`✅ gradle-wrapper.properties modificado com sucesso para a versão 8.10.2!`);
+  } else {
+    console.warn('⚠️ gradle-wrapper.properties não encontrado. O downgrade não pôde ser aplicado.');
   }
   // ---------------------------------------------------------------------
 
