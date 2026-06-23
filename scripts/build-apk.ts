@@ -17,22 +17,9 @@ try {
     throw new Error('Falha crítica ao gerar o código nativo (Expo Prebuild).');
   }
 
-  console.log('\n🩹 Passo 1.5: Ajustando Gradle para a versão 8.13 (Exigência do Expo 56)...');
   const currentDir = process.cwd();
-  const wrapperPropPath = `${currentDir}/android/gradle/wrapper/gradle-wrapper.properties`;
-  const wrapperFile = Bun.file(wrapperPropPath);
-  
-  if (await wrapperFile.exists()) {
-    let content = await wrapperFile.text();
-    content = content.replace(
-      /distributionUrl=.*/g,
-      'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-all.zip'
-    );
-    await Bun.write(wrapperPropPath, content);
-    console.log(`✅ gradle-wrapper.properties modificado com sucesso para a versão 8.13!`);
-  }
 
-  console.log('\n📝 Passo 2: Configurando SDK e Otimizando RAM para a Orange Pi...');
+  console.log('\n📝 Passo 2: Configurando SDK e Otimizando RAM para o Mac M1 (8GB)...');
   
   let sdkDir = Bun.env.ANDROID_HOME || Bun.env.ANDROID_SDK_ROOT;
 
@@ -57,14 +44,14 @@ try {
   if (await gradlePropsFile.exists()) {
     gradleProps = await gradlePropsFile.text();
   }
-  gradleProps += '\n# Limites de Memoria aplicados automaticamente para evitar crash na placa\n';
+  
+  gradleProps += '\n# Limites de Memoria aplicados automaticamente\n';
   gradleProps += 'org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\n';
   gradleProps += 'org.gradle.workers.max=2\n';
-  gradleProps += 'org.gradle.java.installations.auto-detect=false\n';
   await Bun.write(gradlePropsPath, gradleProps);
   console.log(`✅ SDK configurado e limites de memória ativados (Workers: 2, RAM: 2GB).`);
 
-  console.log('\n🔨 Passo 3: Compilando o APK (Com CPU Throttling no C++)...');
+  console.log('\n🔨 Passo 3: Compilando o APK...');
   const gradleCmd = process.platform === 'win32' 
     ? `${currentDir}/android/gradlew.bat` 
     : `${currentDir}/android/gradlew`;
@@ -106,10 +93,5 @@ try {
 } catch (error) {
   console.error('\n❌ O processo foi abortado devido a um erro:');
   console.error(error);
-
-  console.log('\n🔍 [RAIO-X] Buscando logs detalhados do compilador C++...');
-  const currentDir = process.cwd();
-  Bun.spawnSync(['sh', '-c', `find ${currentDir} -name "CMakeError.log" -exec echo "\\n--- CONTEÚDO DO {} ---\\n" \\; -exec cat {} \\;`], { stdio: ['inherit', 'inherit', 'inherit'] as any });
-
   process.exit(1);
 }
