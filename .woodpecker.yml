@@ -35,8 +35,8 @@ steps:
       # -----------------------------------------------------------------
       # PREPARANDO O AMBIENTE NATIVO ARM64 (Orange Pi)
       # -----------------------------------------------------------------
-      - echo "🔧 Atualizando repositórios e instalando Ninja..."
-      - apt-get update && apt-get install -y curl ninja-build
+      - echo "🔧 Atualizando repositórios e instalando dependências base..."
+      - apt-get update && apt-get install -y curl ninja-build unzip
       
       - echo "🔧 Instalando Node.js 20 (Obrigatório para o React Native)..."
       - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
@@ -47,6 +47,22 @@ steps:
       - mkdir -p /opt/android-sdk-linux/cmake/3.22.1
       - curl -L https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-aarch64.tar.gz | tar -xz -C /opt/android-sdk-linux/cmake/3.22.1 --strip-components=1
       - ln -sf /usr/bin/ninja /opt/android-sdk-linux/cmake/3.22.1/bin/ninja
+      
+      # -----------------------------------------------------------------
+      # NOVO: SUBSTITUINDO O NDK x86_64 PELO NDK NATIVO ARM64
+      # -----------------------------------------------------------------
+      - echo "🔗 Baixando NDK Nativo ARM64 (Android C++ Compiler)..."
+      - export NDK_DIR=/opt/android-sdk-linux/ndk/27.1.12297006
+      - rm -rf $NDK_DIR
+      - mkdir -p /opt/android-sdk-linux/ndk
+      - curl -o ndk.zip -L https://dl.google.com/android/repository/android-ndk-r27b-linux-aarch64.zip
+      - unzip -q ndk.zip
+      - mv android-ndk-r27b $NDK_DIR
+      - rm -f ndk.zip
+      # Trava a assinatura do NDK para o Gradle não tentar baixar a versão errada de novo
+      - sed -i 's/Pkg.Revision.*/Pkg.Revision = 27.1.12297006/' $NDK_DIR/source.properties
+      # O Pulo do Gato: Cria um atalho com o nome exato da pasta que o Gradle procura
+      - ln -sf $NDK_DIR/toolchains/llvm/prebuilt/linux-aarch64 $NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
       # -----------------------------------------------------------------
       
       - echo "🔧 Instalando o Bun no contêiner Android..."
