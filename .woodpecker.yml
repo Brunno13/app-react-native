@@ -33,10 +33,9 @@ steps:
     image: ghcr.io/cirruslabs/android-sdk:34
     commands:
       # -----------------------------------------------------------------
-      # PREPARANDO O AMBIENTE NATIVO ARM64 (Orange Pi)
+      # 1. PREPARANDO O AMBIENTE NATIVO ARM64 (Orange Pi)
       # -----------------------------------------------------------------
       - echo "🔧 Atualizando repositórios e instalando dependências base..."
-      # NOVO: Adicionado gcc-aarch64-linux-gnu para roubarmos o libgcc.a dele!
       - apt-get update && apt-get install -y curl ninja-build clang lld llvm gcc-aarch64-linux-gnu
       
       - echo "🔧 Instalando Node.js 20..."
@@ -50,26 +49,34 @@ steps:
       - ln -sf /usr/bin/ninja /opt/android-sdk-linux/cmake/3.22.1/bin/ninja
       
       # -----------------------------------------------------------------
-      # O "TRANSPLANTE" DO NDK (Refinado para resolver o Unwind)
+      # 2. BAIXANDO A VERSÃO EXATA DO NDK EXIGIDA PELO EXPO
+      # -----------------------------------------------------------------
+      - echo "📦 Baixando NDK 27.1.12297006..."
+      - yes | sdkmanager "ndk;27.1.12297006"
+
+      # -----------------------------------------------------------------
+      # 3. O "TRANSPLANTE" E O WRAPPER DO LINKER (-lunwind)
       # -----------------------------------------------------------------
       - echo "🔗 Fazendo transplante e blindagem do Linker para ARM64..."
       - export NDK_BIN=/opt/android-sdk-linux/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin
+      # Removemos as ferramentas Intel
       - rm -f $NDK_BIN/clang $NDK_BIN/clang++ $NDK_BIN/ld.lld $NDK_BIN/llvm-ar $NDK_BIN/llvm-strip $NDK_BIN/llvm-objcopy $NDK_BIN/llvm-readelf
+      
+      # Criamos os atalhos simples
       - ln -sf /usr/bin/clang $NDK_BIN/clang
-      - ln -sf /usr/bin/clang++ $NDK_BIN/clang++
       - ln -sf /usr/bin/ld.lld $NDK_BIN/ld.lld
       - ln -sf /usr/bin/llvm-ar $NDK_BIN/llvm-ar
       - ln -sf /usr/bin/llvm-strip $NDK_BIN/llvm-strip
       - ln -sf /usr/bin/llvm-objcopy $NDK_BIN/llvm-objcopy
       - ln -sf /usr/bin/llvm-readelf $NDK_BIN/llvm-readelf
       
-      # [NOVO] Adicionamos um wrapper para injetar automaticamente -lunwind
-      - mv $NDK_BIN/clang++ $NDK_BIN/clang++_real
-      - echo '#!/bin/sh\nexec '"$NDK_BIN"'/clang++_real -lunwind -lc++_shared "$@"' > $NDK_BIN/clang++
+      # Criamos o Wrapper do clang++ apontando para o binário nativo da placa com as flags de correção
+      - echo '#!/bin/sh' > $NDK_BIN/clang++
+      - echo 'exec /usr/bin/clang++ -lunwind -lc++_shared "$@"' >> $NDK_BIN/clang++
       - chmod +x $NDK_BIN/clang++
 
       # -----------------------------------------------------------------
-      # NOVO: RESOLVENDO O PHANTOM LINKER ERROR (Injeção do libgcc)
+      # 4. RESOLVENDO O PHANTOM LINKER ERROR (Injeção do libgcc)
       # -----------------------------------------------------------------
       - echo "🩹 Injetando libgcc.a nativo no Sysroot do Android NDK..."
       - export SYSROOT=/opt/android-sdk-linux/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/sysroot
@@ -77,8 +84,10 @@ steps:
       - mkdir -p $SYSROOT/usr/lib/aarch64-linux-android/24
       - cp $GCC_LIB $SYSROOT/usr/lib/aarch64-linux-android/24/libgcc.a
       - cp $GCC_LIB $SYSROOT/usr/lib/aarch64-linux-android/libgcc.a
-      # -----------------------------------------------------------------
       
+      # -----------------------------------------------------------------
+      # 5. INSTALAÇÃO DO BUN E BUILD DO APK
+      # -----------------------------------------------------------------
       - echo "🔧 Instalando o Bun no contêiner Android..."
       - curl -fsSL https://bun.sh/install | bash
       - export PATH="$HOME/.bun/bin:$PATH"
