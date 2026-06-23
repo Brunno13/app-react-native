@@ -18,18 +18,31 @@ try {
   }
 
   // ---------------------------------------------------------------------
-  // NOVO PASSO: Correção automática do Bug do Gradle 9.0+ (IBM_SEMERU)
+  // NOVO PASSO: Remoção Cirúrgica do Foojay (A Solução Nuclear)
   // ---------------------------------------------------------------------
-  console.log('\n🩹 Passo 1.5: Aplicando patch de compatibilidade agressivo...');
+  console.log('\n🩹 Passo 1.5: Removendo o plugin foojay problemático...');
   const currentDir = process.cwd();
   const settingsPaths = [
     `${currentDir}/android/settings.gradle`,
     `${currentDir}/android/settings.gradle.kts`
   ];
 
-  let patchApplied = false;
-
-  
+  for (const settingsPath of settingsPaths) {
+    const settingsFile = Bun.file(settingsPath);
+    if (await settingsFile.exists()) {
+      const content = await settingsFile.text();
+      
+      // Separa o texto linha por linha e joga fora qualquer linha que contenha "foojay"
+      const lines = content.split('\n');
+      const cleanLines = lines.filter(line => !line.includes('foojay'));
+      
+      // Se o tamanho mudou, é porque removemos a linha problemática. Salvamos o arquivo limpo.
+      if (lines.length !== cleanLines.length) {
+         await Bun.write(settingsPath, cleanLines.join('\n'));
+         console.log(`✅ Plugin foojay extirpado com sucesso do arquivo: ${settingsPath.split('/').pop()}`);
+      }
+    }
+  }
   // ---------------------------------------------------------------------
 
   console.log('\n📝 Passo 2: Configurando local.properties...');
@@ -52,34 +65,6 @@ try {
   
   await Bun.write(localPropPath, `sdk.dir=${normalizedSdkDir}\n`);
   console.log(`✅ SDK configurado com sucesso apontando para: ${normalizedSdkDir}`);
-
-  // ------
-
-  for (const settingsPath of settingsPaths) {
-    const settingsFile = Bun.file(settingsPath);
-    if (await settingsFile.exists()) {
-      let content = await settingsFile.text();
-      const originalContent = content;
-      
-      content = content.replace(
-        /(id\s*\(?['"]org\.gradle\.toolchains\.foojay-resolver-convention['"]\)?\s*version\s*\(?['"]).*?(['"]\)?)/g,
-        '$10.8.0$2'
-      );
-
-      if (content !== originalContent) {
-        await Bun.write(settingsPath, content);
-        console.log(`✅ Patch aplicado com sucesso no arquivo: ${settingsPath.split('/').pop()}`);
-        patchApplied = true;
-        break;
-      }
-    }
-  }
-
-  if (!patchApplied) {
-    console.warn('⚠️ O patch não encontrou o plugin foojay-resolver para corrigir. O build pode falhar.');
-  }
-
-  //-------
 
   console.log('\n🔨 Passo 3: Compilando o APK...');
   const gradleCmd = process.platform === 'win32' 
