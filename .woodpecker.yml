@@ -32,9 +32,22 @@ steps:
   - name: build-apk
     image: ghcr.io/cirruslabs/android-sdk:34
     commands:
-      - echo "🔧 Instalando Node.js 20..."
+      # -----------------------------------------------------------------
+      # PREPARANDO O AMBIENTE NATIVO ARM64 (Orange Pi)
+      # -----------------------------------------------------------------
+      - echo "🔧 Atualizando repositórios e instalando dependências base..."
+      - apt-get update && apt-get install -y curl cmake ninja-build
+      
+      - echo "🔧 Instalando Node.js 20 (Obrigatório para o React Native)..."
       - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
       - apt-get install -y nodejs
+      
+      - echo "🔗 Criando ponte de arquitetura (Enganando o Android SDK para usar ARM64)..."
+      - mkdir -p /opt/android-sdk-linux/cmake/3.22.1/bin
+      - rm -f /opt/android-sdk-linux/cmake/3.22.1/bin/cmake
+      - rm -f /opt/android-sdk-linux/cmake/3.22.1/bin/ninja
+      - ln -sf /usr/bin/cmake /opt/android-sdk-linux/cmake/3.22.1/bin/cmake
+      - ln -sf /usr/bin/ninja /opt/android-sdk-linux/cmake/3.22.1/bin/ninja
       # -----------------------------------------------------------------
       
       - echo "🔧 Instalando o Bun no contêiner Android..."
