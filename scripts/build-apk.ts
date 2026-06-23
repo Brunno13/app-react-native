@@ -17,25 +17,25 @@ try {
     throw new Error('Falha crítica ao gerar o código nativo (Expo Prebuild).');
   }
 
+// ---------------------------------------------------------------------
+  // NOVO PASSO: Ajuste Fino do Gradle (A Zona Perfeita: 8.13)
   // ---------------------------------------------------------------------
-  // NOVO PASSO: Downgrade Forçado do Gradle (Bypass do Gradle 9.3)
-  // ---------------------------------------------------------------------
-  console.log('\n🩹 Passo 1.5: Forçando downgrade do Gradle para 8.10.2...');
+  console.log('\n🩹 Passo 1.5: Ajustando Gradle para a versão 8.13 (Exigência do Expo 56)...');
   const currentDir = process.cwd();
   const wrapperPropPath = `${currentDir}/android/gradle/wrapper/gradle-wrapper.properties`;
   const wrapperFile = Bun.file(wrapperPropPath);
   
   if (await wrapperFile.exists()) {
     let content = await wrapperFile.text();
-    // Altera a URL de download para forçar a versão 8.10.2, que não tem o bug do IBM_SEMERU
+    // Altera a URL de download para forçar a versão 8.13, que satisfaz o AGP e evita o bug do Gradle 9
     content = content.replace(
       /distributionUrl=.*/g,
-      'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.10.2-all.zip'
+      'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-all.zip'
     );
     await Bun.write(wrapperPropPath, content);
-    console.log(`✅ gradle-wrapper.properties modificado com sucesso para a versão 8.10.2!`);
+    console.log(`✅ gradle-wrapper.properties modificado com sucesso para a versão 8.13!`);
   } else {
-    console.warn('⚠️ gradle-wrapper.properties não encontrado. O downgrade não pôde ser aplicado.');
+    console.warn('⚠️ gradle-wrapper.properties não encontrado. O ajuste não pôde ser aplicado.');
   }
   // ---------------------------------------------------------------------
 
