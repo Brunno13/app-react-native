@@ -6,7 +6,7 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 
 ## 🗺️ Roadmap do Projeto
 
-### ✅ Concluído
+### ✅ Concluído 
 - [x] **Setup Inicial:** Inicialização com React Native, Expo e Bun.
 - [x] **Autenticação:** Integração do cliente `@better-auth/expo`.
 - [x] **Arquitetura:** Organização no padrão Feature-Sliced Design (FSD).
