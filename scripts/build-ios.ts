@@ -57,7 +57,6 @@ export CI="true"
   await Bun.write(xcodeEnvLocalPath, envContent.trim() + '\n');
   console.log(`✅ Xcode mapeado! Node 21 localizado em: ${nodeFullPath}`);
 
-  // Localiza dinamicamente o arquivo .xcworkspace gerado pelo Expo
   const files = await readdir(iosDir);
   const workspaceName = files.find(file => file.endsWith('.xcworkspace'));
 
@@ -88,19 +87,29 @@ export CI="true"
 
   console.log('\n📦 Passo 3: Localizando o binário e compactando para distribuição...');
   
-  const appSourcePath = `${currentDir}/ios_build/Build/Products/Release-iphonesimulator/${schemeName}.app`;
-  const zipDestName = `app-react-native-ios-${appEnv}.zip`;
+  const releaseDir = `${currentDir}/ios_build/Build/Products/Release-iphonesimulator`;
+  let appDirName: string | undefined;
 
-  const appFile = Bun.file(appSourcePath);
-  
-  if (!(await appFile.exists())) {
-      throw new Error(`Pacote .app não encontrado no caminho esperado: ${appSourcePath}`);
+  try {
+    const releaseFiles = await readdir(releaseDir);
+    appDirName = releaseFiles.find(file => file.endsWith('.app'));
+  } catch (err) {
+    throw new Error(`❌ Diretório de compilação não encontrado: ${releaseDir}`);
+  }
+
+  if (!appDirName) {
+      throw new Error(`❌ Nenhum pacote .app foi gerado dentro de: ${releaseDir}`);
   }
   
-  console.log('🤐 Compactando o arquivo .app em um arquivo .zip...');
+  console.log(`🎯 Pacote .app localizado com sucesso: ${appDirName}`);
+  console.log('🤐 Compactando o pacote em um arquivo .zip seguro para a Apple...');
+  
+  const zipDestName = `app-react-native-ios-${appEnv}.zip`;
+  const zipDestPath = `${currentDir}/${zipDestName}`;
+
   const zipProcess = Bun.spawnSync(
-    ['zip', '-r', `../${zipDestName}`, '.'],
-    { cwd: appSourcePath }
+    ['zip', '-r', zipDestPath, appDirName],
+    { cwd: releaseDir }
   );
 
   if (zipProcess.exitCode !== 0) {
