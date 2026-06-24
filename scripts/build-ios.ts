@@ -27,20 +27,26 @@ try {
   const currentDir = process.cwd();
   const iosDir = `${currentDir}/ios`;
 
-  console.log('\n🔗 Passo 1.5: Blindando o ambiente do Xcode para CI/CD...');
+  console.log('\n🔗 Passo 1.5: Configurando o Xcode para trabalhar com o NVM...');
   
-  // 1. Desativa o Watchman (evita quebra de permissão em pastas temporárias do CI)
-  // 2. Garante que o Homebrew (M1) e as rotas padrões estão no PATH
-  // 3. Força a busca pelo binário oficial do Node (O Metro exige Node, não Bun)
   const xcodeEnvLocalPath = `${iosDir}/.xcode.env.local`;
+  
+  // Script shell que força o Xcode a acordar o NVM e carregar a versão ativa (v21)
+  // antes de tentar empacotar o código React Native.
   const envContent = `
 export USE_WATCHMAN=false
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-export NODE_BINARY=$(which node)
+
+# Tenta carregar o NVM (Padrão ou via Homebrew)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \\. "/opt/homebrew/opt/nvm/nvm.sh"
+
+# Com o NVM ativado, pega a rota exata do Node
+export NODE_BINARY=$(command -v node)
   `;
   
   await Bun.write(xcodeEnvLocalPath, envContent.trim() + '\n');
-  console.log(`✅ Arquivo .xcode.env.local gerado com bypass de Watchman e PATH estendido.`);
+  console.log(`✅ Arquivo .xcode.env.local injetado com sucesso para dar bypass no NVM.`);
 
   // Localiza dinamicamente o arquivo .xcworkspace gerado pelo Expo
   const files = await readdir(iosDir);
@@ -55,7 +61,7 @@ export NODE_BINARY=$(which node)
 
   console.log('\n🔨 Passo 2: Compilando o aplicativo via xcodebuild (Modo Release)...');
   
-  // Executa a compilação nativa otimizada para a arquitetura do Apple Silicon (M1)
+  // Executa a compilação nativa otimizada
   const xcodebuild = Bun.spawnSync(
     [
       'xcodebuild',
@@ -79,6 +85,10 @@ export NODE_BINARY=$(which node)
   const zipDestName = `app-react-native-ios-${appEnv}.zip`;
 
   const appFile = Bun.file(appSourcePath);
+  
+  if (!(await appFile.exists())) {
+      throw new Error(`Pacote .app não encontrado no caminho esperado: ${appSourcePath}`);
+  }
   
   console.log('🤐 Compactando o arquivo .app em um arquivo .zip...');
   const zipProcess = Bun.spawnSync(
