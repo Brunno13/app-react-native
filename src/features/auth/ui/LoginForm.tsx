@@ -4,9 +4,11 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator 
 interface LoginFormProps {
   onLogin: (email: string, pass: string) => void;
   loading: boolean;
+  onNavigateToSignUp: () => void;
+  onNavigateToForgot: () => void;
 }
 
-export const LoginForm = ({ onLogin, loading }: LoginFormProps) => {
+export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToForgot }: LoginFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -38,6 +40,16 @@ export const LoginForm = ({ onLogin, loading }: LoginFormProps) => {
           <Text style={styles.buttonText}>Entrar</Text>
         )}
       </TouchableOpacity>
+
+      <View style={styles.linksContainer}>
+        <TouchableOpacity onPress={onNavigateToForgot}>
+          <Text style={styles.linkText}>Esqueceu a senha?</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={onNavigateToSignUp}>
+          <Text style={styles.linkText}>Criar nova conta</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -68,5 +80,15 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  linksContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+    gap: 16,
+  },
+  linkText: {
+    color: '#007BFF',
+    fontSize: 15,
+    fontWeight: '500',
   },
 });
