@@ -3,13 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuthFlow } from '../features/auth/hooks/useAuth';
 
 export const HomeScreen = () => {
-  const { session, handleLogout } = useAuthFlow();
+  const { session, signOut } = useAuthFlow();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bem-vindo, {session?.user?.name || 'Usuário'}!</Text>
       
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={signOut}>
         <Text style={styles.buttonText}>Sair da Conta</Text>
       </TouchableOpacity>
     </View>

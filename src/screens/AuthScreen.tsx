@@ -1,30 +1,58 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useAuthFlow } from '../features/auth/hooks/useAuth';
-import { LoginForm } from '../features/auth/ui/LoginForm';
+import React, { useState } from 'react';
+import { SafeAreaView, View, StyleSheet } from 'react-native';
+
+import { LoginForm } from '../features/auth/ui/LoginForm'; 
+import { SignUpForm } from '../features/auth/ui/SignUpForm';
+import { ForgotPasswordForm } from '../features/auth/ui/ForgotPasswordForm';
+import { useAuth } from '../features/auth/hooks/useAuth';
+
+type AuthView = 'login' | 'signup' | 'forgot_password';
 
 export const AuthScreen = () => {
-  const { handleLogin, loading } = useAuthFlow();
+  const [currentView, setCurrentView] = useState<AuthView>('login');
+  
+  // Extraímos as funções de autenticação do hook correto (useAuth)
+  const { signIn, loading } = useAuth();
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'signup':
+        return (
+          <SignUpForm 
+            onSuccess={() => setCurrentView('login')} 
+            onNavigateToLogin={() => setCurrentView('login')} 
+          />
+        );
+      case 'forgot_password':
+        return (
+          <ForgotPasswordForm 
+            onNavigateToLogin={() => setCurrentView('login')} 
+          />
+        );
+      case 'login':
+      default:
+        // Aqui passamos o signIn e as propriedades de navegação que o TypeScript estava cobrando
+        return (
+          <LoginForm 
+            onLogin={signIn} 
+            loading={loading} 
+            onNavigateToSignUp={() => setCurrentView('signup')}
+            onNavigateToForgot={() => setCurrentView('forgot_password')}
+          />
+        );
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Entrar no App Bun</Text>
-      <LoginForm onLogin={handleLogin} loading={loading} />
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {renderView()}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#F5F5F5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
+  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }
 });

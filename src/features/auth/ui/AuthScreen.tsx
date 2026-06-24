@@ -10,6 +10,8 @@ type AuthView = 'login' | 'signup' | 'forgot_password';
 
 export const AuthScreen = () => {
   const [currentView, setCurrentView] = useState<AuthView>('login');
+  
+  // Usamos o hook useAuth para pegar o signIn e loading
   const { signIn, loading } = useAuth();
 
   const renderView = () => {
@@ -30,12 +32,12 @@ export const AuthScreen = () => {
       case 'login':
       default:
         return (
-            <LoginForm 
-                onLogin={signIn} 
-                loading={loading} 
-                onNavigateToSignUp={() => setCurrentView('signup')}
-                onNavigateToForgot={() => setCurrentView('forgot_password')}
-            />
+          <LoginForm 
+            onLogin={signIn} 
+            loading={loading} 
+            onNavigateToSignUp={() => setCurrentView('signup')}
+            onNavigateToForgot={() => setCurrentView('forgot_password')}
+          />
         );
     }
   };
