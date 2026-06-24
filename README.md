@@ -15,6 +15,7 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 - [x] **CI/CD:** Pipeline configurada no Woodpecker (Geração de Release, pacotes e sincronização Gitea/GitHub).
 
 ### ⏳ Próximos Passos
+- [ ] **Over-the-Air (OTA) Updates:** Configuração do `expo-updates` (EAS Update) para envio ágil de correções de interface e lógica JavaScript sem depender de aprovação nas lojas.
 - [ ] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
 - [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
 - [ ] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição de estados/serviços.
