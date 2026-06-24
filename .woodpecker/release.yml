@@ -1,13 +1,12 @@
 when:
   - event: tag
 
-# Essa etiqueta garante que a Orange Pi nunca vai tocar nessa pipeline!
 labels:
   platform: darwin/arm64
 
 steps:
   - name: build-apk
-    image: bash # Apenas para satisfazer o linter, o Mac ignora isso
+    image: bash
     commands:
       - echo "📦 Instalando dependências do projeto..."
       - bun install
@@ -55,3 +54,50 @@ steps:
         curl -f -s -X POST "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/$RELEASE_ID/assets?name=app-react-native-production.apk" -H "Authorization: token $GITEA_TOKEN" -F "attachment=@./app-react-native-production.apk"
         
         echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
+
+  - name: espelhar-github
+    image: bash
+    environment:
+      GITHUB_USER: Brunno13
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - echo "=== SINCRONIZANDO COM O GITHUB ==="
+      - git config --global --add safe.directory '*'
+      - git push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git main --force
+      - git push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git ${CI_COMMIT_TAG} --force
+
+  - name: criar-release-github
+    image: bash
+    environment:
+      GITHUB_USER: Brunno13
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - |
+        set -e
+        echo "=== CRIANDO RELEASE NO GITHUB ==="
+        GITHUB_API_URL="https://api.github.com/repos/$GITHUB_USER/${CI_REPO_NAME}/releases"
+        
+        if [ -f .release_body.txt ]; then
+          RELEASE_BODY=$(cat .release_body.txt)
+        else
+          RELEASE_BODY="🚀 Lançamento automatizado sincronizado a partir do servidor Gitea interno."
+        fi
+        
+        JSON_PAYLOAD=$(jq -n --arg tag "${CI_COMMIT_TAG}" --arg name "Versão ${CI_COMMIT_TAG}" --arg body "$RELEASE_BODY" '{tag_name: $tag, name: $name, body: $body}')
+        
+        RESPONSE=$(curl -s -X POST $GITHUB_API_URL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" -d "$JSON_PAYLOAD")
+        RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id')
+        
+        if [ "$RELEASE_ID" == "null" ] || [ -z "$RELEASE_ID" ]; then
+          echo "❌ ERRO: O GitHub não retornou um ID válido. Resposta: $RESPONSE"
+          exit 1
+        fi
+        
+        echo "=== INICIANDO UPLOAD DO APK NO GITHUB ==="
+        GH_UPLOAD_URL="https://uploads.github.com/repos/$GITHUB_USER/${CI_REPO_NAME}/releases/$RELEASE_ID/assets"
+        
+        curl -f -s -X POST "$GH_UPLOAD_URL?name=app-react-native-production.apk" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/vnd.android.package-archive" --data-binary @"./app-react-native-production.apk"
+        
+        echo "✅ RELEASE NO GITHUB CRIADA COM SUCESSO!"
