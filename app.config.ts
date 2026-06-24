@@ -14,7 +14,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: 'automatic',
   
   updates: {
-    url: "https://u.expo.dev/0a0df4ff-385b-4b9c-a563-9b9ed7cd39f2"
+    url: "https://u.expo.dev/0a0df4ff-385b-4b9c-a563-9b9ed7cd39f2",
+    requestHeaders: {
+      "expo-channel-name": IS_PROD ? "production" : "staging"
+    }
   },
   
   runtimeVersion: {

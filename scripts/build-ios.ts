@@ -16,7 +16,13 @@ try {
   
   const prebuild = Bun.spawnSync(
     [process.execPath, 'x', 'cross-env', 'CI=1', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'ios', '--clean'], 
-    { stdio: ['inherit', 'inherit', 'inherit'] as any }
+    { 
+      stdio: ['inherit', 'inherit', 'inherit'] as any,
+      env: {
+        ...process.env,
+        APP_ENV: appEnv
+      }
+    }
   );
 
   if (prebuild.exitCode !== 0) {
