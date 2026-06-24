@@ -1,51 +1,49 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
+import { authClient } from '../../../shared/lib/auth';
 
-// ⚠️ ATENÇÃO: Verifique se este caminho aponta para onde o seu auth.ts foi salvo!
-// Se você manteve na raiz (lib/auth.ts), o caminho deve ser '../../../../lib/auth' ou algo similar.
-import { signIn, signOut, useSession } from '../../../shared/lib/auth';
-
-export const useAuthFlow = () => {
+export const useAuth = () => {
   const [loading, setLoading] = useState(false);
-  const { data: session, isPending } = useSession();
 
-  const handleLogin = async (email: string, pass: string) => {
-    if (!email || !pass) {
-      Alert.alert("Aviso", "Preencha o e-mail e a senha.");
-      return;
-    }
-
+  // Login tradicional
+  const signIn = async (email: string, password: string) => {
     setLoading(true);
-
-    try {
-      // Dispara a chamada real para a api-bun
-      const { error } = await signIn.email({
-        email: email,
-        password: pass,
-      });
-
-      if (error) throw new Error(error.message);
-      
-    } catch (err: any) {
-      Alert.alert("Erro no Login", err.message || "Não foi possível conectar ao servidor.");
-    } finally {
-      setLoading(false);
-    }
+    const { data, error } = await authClient.signIn.email({ email, password });
+    setLoading(false);
+    return { data, error };
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-    } catch (err: any) {
-      Alert.alert("Erro ao sair", err.message);
-    }
+  // Novo: Cadastro
+  const signUp = async (email: string, password: string, name: string) => {
+    setLoading(true);
+    const { data, error } = await authClient.signUp.email({ email, password, name });
+    setLoading(false);
+    return { data, error };
   };
+
+  const forgetPassword = async (email: string) => {
+    setLoading(true);
+    
+    const { data, error } = await (authClient as any).forgetPassword({ 
+      email, 
+      redirectTo: 'app-react-native://reset-password'
+    });
+    
+    setLoading(false);
+    return { data, error };
+  };
+
+  // const signInWithSocial = async (provider: 'google' | 'github') => {
+  //   setLoading(true);
+  //   const { data, error } = await authClient.signIn.social({ provider });
+  //   setLoading(false);
+  //   return { data, error };
+  // };
 
   return { 
-    session, 
-    isPending, 
-    loading, 
-    handleLogin, 
-    handleLogout 
+    signIn, 
+    signUp, 
+    forgetPassword, 
+    // signInWithSocial, 
+    loading 
   };
 };
