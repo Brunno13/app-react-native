@@ -13,10 +13,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   
+  updates: {
+    url: "https://u.expo.dev/0a0df4ff-385b-4b9c-a563-9b9ed7cd39f2"
+  },
+  
+  runtimeVersion: {
+    policy: "fingerprint"
+  },
+  
   ios: {
     supportsTablet: true,
     bundleIdentifier: IS_PROD ? 'com.brunno.app' : 'com.brunno.app.staging',
   },
+  
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/icon.png',
@@ -24,10 +33,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: IS_PROD ? 'com.brunno.app' : 'com.brunno.app.staging',
   },
+  
   extra: {
     apiUrl: IS_PROD 
       ? 'http://api-bun.brunnoserver.duckdns.org' 
       : 'http://api-bun-staging.brunnoserver.duckdns.org',
+      
+    eas: {
+      projectId: "0a0df4ff-385b-4b9c-a563-9b9ed7cd39f2"
+    }
   },
   
   plugins: [
