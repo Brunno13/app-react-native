@@ -23,7 +23,7 @@ steps:
       - echo "🔍 Verificando tipagem dos Scripts..."
       - bunx tsc --project scripts/tsconfig.json --noEmit
 
-- name: deploy-ota-staging
+  - name: deploy-ota-staging
     image: oven/bun:latest
     environment:
       APP_ENV: staging
