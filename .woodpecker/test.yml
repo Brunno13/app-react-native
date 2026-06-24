@@ -23,15 +23,15 @@ steps:
       - echo "🔍 Verificando tipagem dos Scripts..."
       - bunx tsc --project scripts/tsconfig.json --noEmit
 
-  - name: deploy-ota-staging
+- name: deploy-ota-staging
     image: oven/bun:latest
     environment:
       APP_ENV: staging
       EXPO_TOKEN:
         from_secret: expo_token
-      CI: "true" 
+      CI: "true"
+      EAS_NO_VCS: "1" 
     commands:
       - |
         echo "🚀 Empacotando e enviando atualização OTA para Staging..."
-        # Usamos o Hash do commit para garantir uma string limpa e rastreável
         bunx eas-cli update --branch staging --message "Deploy via CI - Commit: ${CI_COMMIT_SHA}" --non-interactive
