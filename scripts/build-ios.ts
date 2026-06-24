@@ -2,7 +2,6 @@ import { readdir } from "node:fs/promises";
 
 export {};
 
-// Neutraliza o comportamento do Woodpecker que quebra o validador do Expo CLI
 if (process.env.CI && process.env.CI !== 'true' && process.env.CI !== '1') {
   process.env.CI = 'true';
 }
@@ -27,26 +26,36 @@ try {
   const currentDir = process.cwd();
   const iosDir = `${currentDir}/ios`;
 
-  console.log('\n🔗 Passo 1.5: Configurando o Xcode para trabalhar com o NVM...');
+  console.log('\n🔗 Passo 1.5: Bypass Supremo para NVM e Variáveis no Xcode...');
+  
+  const nvmCheck = Bun.spawnSync([
+    'bash', '-c', 
+    'export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"; nvm use 21 > /dev/null 2>&1; which node'
+  ]);
+  
+  const nodeFullPath = nvmCheck.stdout.toString().trim() || Bun.which('node');
+
+  if (!nodeFullPath) {
+    throw new Error('❌ Node.js não foi encontrado nem no PATH e nem no NVM.');
+  }
+
+  const bunFullPath = Bun.which('bun') || '';
+  
+  const nodeDir = nodeFullPath.split('/').slice(0, -1).join('/');
+  const bunDir = bunFullPath.split('/').slice(0, -1).join('/');
   
   const xcodeEnvLocalPath = `${iosDir}/.xcode.env.local`;
   
-  // Script shell que força o Xcode a acordar o NVM e carregar a versão ativa (v21)
-  // antes de tentar empacotar o código React Native.
   const envContent = `
 export USE_WATCHMAN=false
-
-# Tenta carregar o NVM (Padrão ou via Homebrew)
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
-[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \\. "/opt/homebrew/opt/nvm/nvm.sh"
-
-# Com o NVM ativado, pega a rota exata do Node
-export NODE_BINARY=$(command -v node)
+export NODE_BINARY="${nodeFullPath}"
+export PATH="${nodeDir}:${bunDir}:$PATH:/opt/homebrew/bin:/usr/local/bin"
+export APP_ENV="${appEnv}"
+export CI="true"
   `;
   
   await Bun.write(xcodeEnvLocalPath, envContent.trim() + '\n');
-  console.log(`✅ Arquivo .xcode.env.local injetado com sucesso para dar bypass no NVM.`);
+  console.log(`✅ Xcode mapeado! Node 21 localizado em: ${nodeFullPath}`);
 
   // Localiza dinamicamente o arquivo .xcworkspace gerado pelo Expo
   const files = await readdir(iosDir);
@@ -61,7 +70,6 @@ export NODE_BINARY=$(command -v node)
 
   console.log('\n🔨 Passo 2: Compilando o aplicativo via xcodebuild (Modo Release)...');
   
-  // Executa a compilação nativa otimizada
   const xcodebuild = Bun.spawnSync(
     [
       'xcodebuild',
@@ -80,7 +88,6 @@ export NODE_BINARY=$(command -v node)
 
   console.log('\n📦 Passo 3: Localizando o binário e compactando para distribuição...');
   
-  // Rota padrão do binário gerado pelo derivedDataPath do Xcode
   const appSourcePath = `${currentDir}/ios_build/Build/Products/Release-iphonesimulator/${schemeName}.app`;
   const zipDestName = `app-react-native-ios-${appEnv}.zip`;
 
