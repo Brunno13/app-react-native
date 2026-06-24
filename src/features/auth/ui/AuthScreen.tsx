@@ -30,12 +30,12 @@ export const AuthScreen = () => {
       case 'login':
       default:
         return (
-          <LoginForm 
-            onLogin={signIn}
-            loading={loading}
-            onNavigateToSignUp={() => setCurrentView('signup')}
-            onNavigateToForgot={() => setCurrentView('forgot_password')}
-          />
+            <LoginForm 
+                onLogin={signIn} 
+                loading={loading} 
+                onNavigateToSignUp={() => setCurrentView('signup')}
+                onNavigateToForgot={() => setCurrentView('forgot_password')}
+            />
         );
     }
   };
