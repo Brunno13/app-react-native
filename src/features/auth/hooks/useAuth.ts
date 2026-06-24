@@ -32,18 +32,18 @@ export const useAuth = () => {
     return { data, error };
   };
 
-  // const signInWithSocial = async (provider: 'google' | 'github') => {
-  //   setLoading(true);
-  //   const { data, error } = await authClient.signIn.social({ provider });
-  //   setLoading(false);
-  //   return { data, error };
-  // };
+  const signInWithSocial = async (provider: 'google' | 'github') => {
+    setLoading(true);
+    const { data, error } = await authClient.signIn.social({ provider });
+    setLoading(false);
+    return { data, error };
+  };
 
   return { 
     signIn, 
     signUp, 
     forgetPassword, 
-    // signInWithSocial, 
+    signInWithSocial, 
     loading 
   };
 };
