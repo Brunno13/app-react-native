@@ -1,6 +1,6 @@
 export const theme = {
   colors: {
-    primary: '#0a6f20',    // Azul padrão dos botões de ação 007BFF
+    primary: '#007BFF',    // Azul padrão dos botões de ação
     danger: '#DC3545',     // Vermelho do botão de sair
     background: '#F5F5F5', // Fundo cinza claro das telas
     surface: '#FFFFFF',    // Fundo branco dos inputs e cards
