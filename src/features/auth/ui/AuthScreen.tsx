@@ -1,34 +1,25 @@
 import React, { useState } from 'react';
-import { SafeAreaView, View, StyleSheet } from 'react-native';
+import { SafeAreaView, View } from 'react-native';
 
 import { LoginForm } from './LoginForm'; 
 import { SignUpForm } from './SignUpForm';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { useAuth } from '../hooks/useAuth';
+import { globalStyles } from '../../../shared/ui/globalStyles';
 
 type AuthView = 'login' | 'signup' | 'forgot_password';
 
 export const AuthScreen = () => {
   const [currentView, setCurrentView] = useState<AuthView>('login');
   
-  // Usamos o hook useAuth para pegar o signIn e loading
   const { signIn, loading } = useAuth();
 
   const renderView = () => {
     switch (currentView) {
       case 'signup':
-        return (
-          <SignUpForm 
-            onSuccess={() => setCurrentView('login')} 
-            onNavigateToLogin={() => setCurrentView('login')} 
-          />
-        );
+        return <SignUpForm onSuccess={() => setCurrentView('login')} onNavigateToLogin={() => setCurrentView('login')} />;
       case 'forgot_password':
-        return (
-          <ForgotPasswordForm 
-            onNavigateToLogin={() => setCurrentView('login')} 
-          />
-        );
+        return <ForgotPasswordForm onNavigateToLogin={() => setCurrentView('login')} />;
       case 'login':
       default:
         return (
@@ -43,15 +34,10 @@ export const AuthScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
+      <View style={globalStyles.container}>
         {renderView()}
       </View>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }
-});

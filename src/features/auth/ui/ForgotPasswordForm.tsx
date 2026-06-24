@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
+import { globalStyles } from '../../../shared/ui/globalStyles';
+import { theme } from '../../../shared/ui/theme';
 
 interface ForgotPasswordFormProps {
   onNavigateToLogin: () => void;
@@ -22,30 +24,31 @@ export const ForgotPasswordForm = ({ onNavigateToLogin }: ForgotPasswordFormProp
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Recuperar Senha</Text>
+    <View style={{ width: '100%' }}>
+      <Text style={globalStyles.title}>Recuperar Senha</Text>
       
-      {statusMsg ? <Text style={styles.status}>{statusMsg}</Text> : null}
+      {statusMsg ? (
+        <Text style={{ color: theme.colors.primary, textAlign: 'center', marginBottom: 16, fontWeight: 'bold' }}>
+          {statusMsg}
+        </Text>
+      ) : null}
 
-      <TextInput placeholder="Seu e-mail" style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+      <TextInput 
+        placeholder="Seu e-mail" 
+        style={globalStyles.input} 
+        value={email} 
+        onChangeText={setEmail} 
+        autoCapitalize="none" 
+        keyboardType="email-address" 
+      />
 
-      <TouchableOpacity style={styles.button} onPress={handleReset} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Enviar Link</Text>}
+      <TouchableOpacity style={globalStyles.buttonPrimary} onPress={handleReset} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>Enviar Link</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={onNavigateToLogin}>
-        <Text style={styles.link}>Voltar para o Login</Text>
+      <TouchableOpacity onPress={onNavigateToLogin} style={{ marginTop: 20 }}>
+        <Text style={globalStyles.linkText}>Voltar para o Login</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { width: '100%', padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 12, borderRadius: 8, marginBottom: 16 },
-  button: { backgroundColor: '#007AFF', padding: 16, borderRadius: 8, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
-  status: { marginBottom: 16, textAlign: 'center', fontWeight: 'bold' },
-  link: { color: '#007AFF', textAlign: 'center', marginTop: 16 }
-});
