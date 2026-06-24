@@ -15,7 +15,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
 
   return (
     <View style={{ width: '100%' }}>
-      <Text style={globalStyles.title}>Digite seu login</Text>
+      <Text style={globalStyles.title}>Entre</Text>
 
       <TextInput
         style={globalStyles.input}
