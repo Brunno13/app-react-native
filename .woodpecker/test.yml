@@ -31,6 +31,6 @@ steps:
       EXPO_TOKEN:
         from_secret: expo_token
     commands:
-      - echo "🚀 Empacotando e enviando atualização OTA para Staging..."
-      # O $CI_COMMIT_MESSAGE captura a mensagem do seu commit no Git para usar no log do Expo!
-      - bunx eas-cli update --branch staging --message "Push na main: $CI_COMMIT_MESSAGE" --non-interactive
+      - |
+        echo "🚀 Empacotando e enviando atualização OTA para Staging..."
+        bunx eas-cli update --branch staging --message "Push na main: ${CI_COMMIT_MESSAGE}" --non-interactive
