@@ -2,19 +2,12 @@ when:
   - event: push
     branch: main
 
-# Essa etiqueta garante que o Mac M1 nunca vai tocar nessa pipeline!
 labels:
-  platform: linux/arm64
-
-clone:
-  git:
-    image: woodpeckerci/plugin-git
-    extra_hosts:
-      - "gitea.brunnoserver.duckdns.org:192.168.31.215"
+  platform: darwin/arm64
 
 steps:
   - name: testar-codigo
-    image: oven/bun:latest
+    image: bash
     commands:
       - echo "📦 Instalando dependências..."
       - bun install
@@ -24,13 +17,13 @@ steps:
       - bunx tsc --project scripts/tsconfig.json --noEmit
 
   - name: deploy-ota-staging
-    image: oven/bun:latest
+    image: bash
     environment:
       APP_ENV: staging
       EXPO_TOKEN:
         from_secret: expo_token
       CI: "true"
-      EAS_NO_VCS: "1" 
+      EAS_NO_VCS: "1"
     commands:
       - |
         echo "🚀 Empacotando e enviando atualização OTA para Staging..."
