@@ -21,7 +21,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   
   runtimeVersion: {
-    policy: "fingerprint"
+    policy: "appVersion"
   },
   
   ios: {
