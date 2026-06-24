@@ -27,21 +27,20 @@ try {
   const currentDir = process.cwd();
   const iosDir = `${currentDir}/ios`;
 
-  console.log('\n🔗 Passo 1.5: Configurando o mapa do Node para o terminal interno do Xcode...');
+  console.log('\n🔗 Passo 1.5: Blindando o ambiente do Xcode para CI/CD...');
   
-  // Descobre o caminho absoluto do Node ou Bun na sua máquina
-  const nodePath = Bun.spawnSync(['which', 'node']).stdout.toString().trim();
-  const bunPath = Bun.spawnSync(['which', 'bun']).stdout.toString().trim();
-  const jsRuntime = nodePath || bunPath;
-
-  if (jsRuntime) {
-    // Injeta a rota cravada no arquivo que o Xcode lê antes de compilar o JS
-    const xcodeEnvLocalPath = `${iosDir}/.xcode.env.local`;
-    await Bun.write(xcodeEnvLocalPath, `export NODE_BINARY="${jsRuntime}"\n`);
-    console.log(`✅ NODE_BINARY cravado com sucesso: ${jsRuntime}`);
-  } else {
-    console.warn('⚠️ Aviso: Não foi possível localizar o binário do Node ou Bun no PATH.');
-  }
+  // 1. Desativa o Watchman (evita quebra de permissão em pastas temporárias do CI)
+  // 2. Garante que o Homebrew (M1) e as rotas padrões estão no PATH
+  // 3. Força a busca pelo binário oficial do Node (O Metro exige Node, não Bun)
+  const xcodeEnvLocalPath = `${iosDir}/.xcode.env.local`;
+  const envContent = `
+export USE_WATCHMAN=false
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export NODE_BINARY=$(which node)
+  `;
+  
+  await Bun.write(xcodeEnvLocalPath, envContent.trim() + '\n');
+  console.log(`✅ Arquivo .xcode.env.local gerado com bypass de Watchman e PATH estendido.`);
 
   // Localiza dinamicamente o arquivo .xcworkspace gerado pelo Expo
   const files = await readdir(iosDir);
@@ -52,11 +51,11 @@ try {
   }
 
   const schemeName = workspaceName.replace('.xcworkspace', '');
-  console.log(`\n✅ Projeto Xcode localizado: ${workspaceName} (Scheme: ${schemeName})`);
+  console.log(`✅ Projeto Xcode localizado: ${workspaceName} (Scheme: ${schemeName})`);
 
   console.log('\n🔨 Passo 2: Compilando o aplicativo via xcodebuild (Modo Release)...');
   
-  // Executa a compilação nativa otimizada para a arquitetura ARM64
+  // Executa a compilação nativa otimizada para a arquitetura do Apple Silicon (M1)
   const xcodebuild = Bun.spawnSync(
     [
       'xcodebuild',
@@ -79,6 +78,8 @@ try {
   const appSourcePath = `${currentDir}/ios_build/Build/Products/Release-iphonesimulator/${schemeName}.app`;
   const zipDestName = `app-react-native-ios-${appEnv}.zip`;
 
+  const appFile = Bun.file(appSourcePath);
+  
   console.log('🤐 Compactando o arquivo .app em um arquivo .zip...');
   const zipProcess = Bun.spawnSync(
     ['zip', '-r', `../${zipDestName}`, '.'],
