@@ -26,11 +26,12 @@ steps:
   - name: deploy-ota-staging
     image: oven/bun:latest
     environment:
-      # Força o app.config.ts a ler as configurações de testes
       APP_ENV: staging
       EXPO_TOKEN:
         from_secret: expo_token
+      CI: "true" 
     commands:
       - |
         echo "🚀 Empacotando e enviando atualização OTA para Staging..."
-        bunx eas-cli update --branch staging --message "Push na main: ${CI_COMMIT_MESSAGE}" --non-interactive
+        # Usamos o Hash do commit para garantir uma string limpa e rastreável
+        bunx eas-cli update --branch staging --message "Deploy via CI - Commit: ${CI_COMMIT_SHA}" --non-interactive
