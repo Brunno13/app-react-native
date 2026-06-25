@@ -81,9 +81,9 @@ steps:
     commands:
       - echo "=== SINCRONIZANDO COM O GITHUB ==="
       - git config --global --add safe.directory '*'
-      # O parâmetro '-c credential.helper=' desativa o Keychain do Mac para este push específico
-      - git -c credential.helper= push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git main --force
-      - git -c credential.helper= push https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/${CI_REPO_NAME}.git ${CI_COMMIT_TAG} --force
+      - git config --global http.postBuffer 524288000
+      - git -c credential.helper= push https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${CI_REPO_NAME}.git HEAD:main --force
+      - git -c credential.helper= push https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${CI_REPO_NAME}.git ${CI_COMMIT_TAG} --force
 
   - name: criar-release-github
     image: bash
