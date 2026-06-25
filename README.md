@@ -14,9 +14,9 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 - [x] **Tooling:** Scripts cross-platform para build automatizado.
 - [x] **CI/CD:** Pipeline configurada no Woodpecker (Geração de Release, pacotes e sincronização Gitea/GitHub).
 - [x] **Over-the-Air (OTA) Updates:** Configuração do `expo-updates` (EAS Update) para envio ágil de correções de interface e lógica JavaScript sem depender de aprovação nas lojas.
+- [x] **Navegação:** Migração para **Expo Router** (baseado em arquivos) para roteamento simplificado e suporte robusto a *deep linking*.
 
 ### ⏳ Próximos Passos
-- [ ] **Navegação:** Migração para **Expo Router** (baseado em arquivos) para roteamento simplificado e suporte robusto a *deep linking*.
 - [ ] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
 - [ ] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
 - [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
@@ -33,7 +33,9 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 * **Framework:** React Native + Expo (SDK 56)
 * **Linguagem:** TypeScript
 * **Gerenciador de Pacotes:** Bun
+* **Navegação:** Expo Router
 * **Autenticação:** Better Auth (`@better-auth/expo`)
+* **Atualizações (OTA):** Expo Updates (EAS)
 * **Arquitetura:** Feature-Sliced Design (FSD)
 * **CI/CD:** Woodpecker CI
 
@@ -41,31 +43,43 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 
 ## 🏗️ Arquitetura do Projeto
 
-O projeto segue o padrão **Feature-Sliced Design (FSD)**, focando em modularidade e escalabilidade. A separação ocorre da base (módulos globais) para o topo (telas completas).
+O projeto segue o padrão **Feature-Sliced Design (FSD)**, focando em manter o código organizado e fácil de escalar. A separação é feita em camadas, indo da base (código global) até o topo (telas e rotas).
 
-A estrutura principal reside na pasta `src/`:
+A estrutura principal fica na pasta `src/`:
 
 ```text
 src/
-├── shared/     # Código compartilhado e configurações
-│   ├── lib/    # Inicialização de bibliotecas de terceiros (ex: auth.ts)
-│   └── ui/     # Componentes visuais globais (Botões, Inputs padrão)
+├── shared/     # Código compartilhado e configurações globais
+│   ├── lib/    # Inicialização de bibliotecas (ex: auth.ts)
+│   └── ui/     # Componentes visuais globais (Botões, Inputs, Temas)
 │
-├── features/   # Funcionalidades e regras de negócio fatiadas
-│   └── auth/   # Domínio de Autenticação
-│       ├── hooks/  # Lógica e chamadas de API (useAuth.ts)
-│       └── ui/     # Fragmentos de interface da regra (LoginForm.tsx)
+├── features/   # Regras de negócio e componentes específicos
+│   └── auth/   # Ex: Funcionalidades de Autenticação
+│       ├── hooks/  # Lógica e consumo de API (useAuth.ts)
+│       └── ui/     # Interface específica (LoginForm.tsx)
 │
-├── screens/    # Telas completas que compõem as features
-│   └──         # Ex: HomeScreen, AuthScreen
+├── screens/    # Telas completas, separadas por contexto
+│   ├── auth/   # Ex: LoginScreen.tsx, SignUpScreen.tsx
+│   ├── main/   # Ex: HomeScreen.tsx
+│   └── settings/ # Ex: ProfileScreen.tsx
 │
-└── app/        # Ponto de entrada
-                # Provedores de contexto globais, temas, etc.
+└── app/        # Roteamento de telas (Expo Router)
+    ├── (auth)/ # Rotas públicas (Login, Cadastro)
+    ├── (main)/ # Rotas protegidas (Home, Perfil com abas)
+    └── _layout.tsx # Configuração inicial e proteção de rotas
 ```
 
 ### Diretriz de Importação::
 
-* **O fluxo é de cima para baixo.** Telas (screens) importam funcionalidades (features), que por sua vez podem importar módulos globais (shared). O caminho inverso não é permitido.
+* **O fluxo é de cima para baixo.** 
+
+1. A pasta `app` importa as telas da pasta `screens`.
+
+2. A pasta `screens` importa os componentes da pasta `features` e `shared`.
+
+3. A pasta `features` importa os itens da pasta `shared`.
+
+* **Atenção:** O caminho inverso não é permitido. Um componente em shared não pode importar algo de features, e uma feature não pode importar uma tela de screens. Isso evita problemas de dependência no código.
 
 ---
 
