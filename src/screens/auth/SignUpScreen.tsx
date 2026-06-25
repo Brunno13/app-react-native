@@ -10,7 +10,6 @@ export const SignUpScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <SignUpForm 
-          // O router.back() tira a tela de cadastro da pilha e volta pro login com animação
           onSuccess={() => router.back()} 
           onNavigateToLogin={() => router.back()} 
         />

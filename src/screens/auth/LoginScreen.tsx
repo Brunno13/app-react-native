@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView, View, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router'; // Importamos o roteador
+import { useRouter } from 'expo-router';
 import { LoginForm } from '../../features/auth/ui/LoginForm'; 
 import { useAuth } from '../../features/auth/hooks/useAuth';
 
@@ -14,7 +14,6 @@ export const LoginScreen = () => {
         <LoginForm 
           onLogin={signIn} 
           loading={loading} 
-          // Agora usamos o push para avisar o celular que empilhamos uma nova tela!
           onNavigateToSignUp={() => router.push('/(auth)/signup')}
           onNavigateToForgot={() => router.push('/(auth)/forgot-password')}
         />
