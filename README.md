@@ -169,17 +169,23 @@ O script configura o caminho do Android SDK e as propriedades de memória da JVM
 
 ## 📦 CI/CD, Automação Multiplataforma e Espelhamento
 
-A pipeline configurada no Woodpecker CI (`.woodpecker/release.yml`) automatiza a geração de pacotes (Android e iOS) e a sincronização do repositório.
+A pipeline configurada no Woodpecker CI (`.woodpecker/release.yml`) automatiza a geração de pacotes (Android e iOS), o envio de atualizações sem fio (OTA) e a sincronização do repositório.
 
 **Fluxo da Pipeline de Release:**
 1. **Trigger:** A criação de uma Tag (ex: `v1.0.5`) no Gitea inicia a pipeline.
+
 2. **Agente Nativo:** A execução ocorre em um agente macOS (`darwin/arm64`) para utilizar o Xcode e o Apple Silicon.
+
 3. **Compilação Dupla:**
    * Injeção da variável `APP_ENV=production`.
-   * **Android:** Execução do `expo prebuild` e empacotamento via Gradle.
+   * **Android:** Execução do `expo prebuild` e empacotamento via Gradle gerando o `.apk`.
    * **iOS:** Instalação dos Pods e compilação via `xcodebuild`, gerando um `.zip`.
-4. **Release Interna:** O Woodpecker gera o changelog, cria a versão no Gitea e anexa os arquivos compilados.
-5. **Espelhamento (GitHub):** O código-fonte associado à Tag é enviado para o GitHub, onde uma Release idêntica é criada com o `.apk` e o `.zip`.
+
+4. **Atualização OTA (Over-the-Air):** O bundle JavaScript é sincronizado com a nuvem do Expo (`eas update`), enviando correções instantâneas de lógica e interface para os usuários sem necessidade de aprovação nas lojas.
+
+5. **Release Interna:** O Woodpecker gera o changelog, cria a versão no servidor Gitea e anexa os artefatos compilados.
+
+6. **Espelhamento (GitHub):** O código-fonte associado à Tag é enviado para o GitHub, onde uma Release pública idêntica é criada com o `.apk` e o `.zip`.
 
 ---
 
