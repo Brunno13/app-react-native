@@ -20,6 +20,8 @@ steps:
     environment:
       EXPO_TOKEN:
         from_secret: expo_token
+      CI: "true"
+      EAS_NO_VCS: "1"
     commands:
       - echo "🚀 Sincronizando o Bundle JavaScript (OTA) com a nuvem do Expo..."
       - bunx eas-cli update --branch production --message "Release da versão ${CI_COMMIT_TAG}" --non-interactive
