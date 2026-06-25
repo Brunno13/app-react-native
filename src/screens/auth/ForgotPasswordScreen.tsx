@@ -1,7 +1,7 @@
 import React from 'react';
 import { SafeAreaView, View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ForgotPasswordForm } from '../features/auth/ui/ForgotPasswordForm';
+import { ForgotPasswordForm } from '../../features/auth/ui/ForgotPasswordForm';
 
 export const ForgotPasswordScreen = () => {
   const router = useRouter();

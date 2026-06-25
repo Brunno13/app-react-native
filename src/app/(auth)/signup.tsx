@@ -1,1 +1,1 @@
-export { SignUpScreen as default } from '../../screens/SignUpScreen';
+export { SignUpScreen as default } from '../../screens/auth/SignUpScreen';

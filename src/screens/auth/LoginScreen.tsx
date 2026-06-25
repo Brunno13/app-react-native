@@ -1,8 +1,8 @@
 import React from 'react';
 import { SafeAreaView, View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router'; // Importamos o roteador
-import { LoginForm } from '../features/auth/ui/LoginForm'; 
-import { useAuth } from '../features/auth/hooks/useAuth';
+import { LoginForm } from '../../features/auth/ui/LoginForm'; 
+import { useAuth } from '../../features/auth/hooks/useAuth';
 
 export const LoginScreen = () => {
   const { signIn, loading } = useAuth();

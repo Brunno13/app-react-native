@@ -1,7 +1,7 @@
 import React from 'react';
 import { SafeAreaView, View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SignUpForm } from '../features/auth/ui/SignUpForm';
+import { SignUpForm } from '../../features/auth/ui/SignUpForm';
 
 export const SignUpScreen = () => {
   const router = useRouter();

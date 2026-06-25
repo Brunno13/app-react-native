@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useAuthFlow } from '../features/auth/hooks/useAuth';
+import { useAuthFlow } from '../../features/auth/hooks/useAuth';
 
 export const HomeScreen = () => {
   const { session, signOut } = useAuthFlow();
