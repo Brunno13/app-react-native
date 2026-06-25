@@ -8,10 +8,6 @@ export const HomeScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bem-vindo, {session?.user?.name || 'Usuário'}!</Text>
-      
-      <TouchableOpacity style={styles.logoutButton} onPress={signOut}>
-        <Text style={styles.buttonText}>Sair da Conta</Text>
-      </TouchableOpacity>
     </View>
   );
 };

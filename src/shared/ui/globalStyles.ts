@@ -23,11 +23,35 @@ export const globalStyles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
     textAlign: 'center',
   },
+  subtitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  textSecondary: {
+    fontSize: 16,
+    color: theme.colors.textSecondary,
+  },
   linkText: {
     color: theme.colors.link,
     fontSize: 15,
     fontWeight: '500',
     textAlign: 'center',
+  },
+
+  // --- Componentes Visuais ---
+  avatarLarge: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarLargeText: {
+    fontSize: 40,
+    color: theme.colors.surface,
+    fontWeight: 'bold',
   },
 
   // --- Formulários ---
