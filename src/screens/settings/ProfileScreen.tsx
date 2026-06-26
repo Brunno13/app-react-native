@@ -1,38 +1,77 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useAuthFlow } from '../../features/auth/hooks/useAuth';
 import { globalStyles } from '../../shared/ui/globalStyles';
 import { theme } from '../../shared/ui/theme';
+import { FontAwesome } from '@expo/vector-icons';
 
 export const ProfileScreen = () => {
   const { session, signOut } = useAuthFlow();
+  const router = useRouter();
 
   return (
-    <View style={globalStyles.container}>
-      <View style={[globalStyles.avatarLarge, styles.avatarSpacing]}>
-        <Text style={globalStyles.avatarLargeText}>
-          {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
-        </Text>
-      </View>
+    <SafeAreaView style={globalStyles.safeArea}>
+      <View style={styles.container}>
+        
+        {/* Cabeçalho do Usuário */}
+        <View style={styles.header}>
+          <View style={[globalStyles.avatarLarge, styles.avatarSpacing]}>
+            <Text style={globalStyles.avatarLargeText}>
+              {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
+            </Text>
+          </View>
+          <Text style={[globalStyles.subtitle, styles.nameSpacing]}>
+            {session?.user?.name || 'Usuário'}
+          </Text>
+          <Text style={[globalStyles.textSecondary, styles.emailSpacing]}>
+            {session?.user?.email || 'email@indisponivel.com'}
+          </Text>
+        </View>
 
-      <Text style={[globalStyles.subtitle, styles.nameSpacing]}>
-        {session?.user?.name || 'Usuário'}
-      </Text>
-      
-      <Text style={[globalStyles.textSecondary, styles.emailSpacing]}>
-        {session?.user?.email || 'email@indisponivel.com'}
-      </Text>
-      
-      <TouchableOpacity style={globalStyles.buttonDanger} onPress={signOut}>
-        <Text style={globalStyles.buttonText}>Sair da Conta</Text>
-      </TouchableOpacity>
-    </View>
+        <View style={styles.menuContainer}>
+          <TouchableOpacity 
+            style={globalStyles.menuItem} 
+            onPress={() => router.push('/(main)/edit-profile')}
+          >
+            <FontAwesome name="pencil" size={20} color={theme.colors.text} />
+            <Text style={globalStyles.menuItemText}>Editar Dados do Perfil</Text>
+            <FontAwesome name="chevron-right" size={16} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={globalStyles.menuItem} 
+            onPress={() => router.push('/(main)/security')}
+          >
+            <FontAwesome name="shield" size={20} color={theme.colors.text} />
+            <Text style={globalStyles.menuItemText}>Segurança e Sessões</Text>
+            <FontAwesome name="chevron-right" size={16} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+        
+        {/* Botão Sair */}
+        <TouchableOpacity style={globalStyles.buttonDanger} onPress={signOut}>
+          <Text style={globalStyles.buttonText}>Sair da Conta</Text>
+        </TouchableOpacity>
+
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+    justifyContent: 'space-between',
+  },
+  header: {
+    alignItems: 'center',
+  },
   avatarSpacing: {
-    marginTop: theme.spacing.xl,
+    marginTop: theme.spacing.md,
     marginBottom: theme.spacing.lg,
   },
   nameSpacing: {
@@ -40,5 +79,10 @@ const styles = StyleSheet.create({
   },
   emailSpacing: {
     marginBottom: theme.spacing.xl,
+  },
+  menuContainer: {
+    flex: 1,
+    width: '100%',
+    marginTop: theme.spacing.md,
   },
 });

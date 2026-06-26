@@ -35,11 +35,54 @@ export const useAuth = () => {
     return { data, error };
   };
 
-  return { signIn, signUp, forgetPassword, signInWithSocial, loading };
+  const updateUser = async (updateData: { name?: string; image?: string }) => {
+    setLoading(true);
+    const { data, error } = await authClient.updateUser(updateData);
+    setLoading(false);
+    return { data, error };
+  };
+
+  const changePassword = async (newPassword: string, currentPassword: string) => {
+    setLoading(true);
+    const { data, error } = await authClient.changePassword({ 
+      newPassword, 
+      currentPassword,
+      revokeOtherSessions: true 
+    });
+    setLoading(false);
+    return { data, error };
+  };
+
+  const getActiveSessions = async () => {
+    setLoading(true);
+    const { data, error } = await authClient.listSessions();
+    setLoading(false);
+    return { data, error };
+  };
+
+  const revokeDeviceSession = async (sessionToken: string) => {
+    setLoading(true);
+    const { data, error } = await authClient.revokeSession({ token: sessionToken });
+    setLoading(false);
+    return { data, error };
+  };
+
+  return { 
+    signIn, 
+    signUp, 
+    forgetPassword, 
+    signInWithSocial,
+    updateUser,
+    changePassword,
+    getActiveSessions,
+    revokeDeviceSession,
+    loading 
+  };
 };
 
 export const useAuthFlow = () => {
   const session = authClient.useSession();
+  
   const signOut = async () => {
     await authClient.signOut();
   };

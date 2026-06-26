@@ -15,7 +15,7 @@ export default function RootLayout() {
     if (!session && !inAuthGroup) {
       router.replace('/(auth)/login');
     } else if (session && inAuthGroup) {
-      router.replace('/(main)/home');
+      router.replace('/(main)/(tabs)/home');
     }
   }, [session, isPending, segments]);
 

@@ -14,6 +14,9 @@ export const globalStyles = StyleSheet.create({
     padding: theme.spacing.lg,
     backgroundColor: theme.colors.background,
   },
+  scrollContent: {
+    padding: theme.spacing.lg,
+  },
 
   // --- Tipografia ---
   title: {
@@ -64,6 +67,35 @@ export const globalStyles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.md,
+  },
+
+  // --- Listas, Menus e Cards ---
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  menuItemText: {
+    flex: 1,
+    fontSize: 16,
+    color: theme.colors.text,
+    marginLeft: theme.spacing.md,
+    fontWeight: '500',
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
 
   // --- Botões ---
