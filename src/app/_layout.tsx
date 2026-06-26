@@ -11,11 +11,16 @@ export default function RootLayout() {
     if (isPending) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const isAtRoot = !segments[0]; 
 
-    if (!session && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (session && inAuthGroup) {
-      router.replace('/(main)/(tabs)/home');
+    if (!session) {
+      if (!inAuthGroup) {
+        router.replace('/(auth)/login');
+      }
+    } else {
+      if (isAtRoot || inAuthGroup) {
+        router.replace('/(main)/(tabs)/home');
+      }
     }
   }, [session, isPending, segments]);
 
