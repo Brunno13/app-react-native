@@ -13,6 +13,11 @@ export const authClient = createAuthClient({
             storage: SecureStore,       
         }),
     ],
+    fetchOptions: {
+        headers: {
+            Origin: apiUrl, 
+        },
+    },
 })
 
 export const { signIn, signUp, useSession, signOut } = authClient;
