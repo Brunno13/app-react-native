@@ -50,6 +50,7 @@ export const globalStyles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   avatarLargeText: {
     fontSize: 40,

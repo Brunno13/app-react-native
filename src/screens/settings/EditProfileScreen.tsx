@@ -3,69 +3,76 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Imag
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth, useAuthFlow } from '../../features/auth/hooks/useAuth';
+import { uploadAvatarImage } from '../../shared/api/uploadApi';
 import { globalStyles } from '../../shared/ui/globalStyles';
 import { theme } from '../../shared/ui/theme';
 
 export const EditProfileScreen = () => {
   const { session } = useAuthFlow();
-  const { updateUser, loading } = useAuth();
+  const { updateUser, loading: authLoading } = useAuth();
+  const [uploading, setUploading] = useState(false);
   const router = useRouter();
+  
   const [name, setName] = useState(session?.user?.name || '');
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  
   const displayImage = localImageUri || session?.user?.image;
+  const isSubmitting = authLoading || uploading;
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
+      base64: true,
     });
 
     if (!result.canceled) {
       setLocalImageUri(result.assets[0].uri);
+      // Salva o base64 se a biblioteca conseguir extraí-lo
+      if (result.assets[0].base64) {
+        setImageBase64(result.assets[0].base64);
+      }
     }
   };
 
-const handleSave = async () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('Aviso', 'O nome não pode estar vazio.');
       return;
     }
 
-    // Inicializa o payload com os dados obrigatórios do formulário
     const updatePayload: { name?: string; image?: string } = { name };
 
-    // Se o usuário selecionou uma nova imagem, trata o processo de upload
-    if (localImageUri) {
+    if (localImageUri && imageBase64) {
       try {
-        // TODO: Implementar a chamada real para a api-bun aqui
-        // const finalImageUrl = await uploadImageToBunApi(localImageUri);
-        
-        // Alerta provisório até a API de upload estar conectada
-        Alert.alert('Aviso', 'A lógica de upload da imagem precisa ser implementada na sua api-bun.');
-        
-        // Se a API retornar a string da URL, adicionar ao payload
-        // updatePayload.image = finalImageUrl;
+        setUploading(true);
+        // 🔥 Dispara o upload com a string pesada e a URI leve
+        const finalImageUrl = await uploadAvatarImage(imageBase64, localImageUri);
+        updatePayload.image = finalImageUrl;
       } catch (error) {
         Alert.alert('Erro', 'Falha ao fazer upload da imagem.');
+        setUploading(false);
         return; 
       }
     }
 
-    // Envia o objeto limpo e perfeitamente tipado para o seu hook
     const { error } = await updateUser(updatePayload);
+    setUploading(false);
     
     if (error) {
       Alert.alert('Erro', error.message || 'Não foi possível atualizar o perfil.');
     } else {
-      Alert.alert('Sucesso', 'Perfil updated!');
+      Alert.alert('Sucesso', 'Perfil atualizado!');
       router.back();
     }
   };
 
   return (
     <View style={globalStyles.container}>
-      <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
+      <TouchableOpacity style={styles.avatarContainer} onPress={pickImage} disabled={isSubmitting}>
         {displayImage ? (
           <Image source={{ uri: displayImage }} style={globalStyles.avatarLarge} />
         ) : (
@@ -88,10 +95,15 @@ const handleSave = async () => {
         placeholder="Seu nome completo"
         value={name}
         onChangeText={setName}
+        editable={!isSubmitting}
       />
 
-      <TouchableOpacity style={globalStyles.buttonPrimary} onPress={handleSave} disabled={loading}>
-        {loading ? (
+      <TouchableOpacity 
+        style={globalStyles.buttonPrimary} 
+        onPress={handleSave} 
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={globalStyles.buttonText}>Salvar Alterações</Text>

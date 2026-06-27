@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthFlow } from '../../features/auth/hooks/useAuth';
@@ -10,18 +10,32 @@ import { FontAwesome } from '@expo/vector-icons';
 export const ProfileScreen = () => {
   const { session, signOut } = useAuthFlow();
   const router = useRouter();
+  const userAvatar = session?.user?.image;
+  const initialLetter = session?.user?.name?.charAt(0).toUpperCase() || 'U';
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
       <View style={styles.container}>
         
-        {/* Cabeçalho do Usuário */}
         <View style={styles.header}>
-          <View style={[globalStyles.avatarLarge, styles.avatarSpacing]}>
-            <Text style={globalStyles.avatarLargeText}>
-              {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
-            </Text>
-          </View>
+          
+          {userAvatar ? (
+            <Image 
+              source={{ uri: userAvatar }} 
+              style={[globalStyles.avatarLarge, styles.avatarSpacing]} 
+              onError={(error) => {
+                console.error("❌ Erro ao renderizar imagem:", error.nativeEvent.error);
+                console.log("🔗 URL que tentou carregar:", userAvatar);
+              }}
+            />
+          ) : (
+            <View style={[globalStyles.avatarLarge, styles.avatarSpacing]}>
+              <Text style={globalStyles.avatarLargeText}>
+                {initialLetter}
+              </Text>
+            </View>
+          )}
+
           <Text style={[globalStyles.subtitle, styles.nameSpacing]}>
             {session?.user?.name || 'Usuário'}
           </Text>
