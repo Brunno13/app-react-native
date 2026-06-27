@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { registerSchema, type RegisterFormData } from '../validations/authSchema';
+import { useTranslation } from 'react-i18next';
+import { getRegisterSchema, type RegisterFormData } from '../validations/authSchema';
 import { globalStyles } from '../../../shared/ui/globalStyles';
 import { theme } from '../../../shared/ui/theme';
 
@@ -13,6 +14,7 @@ interface SignUpFormProps {
 }
 
 export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormProps) => {
+  const { t } = useTranslation();
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
@@ -21,11 +23,11 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
     control,
     handleSubmit,
     setError,
-    clearErrors, // 🔥
-    setValue,    // 🔥
+    clearErrors,
+    setValue,
     formState: { errors, isValid },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(getRegisterSchema(t)),
     defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
     mode: 'onChange',
   });
@@ -33,7 +35,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
   const onSubmit = async (data: RegisterFormData) => {
     const response = await onSignUp(data);
     if (response?.error) {
-      setError('email', { type: 'server', message: response.error.message || 'Erro ao cadastrar.' });
+      setError('email', { type: 'server', message: response.error.message || t('auth.signupError') });
     }
   };
 
@@ -46,7 +48,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
 
   return (
     <View style={styles.container}>
-      <Text style={globalStyles.title}>Criar Conta</Text>
+      <Text style={globalStyles.title}>{t('auth.createAccount')}</Text>
 
       <Controller
         control={control}
@@ -54,7 +56,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={[globalStyles.input, errors.name && globalStyles.inputError]}
-            placeholder="Nome completo"
+            placeholder={t('auth.namePlaceholder')}
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
@@ -74,7 +76,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
           <TextInput
             ref={emailRef}
             style={[globalStyles.input, errors.email && globalStyles.inputError]}
-            placeholder="E-mail"
+            placeholder={t('auth.emailPlaceholder')}
             keyboardType="email-address"
             autoCapitalize="none"
             onBlur={onBlur}
@@ -96,7 +98,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
           <TextInput
             ref={passwordRef}
             style={[globalStyles.input, errors.password && globalStyles.inputError]}
-            placeholder="Senha"
+            placeholder={t('auth.passwordPlaceholder')}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -117,7 +119,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
           <TextInput
             ref={confirmPasswordRef}
             style={[globalStyles.input, errors.confirmPassword && globalStyles.inputError]}
-            placeholder="Confirme a senha"
+            placeholder={t('auth.confirmPasswordPlaceholder')}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -135,12 +137,12 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
         onPress={handleSubmit(onSubmit)} 
         disabled={!isValid || loading}
       >
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>Cadastrar</Text>}
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('auth.createAccountButton')}</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleNavigateToLogin} style={styles.loginButton}>
         <Text style={globalStyles.textSecondary}>
-          Já tem uma conta? <Text style={globalStyles.linkText}>Entrar</Text>
+          {t('auth.alreadyHaveAccount')} <Text style={globalStyles.linkText}>{t('auth.login')}</Text>
         </Text>
       </TouchableOpacity>
     </View>

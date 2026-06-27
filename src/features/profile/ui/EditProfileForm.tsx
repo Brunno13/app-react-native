@@ -3,8 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Image, Styl
 import * as ImagePicker from 'expo-image-picker';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-import { editProfileSchema, type EditProfileFormData } from '../validations/profileSchema';
+import { useTranslation } from 'react-i18next'; // 🔥 Importamos o hook
+import { getEditProfileSchema, type EditProfileFormData } from '../validations/profileSchema';
 import { globalStyles } from '../../../shared/ui/globalStyles';
 import { theme } from '../../../shared/ui/theme';
 
@@ -16,6 +16,7 @@ interface EditProfileFormProps {
 }
 
 export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, onSubmitProfile }: EditProfileFormProps) => {
+  const { t } = useTranslation();
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
 
@@ -24,7 +25,7 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
     handleSubmit,
     formState: { errors, isValid, isDirty },
   } = useForm<EditProfileFormData>({
-    resolver: zodResolver(editProfileSchema),
+    resolver: zodResolver(getEditProfileSchema(t)),
     defaultValues: { name: initialName },
     mode: 'onChange',
   });
@@ -68,11 +69,11 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
           </View>
         )}
         <View style={styles.editBadge}>
-          <Text style={styles.editBadgeText}>Alterar Foto</Text>
+          <Text style={styles.editBadgeText}>{t('profile.changePhoto')}</Text>
         </View>
       </TouchableOpacity>
 
-      <Text style={globalStyles.title}>Atualizar Dados</Text>
+      <Text style={globalStyles.title}>{t('profile.updateData')}</Text>
 
       <Controller
         control={control}
@@ -80,7 +81,7 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={[globalStyles.input, errors.name && globalStyles.inputError]}
-            placeholder="Seu nome completo"
+            placeholder={t('profile.fullNamePlaceholder')}
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
@@ -97,7 +98,7 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
         onPress={handleSubmit(onSubmit)} 
         disabled={!canSubmit || isSubmitting}
       >
-        {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>Salvar Alterações</Text>}
+        {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('profile.saveChanges')}</Text>}
       </TouchableOpacity>
     </View>
   );

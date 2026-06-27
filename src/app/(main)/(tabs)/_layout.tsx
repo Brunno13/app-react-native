@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function TabsLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       screenOptions={{
@@ -13,7 +16,7 @@ export default function TabsLayout() {
       <Tabs.Screen 
         name="home" 
         options={{ 
-          title: 'Início',
+          title: t('navigation.home'),
           tabBarIcon: ({ color }) => <FontAwesome name="home" size={24} color={color} />
         }} 
       />
@@ -21,7 +24,7 @@ export default function TabsLayout() {
       <Tabs.Screen 
         name="profile" 
         options={{ 
-          title: 'Meu Perfil',
+          title: t('navigation.profile'),
           tabBarIcon: ({ color }) => <FontAwesome name="user" size={24} color={color} />
         }} 
       />

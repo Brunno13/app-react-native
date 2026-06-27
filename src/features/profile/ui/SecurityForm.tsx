@@ -2,8 +2,10 @@ import React, { useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { changePasswordSchema, type ChangePasswordFormData } from '../validations/profileSchema';
+import { useTranslation } from 'react-i18next';
+import { getChangePasswordSchema, type ChangePasswordFormData } from '../validations/profileSchema';
 import { globalStyles } from '../../../shared/ui/globalStyles';
+import { theme } from '../../../shared/ui/theme';
 
 interface SecurityFormProps {
   onSubmitPasswordChange: (data: ChangePasswordFormData) => Promise<boolean>;
@@ -11,6 +13,7 @@ interface SecurityFormProps {
 }
 
 export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormProps) => {
+  const { t } = useTranslation();
   const newPasswordRef = useRef<TextInput>(null);
 
   const {
@@ -19,7 +22,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
     reset,
     formState: { errors, isValid },
   } = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(changePasswordSchema),
+    resolver: zodResolver(getChangePasswordSchema(t)),
     defaultValues: { currentPassword: '', newPassword: '' },
     mode: 'onChange',
   });
@@ -37,7 +40,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={[globalStyles.input, errors.currentPassword && globalStyles.inputError]}
-            placeholder="Senha Atual"
+            placeholder={t('profile.currentPasswordPlaceholder')}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -58,7 +61,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
           <TextInput
             ref={newPasswordRef}
             style={[globalStyles.input, errors.newPassword && globalStyles.inputError]}
-            placeholder="Nova Senha"
+            placeholder={t('profile.newPasswordPlaceholder')}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -76,7 +79,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
         onPress={handleSubmit(onSubmit)} 
         disabled={!isValid || loading}
       >
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>Atualizar Senha</Text>}
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('profile.updatePassword')}</Text>}
       </TouchableOpacity>
     </View>
   );
@@ -84,5 +87,5 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
 
 const styles = StyleSheet.create({
   container: { width: '100%', maxWidth: 400 },
-  submitButton: { marginTop: 8 },
+  submitButton: { marginTop: theme.spacing.sm },
 });
