@@ -10,22 +10,28 @@ import { FontAwesome } from '@expo/vector-icons';
 export const ProfileScreen = () => {
   const { session, signOut } = useAuthFlow();
   const router = useRouter();
+
   const userAvatar = session?.user?.image;
   const initialLetter = session?.user?.name?.charAt(0).toUpperCase() || 'U';
+  const avatarCacheBreaker = session?.user?.updatedAt 
+    ? new Date(session.user.updatedAt).getTime() 
+    : new Date().getTime();
+
+  const optimizedAvatarUri = userAvatar 
+    ? `${userAvatar}?t=${avatarCacheBreaker}` 
+    : null;
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
       <View style={styles.container}>
-        
         <View style={styles.header}>
           
-          {userAvatar ? (
+          {optimizedAvatarUri ? (
             <Image 
-              source={{ uri: userAvatar }} 
+              source={{ uri: optimizedAvatarUri }} 
               style={[globalStyles.avatarLarge, styles.avatarSpacing]} 
               onError={(error) => {
                 console.error("❌ Erro ao renderizar imagem:", error.nativeEvent.error);
-                console.log("🔗 URL que tentou carregar:", userAvatar);
               }}
             />
           ) : (
@@ -64,7 +70,6 @@ export const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
         
-        {/* Botão Sair */}
         <TouchableOpacity style={globalStyles.buttonDanger} onPress={signOut}>
           <Text style={globalStyles.buttonText}>Sair da Conta</Text>
         </TouchableOpacity>

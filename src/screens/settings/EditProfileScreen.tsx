@@ -17,8 +17,18 @@ export const EditProfileScreen = () => {
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   
-  const displayImage = localImageUri || session?.user?.image;
   const isSubmitting = authLoading || uploading;
+
+  const serverAvatarUrl = session?.user?.image;
+  const avatarCacheBreaker = session?.user?.updatedAt 
+    ? new Date(session.user.updatedAt).getTime() 
+    : new Date().getTime();
+
+  const optimizedServerUri = serverAvatarUrl 
+    ? `${serverAvatarUrl}?t=${avatarCacheBreaker}` 
+    : null;
+
+  const displayImage = localImageUri || optimizedServerUri;
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -31,7 +41,6 @@ export const EditProfileScreen = () => {
 
     if (!result.canceled) {
       setLocalImageUri(result.assets[0].uri);
-      // Salva o base64 se a biblioteca conseguir extraí-lo
       if (result.assets[0].base64) {
         setImageBase64(result.assets[0].base64);
       }
@@ -49,7 +58,6 @@ export const EditProfileScreen = () => {
     if (localImageUri && imageBase64) {
       try {
         setUploading(true);
-        // 🔥 Dispara o upload com a string pesada e a URI leve
         const finalImageUrl = await uploadAvatarImage(imageBase64, localImageUri);
         updatePayload.image = finalImageUrl;
       } catch (error) {
