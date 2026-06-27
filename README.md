@@ -36,6 +36,7 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 * **Navegação:** Expo Router
 * **Autenticação:** Better Auth (`@better-auth/expo`)
 * **Formulários & Validação:** React Hook Form + Zod
+* **Resiliência & Internacionalização:** React Error Boundary + i18next
 * **Atualizações (OTA):** Expo Updates (EAS)
 * **Arquitetura:** Feature-Sliced Design (FSD)
 * **CI/CD:** Woodpecker CI
@@ -50,24 +51,26 @@ A estrutura principal fica na pasta `src/`:
 
 ```text
 src/
-├── shared/     # Código compartilhado e configurações globais
-│   ├── lib/    # Inicialização de bibliotecas (ex: auth.ts)
-│   └── ui/     # Componentes visuais globais (Botões, Inputs, Temas)
+├── shared/       # Código compartilhado e configurações globais
+│   ├── config/   # Configurações do app (ex: i18n/locales para traduções)
+│   ├── lib/      # Inicialização de bibliotecas (ex: auth.ts)
+│   └── ui/       # Componentes visuais globais (ErrorFallback, Temas)
 │
-├── features/   # Regras de negócio e componentes específicos
-│   └── auth/   # Ex: Funcionalidades de Autenticação
-│       ├── hooks/  # Lógica e consumo de API (useAuth.ts)
-│       └── ui/     # Interface específica (LoginForm.tsx)
+├── features/     # Regras de negócio e componentes específicos
+│   └── auth/     # Ex: Funcionalidades de Autenticação
+│       ├── hooks/    # Lógica e consumo de API (useAuth.ts)
+│       ├── validations/ # Schemas do Zod (authSchema.ts)
+│       └── ui/       # Interface específica (LoginForm.tsx)
 │
-├── screens/    # Telas completas, separadas por contexto
-│   ├── auth/   # Ex: LoginScreen.tsx, SignUpScreen.tsx
-│   ├── main/   # Ex: HomeScreen.tsx
-│   └── settings/ # Ex: ProfileScreen.tsx
+├── screens/      # Telas completas, separadas por contexto
+│   ├── auth/     # Ex: LoginScreen.tsx, SignUpScreen.tsx
+│   ├── main/     # Ex: HomeScreen.tsx
+│   └── profile/  # Ex: ProfileScreen.tsx, SecurityScreen.tsx
 │
-└── app/        # Roteamento de telas (Expo Router)
-    ├── (auth)/ # Rotas públicas (Login, Cadastro)
-    ├── (main)/ # Rotas protegidas (Home, Perfil com abas)
-    └── _layout.tsx # Configuração inicial e proteção de rotas
+└── app/          # Roteamento de telas (Expo Router)
+    ├── (auth)/   # Rotas públicas (Login, Cadastro)
+    ├── (main)/   # Rotas protegidas (Home, Perfil com abas)
+    └── _layout.tsx # Configuração inicial (Providers, ErrorBoundary)
 ```
 
 ### Diretriz de Importação::
