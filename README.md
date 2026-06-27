@@ -16,11 +16,11 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 - [x] **Over-the-Air (OTA) Updates:** Configuração do `expo-updates` (EAS Update) para envio ágil de correções de interface e lógica JavaScript sem depender de aprovação nas lojas.
 - [x] **Navegação:** Migração para **Expo Router** (baseado em arquivos) para roteamento simplificado e suporte robusto a *deep linking*.
 - [x] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
+- [x] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
 
 ### ⏳ Próximos Passos
-- [ ] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
-- [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
 - [ ] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição de estados/serviços.
+- [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
 - [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
 - [ ] **Testes E2E:** Implementação do `Maestro` para testes automatizados de fluxos de usuário e interface end-to-end.
