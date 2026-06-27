@@ -1,1 +1,1 @@
-export { EditProfileScreen as default } from '../../screens/settings/EditProfileScreen';
+export { EditProfileScreen as default } from '../../screens/profile/EditProfileScreen';

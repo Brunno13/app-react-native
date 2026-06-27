@@ -6,7 +6,7 @@ import { useAuth } from '../../features/auth/hooks/useAuth';
 
 export const LoginScreen = () => {
   const { signIn, loading } = useAuth();
-  const router = useRouter(); // Instanciamos o roteador
+  const router = useRouter(); 
 
   return (
     <SafeAreaView style={styles.safeArea}>

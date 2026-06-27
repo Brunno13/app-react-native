@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native';
+
+import { SecurityForm } from '../../features/profile/ui/SecurityForm';
 import { useAuth } from '../../features/auth/hooks/useAuth';
+import type { ChangePasswordFormData } from '../../features/profile/validations/profileSchema';
 import { globalStyles } from '../../shared/ui/globalStyles';
 import { theme } from '../../shared/ui/theme';
 import { FontAwesome } from '@expo/vector-icons';
 
 export const SecurityScreen = () => {
   const { changePassword, getActiveSessions, revokeDeviceSession, loading } = useAuth();
-
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   
   const [sessions, setSessions] = useState<any[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
@@ -20,27 +20,22 @@ export const SecurityScreen = () => {
 
   const fetchSessions = async () => {
     setLoadingSessions(true);
-    const { data, error } = await getActiveSessions();
+    const { data } = await getActiveSessions();
     if (data) setSessions(data);
     setLoadingSessions(false);
   };
 
-  const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword) {
-      Alert.alert('Aviso', 'Preencha as senhas corretamente.');
-      return;
-    }
-
-    const { error } = await changePassword(newPassword, currentPassword);
+  const handlePasswordChange = async (data: ChangePasswordFormData): Promise<boolean> => {
+    const { error } = await changePassword(data.newPassword, data.currentPassword);
     
     if (error) {
       Alert.alert('Erro', error.message || 'Não foi possível alterar a senha.');
-    } else {
-      Alert.alert('Sucesso', 'Sua senha foi alterada. Outros dispositivos foram desconectados.');
-      setCurrentPassword('');
-      setNewPassword('');
-      fetchSessions();
-    }
+      return false;
+    } 
+    
+    Alert.alert('Sucesso', 'Sua senha foi alterada. Outros dispositivos foram desconectados.');
+    fetchSessions();
+    return true;
   };
 
   const handleRevoke = async (token: string) => {
@@ -55,24 +50,12 @@ export const SecurityScreen = () => {
   return (
     <ScrollView style={globalStyles.safeArea} contentContainerStyle={globalStyles.scrollContent}>
       <Text style={globalStyles.subtitle}>Trocar Senha</Text>
+      
       <View style={styles.section}>
-        <TextInput
-          style={globalStyles.input}
-          placeholder="Senha Atual"
-          secureTextEntry
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
+        <SecurityForm 
+          onSubmitPasswordChange={handlePasswordChange}
+          loading={loading}
         />
-        <TextInput
-          style={globalStyles.input}
-          placeholder="Nova Senha"
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
-        <TouchableOpacity style={globalStyles.buttonPrimary} onPress={handleChangePassword} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>Atualizar Senha</Text>}
-        </TouchableOpacity>
       </View>
 
       <Text style={[globalStyles.subtitle, styles.sessionsTitle]}>Sessões Ativas</Text>
@@ -99,20 +82,12 @@ export const SecurityScreen = () => {
           </View>
         ))
       )}
-
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  section: {
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
-  },
-  sessionsTitle: {
-    marginTop: theme.spacing.md,
-  },
-  revokeButton: {
-    padding: theme.spacing.sm,
-  }
+  section: { marginTop: theme.spacing.md, marginBottom: theme.spacing.xl },
+  sessionsTitle: { marginTop: theme.spacing.md },
+  revokeButton: { padding: theme.spacing.sm }
 });

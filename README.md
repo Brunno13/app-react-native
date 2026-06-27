@@ -15,9 +15,9 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 - [x] **CI/CD:** Pipeline configurada no Woodpecker (Geração de Release, pacotes e sincronização Gitea/GitHub).
 - [x] **Over-the-Air (OTA) Updates:** Configuração do `expo-updates` (EAS Update) para envio ágil de correções de interface e lógica JavaScript sem depender de aprovação nas lojas.
 - [x] **Navegação:** Migração para **Expo Router** (baseado em arquivos) para roteamento simplificado e suporte robusto a *deep linking*.
+- [x] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
 
 ### ⏳ Próximos Passos
-- [ ] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
 - [ ] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
 - [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
 - [ ] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição de estados/serviços.
@@ -35,6 +35,7 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 * **Gerenciador de Pacotes:** Bun
 * **Navegação:** Expo Router
 * **Autenticação:** Better Auth (`@better-auth/expo`)
+* **Formulários & Validação:** React Hook Form + Zod
 * **Atualizações (OTA):** Expo Updates (EAS)
 * **Arquitetura:** Feature-Sliced Design (FSD)
 * **CI/CD:** Woodpecker CI

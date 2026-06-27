@@ -1,1 +1,1 @@
-export { SecurityScreen as default } from '../../screens/settings/SecurityScreen';
+export { SecurityScreen as default } from '../../screens/profile/SecurityScreen';

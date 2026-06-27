@@ -58,7 +58,7 @@ export const globalStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  // --- Formulários ---
+  // --- Formulários e Validação ---
   input: {
     width: '100%',
     height: 50,
@@ -68,6 +68,18 @@ export const globalStyles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.md,
+  },
+
+  inputError: {
+    borderColor: theme.colors.danger,
+  },
+
+  formErrorText: {
+    color: theme.colors.danger,
+    fontSize: 12,
+    alignSelf: 'flex-start',
+    marginBottom: theme.spacing.md,
+    marginTop: -theme.spacing.sm,
   },
 
   // --- Listas, Menus e Cards ---
