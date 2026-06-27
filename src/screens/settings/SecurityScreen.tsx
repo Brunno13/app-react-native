@@ -87,7 +87,7 @@ export const SecurityScreen = () => {
           <View key={sess.token} style={globalStyles.card}>
             <View style={{ flex: 1 }}>
               <Text style={{ fontWeight: 'bold', color: theme.colors.text }}>
-                {sess.ipAddress || 'Dispositivo Desconhecido'}
+                {sess.userAgent || 'Dispositivo Desconhecido'}
               </Text>
               <Text style={globalStyles.textSecondary}>
                 {new Date(sess.createdAt).toLocaleDateString()}
