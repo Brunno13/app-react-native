@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FontAwesome } from '@expo/vector-icons';
-import { SecurityForm } from '../../features/profile/ui/SecurityForm';
-import { useAuth } from '../../features/auth/hooks/useAuth';
-import type { ChangePasswordFormData } from '../../features/profile/validations/profileSchema';
-import { globalStyles } from '../../shared/ui/globalStyles';
-import { theme } from '../../shared/ui/theme';
+import { SecurityForm } from '@/features/profile/ui/SecurityForm';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import type { ChangePasswordFormData } from '@/features/profile/validations/profileSchema';
+import { globalStyles } from '@/shared/ui/globalStyles';
+import { theme } from '@/shared/ui/theme';
+import { useNotification } from '@/shared/providers/NotificationProvider';
 
 export const SecurityScreen = () => {
   const { changePassword, getActiveSessions, revokeDeviceSession, loading } = useAuth();
   const { t } = useTranslation();
-  
+  const { showToast, showModal } = useNotification();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
 
@@ -30,11 +31,11 @@ export const SecurityScreen = () => {
     const { error } = await changePassword(data.newPassword, data.currentPassword);
     
     if (error) {
-      Alert.alert(t('alerts.error'), error.message || t('alerts.error'));
+      showModal(t('alerts.error'), error.message || t('alerts.error'), 'error');
       return false;
     } 
     
-    Alert.alert(t('alerts.success'), t('alerts.passwordChanged'));
+    showModal(t('alerts.success'), t('alerts.passwordChanged'), 'success');
     fetchSessions();
     return true; 
   };
@@ -42,7 +43,7 @@ export const SecurityScreen = () => {
   const handleRevoke = async (token: string) => {
     const { error } = await revokeDeviceSession(token);
     if (error) {
-      Alert.alert(t('alerts.error'), t('alerts.revokeError'));
+      showToast(t('alerts.error'), t('alerts.revokeError'), 'error');
     } else {
       fetchSessions();
     }

@@ -17,9 +17,9 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 - [x] **Navegação:** Migração para **Expo Router** (baseado em arquivos) para roteamento simplificado e suporte robusto a *deep linking*.
 - [x] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
 - [x] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
+- [x] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição de estados/serviços.
 
 ### ⏳ Próximos Passos
-- [ ] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição de estados/serviços.
 - [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
 - [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
@@ -31,10 +31,11 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 ## 🛠️ Tecnologias Utilizadas
 
 * **Framework:** React Native + Expo (SDK 56)
-* **Linguagem:** TypeScript
+* **Linguagem:** TypeScript (com Path Aliasing)
 * **Gerenciador de Pacotes:** Bun
 * **Navegação:** Expo Router
 * **Autenticação:** Better Auth (`@better-auth/expo`)
+* **Estado Global & Injeção:** Context API (Providers Customizados)
 * **Formulários & Validação:** React Hook Form + Zod
 * **Resiliência & Internacionalização:** React Error Boundary + i18next
 * **Atualizações (OTA):** Expo Updates (EAS)

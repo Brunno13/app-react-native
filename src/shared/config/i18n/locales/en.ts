@@ -36,6 +36,12 @@ export const en = {
       welcome: 'Welcome',
       defaultUser: 'User',
       simulateCrash: 'Simulate App Crash',
+      testToast: 'Test Success Toast',
+      testModal: 'Test Alert Modal',
+      toastTitle: 'All Good!',
+      toastMessage: 'This is a fluid notification that disappears on its own.',
+      modalTitle: 'Attention Required',
+      modalMessage: 'This is a blocking modal. You must read and close it.',
     },
     profile: {
       updateData: 'Update Profile',

@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { View, Alert, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next'; // 🔥
-
-import { SignUpForm } from '../../features/auth/ui/SignUpForm';
-import { authClient } from '../../shared/lib/auth';
-import type { RegisterFormData } from '../../features/auth/validations/authSchema';
+import { useTranslation } from 'react-i18next';
+import { SignUpForm } from '@/features/auth/ui/SignUpForm';
+import { authClient } from '@/shared/lib/auth';
+import type { RegisterFormData } from '@/features/auth/validations/authSchema';
+import { useNotification } from '@/shared/providers/NotificationProvider';
 
 export const SignUpScreen = () => {
   const router = useRouter();
-  const { t } = useTranslation(); // 🔥
+  const { t } = useTranslation();
+  const { showToast } = useNotification();
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async (data: RegisterFormData) => {
@@ -26,7 +27,7 @@ export const SignUpScreen = () => {
       return { error };
     }
 
-    Alert.alert(t('alerts.success'), t('alerts.accountCreated'));
+    showToast(t('alerts.success'), t('alerts.accountCreated'), 'success');
     router.back();
     return { error: null };
   };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authClient } from '../../../shared/lib/auth';
+import { authClient } from '@/shared/lib/auth';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -67,6 +67,13 @@ export const useAuth = () => {
     return { data, error };
   };
 
+  const signOut = async () => {
+    setLoading(true);
+    const result = await authClient.signOut();
+    setLoading(false);
+    return result;
+  };
+
   return { 
     signIn, 
     signUp, 
@@ -76,21 +83,7 @@ export const useAuth = () => {
     changePassword,
     getActiveSessions,
     revokeDeviceSession,
-    loading 
-  };
-};
-
-export const useAuthFlow = () => {
-  const session = authClient.useSession();
-  
-  const signOut = async () => {
-    await authClient.signOut();
-  };
-
-  return {
-    session: session.data,
-    isPending: session.isPending,
-    isAuthenticated: !!session.data,
     signOut,
+    loading 
   };
 };
