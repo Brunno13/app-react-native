@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useGlobalAuth } from '@/features/auth/providers/AuthProvider';
+import { useGlobalAuth } from '@/features/auth';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 import { theme } from '@/shared/ui/theme';
 

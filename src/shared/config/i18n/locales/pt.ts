@@ -61,6 +61,12 @@ export const pt = {
       activeSessions: 'Sessões Ativas',
       manageDevices: 'Gerencie os dispositivos conectados à sua conta.',
       unknownDevice: 'Dispositivo Desconhecido',
+      offlineMode: 'Modo Offline',
+      offlineDesc: 'Salvar dados no dispositivo',
+    },
+    database: {
+      criticalError: 'Erro Crítico de Banco de Dados',
+      optimizing: 'Otimizando banco local...',
     },
     validation: {
       nameMin: 'O nome deve ter pelo menos 3 caracteres.',
@@ -79,6 +85,11 @@ export const pt = {
       passwordChanged: 'Sua senha foi alterada. Outros dispositivos foram desconectados.',
       revokeError: 'Não foi possível desconectar o dispositivo.',
       uploadError: 'Falha ao fazer upload da imagem.',
+      networkError: 'Sem Conexão',
+      networkOfflineMessage: 'Você está offline. Como este é seu primeiro acesso ou sua sessão expirou, você precisa de internet para fazer o login inicial.',
+      timeoutError: 'Servidor Lento',
+      timeoutMessage: 'O servidor demorou muito para responder. Verifique sua conexão e tente novamente.',
+      unknownError: 'Erro desconhecido',
     },
     errors: {
       catastrophicTitle: 'Ops! Algo deu errado.',

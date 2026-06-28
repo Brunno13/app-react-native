@@ -61,6 +61,12 @@ export const en = {
       activeSessions: 'Active Sessions',
       manageDevices: 'Manage devices connected to your account.',
       unknownDevice: 'Unknown Device',
+      offlineMode: 'Offline Mode',
+      offlineDesc: 'Save data on device',
+    },
+    database: {
+      criticalError: 'Critical Database Error',
+      optimizing: 'Optimizing local database...',
     },
     validation: {
       nameMin: 'Name must be at least 3 characters.',
@@ -79,6 +85,11 @@ export const en = {
       passwordChanged: 'Your password has been changed. Other devices have been logged out.',
       revokeError: 'Could not disconnect the device.',
       uploadError: 'Failed to upload image.',
+      networkError: 'No Connection',
+      networkOfflineMessage: 'You are offline. Since this is your first login or your session expired, you need internet to sign in.',
+      timeoutError: 'Server Timeout',
+      timeoutMessage: 'The server took too long to respond. Please check your connection and try again.',
+      unknownError: 'Unknown error',
     },
     errors: {
       catastrophicTitle: 'Oops! Something went wrong.',
