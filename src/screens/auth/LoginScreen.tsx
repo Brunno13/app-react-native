@@ -2,8 +2,8 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LoginForm } from '@/features/auth/ui/LoginForm'; 
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { LoginForm } from '@/features/auth'; 
+import { useAuth } from '@/features/auth';
 
 export const LoginScreen = () => {
   const { signIn, loading } = useAuth();

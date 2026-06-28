@@ -3,9 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+
 import { getLoginSchema, type LoginFormData } from '../validations/authSchema';
 import { globalStyles } from '@/shared/ui/globalStyles';
 import { theme } from '@/shared/ui/theme';
+import { useNotification } from '@/shared/providers/NotificationProvider'; 
 
 interface LoginFormProps {
   onLogin: (email: string, pass: string) => Promise<{ error: any }>;
@@ -16,6 +18,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToForgot }: LoginFormProps) => {
   const { t } = useTranslation();
+  const { showModal } = useNotification();
   const passwordRef = useRef<TextInput>(null);
 
   const {
@@ -33,7 +36,18 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
 
   const onSubmit = async (data: LoginFormData) => {
     const response = await onLogin(data.email, data.password);
+    
     if (response?.error) {
+      if (response.error.code === 'OFFLINE') {
+        showModal(t('alerts.networkError'), response.error.message, 'error');
+        return;
+      }
+      
+      if (response.error.code === 'TIMEOUT') {
+        showModal(t('alerts.timeoutError'), response.error.message, 'info');
+        return; 
+      }
+
       setError('email', { type: 'manual', message: t('auth.invalidCredentials') });
       setError('password', { type: 'manual', message: t('auth.checkPassword') });
     }

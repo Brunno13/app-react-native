@@ -3,7 +3,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { ErrorBoundary } from 'react-error-boundary';
 import '../shared/config/i18n'; 
 import { ErrorFallback } from '../shared/ui/ErrorFallback';
-import { useGlobalAuth } from '../features/auth/providers/AuthProvider'; 
+import { useGlobalAuth } from '@/features/auth'; 
 import { AppProvider } from '../shared/providers/AppProvider'; 
 
 function AppNavigation() {

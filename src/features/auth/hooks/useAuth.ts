@@ -1,14 +1,41 @@
 import { useState } from 'react';
+import * as Network from 'expo-network';
+import { useTranslation } from 'react-i18next';
 import { authClient } from '@/shared/lib/auth';
+import { db } from '@/shared/db/client';
+import { AuthRepository } from '@/shared/db/repositories/authRepository';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
-    const { data, error } = await authClient.signIn.email({ email, password });
-    setLoading(false);
-    return { data, error };
+    
+    try {
+      const networkState = await Network.getNetworkStateAsync();
+      const isOnline = networkState.isConnected && networkState.isInternetReachable;
+
+      if (!isOnline) {
+        setLoading(false);
+        return { data: null, error: { code: 'OFFLINE', message: t('alerts.networkOfflineMessage') } };
+      }
+
+      const timeoutPromise = new Promise<{ data: null, error: any }>((resolve) =>
+        setTimeout(() => resolve({ data: null, error: { code: 'TIMEOUT', message: t('alerts.timeoutMessage') } }), 10000)
+      );
+
+      const authPromise = authClient.signIn.email({ email, password });
+
+      const response = await Promise.race([authPromise, timeoutPromise]) as { data: any, error: any };
+
+      setLoading(false);
+      return response;
+
+    } catch (err: any) {
+      setLoading(false);
+      return { data: null, error: { code: 'UNKNOWN', message: err.message || t('alerts.unknownError') } };
+    }
   };
 
   const signUp = async (email: string, password: string, name: string) => {
@@ -69,6 +96,7 @@ export const useAuth = () => {
 
   const signOut = async () => {
     setLoading(true);
+    await AuthRepository.clear(db);
     const result = await authClient.signOut();
     setLoading(false);
     return result;

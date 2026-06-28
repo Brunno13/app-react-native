@@ -1,6 +1,16 @@
-# 📱 App React Native (App Bun)
+# 📱 App React Native (Expo + Bun)
 
-Aplicativo mobile multiplataforma construído com React Native e Expo, utilizando **Bun** como gerenciador de pacotes. O projeto conta com autenticação via `better-auth`, gerenciamento dinâmico de ambientes e pipeline de CI/CD para geração de releases.
+Aplicativo mobile multiplataforma construído com **React Native** e **Expo**, utilizando o **Bun** como gerenciador de pacotes de alta performance. 
+
+O projeto foi estruturado sob os princípios da arquitetura **Feature-Sliced Design (FSD)** e segue o conceito **Offline-First**, sendo totalmente resiliente a quedas de conexão e focado em segurança de dados em nível de hardware.
+
+### 🚀 Recursos Principais
+* **Autenticação Híbrida & Segura:** Integração com `better-auth`, cache de dados visuais em banco local e armazenamento de tokens confidenciais criptografados via hardware (`Secure Store`).
+* **Arquitetura Escalável (FSD):** Código altamente modular, organizado por domínios de negócio e isolado por pontos de entrada estritos (*Public APIs / Barrel Files*).
+* **Persistência Offline-First:** Banco de dados local `Expo SQLite` gerenciado com a tipagem segura do `Drizzle ORM`.
+* **Resiliência e Conectividade:** Monitoramento de rede em tempo real com banner reativo integrado e travas de segurança (*Timeout* de 10s) para evitar travamentos de interface.
+* **Cliente HTTP Inteligente:** Wrapper centralizado sobre a API `fetch` com injeção automática de tokens e interceptador de segurança para sessões expiradas (Erros 401).
+* **Infraestrutura de Produção:** Separação dinâmica de ambientes (Staging / Produção), atualizações remotas instantâneas (OTA via EAS Update) e esteira de CI/CD automatizada com Woodpecker CI.
 
 ---
 
@@ -18,12 +28,13 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 - [x] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
 - [x] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
 - [x] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição de estados/serviços.
+- [x] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`, combinando cache visual em disco e persistência de dados sensíveis (tokens de sessão) no cofre nativo via `expo-secure-store`.
 
 ### ⏳ Próximos Passos
-- [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
+- [ ] **Biometria:** Implementação de tela de bloqueio (Lock Screen) utilizando `expo-local-authentication` para proteger o acesso aos tokens salvos no cofre do sistema operacional.
 - [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
-- [ ] **Testes E2E:** Implementação do `Maestro` para testes automatizados de fluxos de usuário e interface end-to-end.
 - [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
+- [ ] **Testes E2E:** Implementação do `Maestro` para testes automatizados de fluxos de usuário e interface end-to-end.
 - [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas e monitoramento em produção.
 
 ---
@@ -35,6 +46,9 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 * **Gerenciador de Pacotes:** Bun
 * **Navegação:** Expo Router
 * **Autenticação:** Better Auth (`@better-auth/expo`)
+* **Banco de Dados & ORM:** Expo SQLite + Drizzle ORM
+* **Segurança de Dados:** Expo Secure Store
+* **Rede & Conectividade:** NetInfo (`@react-native-community/netinfo`)
 * **Estado Global & Injeção:** Context API (Providers Customizados)
 * **Formulários & Validação:** React Hook Form + Zod
 * **Resiliência & Internacionalização:** React Error Boundary + i18next
@@ -46,45 +60,67 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 
 ## 🏗️ Arquitetura do Projeto
 
-O projeto segue o padrão **Feature-Sliced Design (FSD)**, focando em manter o código organizado e fácil de escalar. A separação é feita em camadas, indo da base (código global) até o topo (telas e rotas).
+O projeto segue rigorosamente o padrão **Feature-Sliced Design (FSD)**, focando em alta coesão, baixo acoplamento e escalabilidade previsível. A separação é feita em camadas estruturadas, indo da infraestrutura base e global até as regras de negócio puras e o roteamento físico.
 
-A estrutura principal fica na pasta `src/`:
+A estrutura principal de pastas dentro de `src/` está organizada da seguinte forma:
 
 ```text
 src/
-├── shared/       # Código compartilhado e configurações globais
-│   ├── config/   # Configurações do app (ex: i18n/locales para traduções)
-│   ├── lib/      # Inicialização de bibliotecas (ex: auth.ts)
-│   └── ui/       # Componentes visuais globais (ErrorFallback, Temas)
+├── shared/               # Infraestrutura corporativa, utilitários e configurações globais (sem regras de negócio)
+│   ├── api/              # Cliente HTTP centralizado (httpClient.ts com interceptadores de token e tratamento de 401)
+│   ├── config/           # Configurações do ecossistema do app (ex: i18n/locales para internacionalização)
+│   ├── db/               # Motor Offline-First (Cliente Drizzle ORM, migrações SQL, repositórios e schemas isolados)
+│   ├── lib/              # Inicialização e pontes de bibliotecas externas (ex: auth.ts para Better Auth)
+│   ├── providers/        # Provedores globais de contexto (AppProvider, DatabaseProvider, NotificationProvider)
+│   └── ui/               # Design System atomizado (Toast, AlertModal, NetworkBanner e tokens do theme.ts)
 │
-├── features/     # Regras de negócio e componentes específicos
-│   └── auth/     # Ex: Funcionalidades de Autenticação
-│       ├── hooks/    # Lógica e consumo de API (useAuth.ts)
-│       ├── validations/ # Schemas do Zod (authSchema.ts)
-│       └── ui/       # Interface específica (LoginForm.tsx)
+├── features/             # Fatias de negócio independentes, acopladas a domínios comerciais específicos
+│   ├── auth/             # Domínio de Autenticação e Sessão Híbrida
+│   │   ├── index.ts      # Public API (Barrel File: expõe estritamente o necessário para consumo externo)
+│   │   ├── hooks/        # Lógica de estados, ações de login e travas de rede/timeout (useAuth.ts)
+│   │   ├── ui/           # Componentes e formulários de interface específicos da feature (LoginForm.tsx)
+│   │   └── validations/  # Schemas de validação de dados em tempo de execução com Zod (authSchema.ts)
+│   └── profile/          # Domínio de Perfil de Usuário e Configurações locais
+│       ├── index.ts      # Public API (Barrel File)
+│       └── hooks/        # Manipulação de preferências persistidas e síncronas no SQLite (usePreferences.ts)
 │
-├── screens/      # Telas completas, separadas por contexto
-│   ├── auth/     # Ex: LoginScreen.tsx, SignUpScreen.tsx
-│   ├── main/     # Ex: HomeScreen.tsx
-│   └── profile/  # Ex: ProfileScreen.tsx, SecurityScreen.tsx
+├── screens/              # Telas completas e composições de blocos, atuando como orquestradoras visuais
+│   ├── auth/             # LoginScreen.tsx, SignUpScreen.tsx, ForgotPasswordScreen.tsx
+│   ├── main/             # HomeScreen.tsx
+│   └── profile/          # ProfileScreen.tsx, SecurityScreen.tsx
 │
-└── app/          # Roteamento de telas (Expo Router)
-    ├── (auth)/   # Rotas públicas (Login, Cadastro)
-    ├── (main)/   # Rotas protegidas (Home, Perfil com abas)
-    └── _layout.tsx # Configuração inicial (Providers, ErrorBoundary)
+└── app/                  # Ponto de entrada e roteamento nativo (Expo Router baseado no sistema de arquivos)
+    ├── (auth)/           # Fluxo público de acesso (Telas de autenticação)
+    ├── (main)/           # Fluxo protegido por sessão (Home, Perfil e navegação por abas)
+    └── _layout.tsx       # Inicialização estrutural do app (Injeção de Providers globais e Error Boundary)
 ```
 
 ### Diretriz de Importação::
 
-* **O fluxo é de cima para baixo.** 
+* **Para garantir a manutenibilidade do código e evitar acoplamento circular, seguimos regras de governança estritas:**
 
-1. A pasta `app` importa as telas da pasta `screens`.
+1. **Fluxo Unidirecional de Dependências (Cima para Baixo):** 
+    
+    * A pasta `app` importa composições das telas de `screens`.
 
-2. A pasta `screens` importa os componentes da pasta `features` e `shared`.
+    * A pasta `screens` importa fatias expostas em `features` e bases de `shared`.
 
-3. A pasta `features` importa os itens da pasta `shared`.
+    * A pasta `features` consome utilitários de infraestrutura apenas de `shared`.
 
-* **Atenção:** O caminho inverso não é permitido. Um componente em shared não pode importar algo de features, e uma feature não pode importar uma tela de screens. Isso evita problemas de dependência no código.
+    * Atenção: O caminho inverso é estritamente proibido. Um arquivo em `shared` jamais pode importar algo de `features` ou `screens`.
+
+2. **Regra de Encapsulamento (Public APIs):**
+
+    * Nenhuma camada ou componente externo tem permissão para importar arquivos de subpastas profundas dentro de uma fatia de `features` (ex: `import { useGlobalAuth } from '@/features/auth/providers/AuthProvider'`).
+
+    * Todo acesso deve ser mediado obrigatoriamente através da Public API da feature (`index.ts`). O consumo externo deve ser limpo e centralizado:
+        `import { useGlobalAuth, useAuth, LoginForm } from '@/features/auth';`
+
+3. **Segurança e Persistência Híbrida:**
+
+    * Dados rápidos de visualização para construção de interfaces responsivas e offline ficam em cache na estrutura SQLite (`shared/db`).
+
+    * Informações sensíveis de criptografia e tokens de segurança de autenticação são salvos fora do banco convencional, utilizando o armazenamento encriptado em nível de hardware via `expo-secure-store`.
 
 ---
 

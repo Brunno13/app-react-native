@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet
 import { useTranslation } from 'react-i18next';
 import { FontAwesome } from '@expo/vector-icons';
 import { SecurityForm } from '@/features/profile/ui/SecurityForm';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useAuth } from '@/features/auth';
 import type { ChangePasswordFormData } from '@/features/profile/validations/profileSchema';
 import { globalStyles } from '@/shared/ui/globalStyles';
 import { theme } from '@/shared/ui/theme';

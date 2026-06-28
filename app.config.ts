@@ -50,6 +50,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     "expo-router",
     "expo-status-bar",
+    'expo-sqlite',
+    'expo-secure-store',
     [
       "expo-build-properties",
       {
