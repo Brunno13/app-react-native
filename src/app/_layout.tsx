@@ -3,11 +3,11 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { ErrorBoundary } from 'react-error-boundary';
 import '../shared/config/i18n'; 
 import { ErrorFallback } from '../shared/ui/ErrorFallback';
+import { useGlobalAuth } from '../features/auth/providers/AuthProvider'; 
+import { AppProvider } from '../shared/providers/AppProvider'; 
 
-import { useAuthFlow } from '../features/auth/hooks/useAuth';
-
-export default function RootLayout() {
-  const { session, isPending } = useAuthFlow();
+function AppNavigation() {
+  const { session, isPending } = useGlobalAuth(); 
   const segments = useSegments();
   const router = useRouter();
 
@@ -29,11 +29,19 @@ export default function RootLayout() {
   }, [session, isPending, segments]);
 
   return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(main)" />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(main)" />
-      </Stack>
+      <AppProvider>
+        <AppNavigation />
+      </AppProvider>
     </ErrorBoundary>
   );
 }

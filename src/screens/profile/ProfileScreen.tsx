@@ -4,14 +4,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { FontAwesome } from '@expo/vector-icons';
-import { useAuthFlow } from '../../features/auth/hooks/useAuth';
-import { globalStyles } from '../../shared/ui/globalStyles';
-import { theme } from '../../shared/ui/theme';
+import { useGlobalAuth } from '@/features/auth/providers/AuthProvider';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { globalStyles } from '@/shared/ui/globalStyles';
+import { theme } from '@/shared/ui/theme';
 
 export const ProfileScreen = () => {
-  const { session, signOut } = useAuthFlow();
+  const { session } = useGlobalAuth();
+  const { signOut } = useAuth();
+  
   const router = useRouter();
-  const { t } = useTranslation(); // 🔥
+  const { t } = useTranslation();
+
   const userAvatar = session?.user?.image;
   const initialLetter = session?.user?.name?.charAt(0).toUpperCase() || 'U';
   const avatarCacheBreaker = session?.user?.updatedAt 

@@ -36,6 +36,12 @@ export const pt = {
       welcome: 'Bem-vindo',
       defaultUser: 'Usuário',
       simulateCrash: 'Simular Crash do App',
+      testToast: 'Testar Toast de Sucesso',
+      testModal: 'Testar Modal de Alerta',
+      toastTitle: 'Tudo Certo!',
+      toastMessage: 'Esta é uma notificação fluida que desaparece sozinha.',
+      modalTitle: 'Atenção Necessária',
+      modalMessage: 'Este é um modal bloqueante. Você precisa ler e fechar.',
     },
     profile: {
       updateData: 'Atualizar Dados',

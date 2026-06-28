@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-import { View, Alert } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-
-import { EditProfileForm } from '../../features/profile/ui/EditProfileForm';
-import { useAuth, useAuthFlow } from '../../features/auth/hooks/useAuth';
-import { uploadAvatarImage } from '../../shared/api/uploadApi';
-import type { EditProfileFormData } from '../../features/profile/validations/profileSchema';
-import { globalStyles } from '../../shared/ui/globalStyles';
+import { EditProfileForm } from '@/features/profile/ui/EditProfileForm';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useGlobalAuth } from '@/features/auth/providers/AuthProvider';
+import { uploadAvatarImage } from '@/features/profile/api/uploadApi';
+import type { EditProfileFormData } from '@/features/profile/validations/profileSchema';
+import { globalStyles } from '@/shared/ui/globalStyles';
+import { useNotification } from '@/shared/providers/NotificationProvider'; 
 
 export const EditProfileScreen = () => {
-  const { session } = useAuthFlow();
+  const { session } = useGlobalAuth();
   const { updateUser, loading: authLoading } = useAuth();
   const { t } = useTranslation();
+  const { showToast, showModal } = useNotification(); 
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
-
   const isSubmitting = authLoading || uploading;
   const serverAvatarUrl = session?.user?.image;
   const avatarCacheBreaker = session?.user?.updatedAt ? new Date(session.user.updatedAt).getTime() : new Date().getTime();
@@ -29,7 +30,7 @@ export const EditProfileScreen = () => {
         setUploading(true);
         updatePayload.image = await uploadAvatarImage(imageBase64, localImageUri);
       } catch (error) {
-        Alert.alert(t('alerts.error'), t('alerts.uploadError'));
+        showModal(t('alerts.error'), t('alerts.uploadError'), 'error');
         setUploading(false);
         return; 
       }
@@ -39,9 +40,9 @@ export const EditProfileScreen = () => {
     setUploading(false);
     
     if (error) {
-      Alert.alert(t('alerts.error'), error.message || t('alerts.error'));
+      showModal(t('alerts.error'), error.message || t('alerts.error'), 'error');
     } else {
-      Alert.alert(t('alerts.success'), t('alerts.profileUpdated'));
+      showToast(t('alerts.success'), t('alerts.profileUpdated'), 'success');
       router.back();
     }
   };

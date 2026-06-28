@@ -1,5 +1,5 @@
-import { authClient } from '../lib/auth';
-import { ENV, API_ENDPOINTS } from '../config/env';
+import { authClient } from '@/shared/lib/auth';
+import { ENV, API_ENDPOINTS } from '@/shared/config/env';
 
 interface UploadAvatarResponse {
   success: boolean;
