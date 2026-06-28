@@ -21,9 +21,9 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 
 ### ⏳ Próximos Passos
 - [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
-- [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
 - [ ] **Testes E2E:** Implementação do `Maestro` para testes automatizados de fluxos de usuário e interface end-to-end.
+- [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas e monitoramento em produção.
 
 ---
