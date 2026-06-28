@@ -1,50 +1,50 @@
 import { z } from 'zod';
+import { TFunction } from 'i18next';
 
-export const loginSchema = z.object({
+export const getLoginSchema = (t: TFunction) => z.object({
   email: z
     .string()
     .trim()
-    .min(1, 'O e-mail é obrigatório.')
-    .email('Digite um formato de e-mail válido.'),
+    .min(1, t('validation.emailRequired'))
+    .email(t('validation.emailInvalid')),
   password: z
     .string()
-    .min(1, 'A senha é obrigatória.')
+    .min(1, t('validation.passwordRequired'))
 });
 
-export type LoginFormData = z.infer<typeof loginSchema>;
+export type LoginFormData = z.infer<ReturnType<typeof getLoginSchema>>;
 
-export const registerSchema = z.object({
+export const getRegisterSchema = (t: TFunction) => z.object({
   name: z
     .string()
     .trim()
-    .min(3, 'O nome deve ter pelo menos 3 caracteres.')
-    .max(50, 'O nome não pode exceder 50 caracteres.'),
+    .min(3, t('validation.nameMin'))
+    .max(50, t('validation.nameMax')),
   email: z
     .string()
     .trim()
-    .min(1, 'O e-mail é obrigatório.')
-    .email('Digite um formato de e-mail válido.'),
+    .min(1, t('validation.emailRequired'))
+    .email(t('validation.emailInvalid')),
   password: z
     .string()
-    .min(8, 'A senha deve ter no mínimo 8 caracteres.'),
+    .min(8, t('validation.passwordMin')),
   confirmPassword: z
     .string()
-    .min(1, 'A confirmação de senha é obrigatória.')
+    .min(1, t('validation.passwordRequired'))
 })
-
 .refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem.',
-  path: ['confirmPassword'],
+  message: t('validation.passwordsDontMatch'),
+  path: ['confirmPassword'], 
 });
 
-export type RegisterFormData = z.infer<typeof registerSchema>;
+export type RegisterFormData = z.infer<ReturnType<typeof getRegisterSchema>>;
 
-export const forgotPasswordSchema = z.object({
+export const getForgotPasswordSchema = (t: TFunction) => z.object({
   email: z
     .string()
     .trim()
-    .min(1, 'O e-mail é obrigatório.')
-    .email('Digite um formato de e-mail válido.'),
+    .min(1, t('validation.emailRequired'))
+    .email(t('validation.emailInvalid')),
 });
 
-export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+export type ForgotPasswordFormData = z.infer<ReturnType<typeof getForgotPasswordSchema>>;

@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { SafeAreaView, View, Alert, StyleSheet } from 'react-native';
+import { View, Alert, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next'; // 🔥
+
 import { SignUpForm } from '../../features/auth/ui/SignUpForm';
 import { authClient } from '../../shared/lib/auth';
 import type { RegisterFormData } from '../../features/auth/validations/authSchema';
 
 export const SignUpScreen = () => {
   const router = useRouter();
+  const { t } = useTranslation(); // 🔥
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async (data: RegisterFormData) => {
@@ -22,7 +26,7 @@ export const SignUpScreen = () => {
       return { error };
     }
 
-    Alert.alert('Sucesso', 'Conta criada com sucesso!');
+    Alert.alert(t('alerts.success'), t('alerts.accountCreated'));
     router.back();
     return { error: null };
   };

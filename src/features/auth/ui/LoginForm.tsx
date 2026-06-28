@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema, type LoginFormData } from '../validations/authSchema';
+import { useTranslation } from 'react-i18next';
+import { getLoginSchema, type LoginFormData } from '../validations/authSchema';
 import { globalStyles } from '../../../shared/ui/globalStyles';
 import { theme } from '../../../shared/ui/theme';
 
@@ -14,6 +15,7 @@ interface LoginFormProps {
 }
 
 export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToForgot }: LoginFormProps) => {
+  const { t } = useTranslation();
   const passwordRef = useRef<TextInput>(null);
 
   const {
@@ -24,7 +26,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
     setValue,
     formState: { errors, isValid },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(getLoginSchema(t)),
     defaultValues: { email: '', password: '' },
     mode: 'onChange',
   });
@@ -32,8 +34,8 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
   const onSubmit = async (data: LoginFormData) => {
     const response = await onLogin(data.email, data.password);
     if (response?.error) {
-      setError('email', { type: 'manual', message: 'Credenciais inválidas.' });
-      setError('password', { type: 'manual', message: 'Verifique sua senha.' });
+      setError('email', { type: 'manual', message: t('auth.invalidCredentials') });
+      setError('password', { type: 'manual', message: t('auth.checkPassword') });
     }
   };
 
@@ -51,7 +53,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
 
   return (
     <View style={styles.container}>
-      <Text style={globalStyles.title}>Bem-vindo de volta</Text>
+      <Text style={globalStyles.title}>{t('auth.welcomeBack')}</Text>
 
       <Controller
         control={control}
@@ -59,7 +61,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={[globalStyles.input, errors.email && globalStyles.inputError]}
-            placeholder="Seu e-mail"
+            placeholder={t('auth.emailPlaceholder')}
             keyboardType="email-address"
             autoCapitalize="none"
             onBlur={onBlur}
@@ -81,7 +83,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
           <TextInput
             ref={passwordRef}
             style={[globalStyles.input, errors.password && globalStyles.inputError]}
-            placeholder="Sua senha"
+            placeholder={t('auth.passwordPlaceholder')}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -95,7 +97,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
       {errors.password && <Text style={globalStyles.formErrorText}>{errors.password.message}</Text>}
 
       <TouchableOpacity onPress={handleNavigateToForgot} style={styles.forgotButton}>
-        <Text style={globalStyles.linkText}>Esqueceu a senha?</Text>
+        <Text style={globalStyles.linkText}>{t('auth.forgotPasswordLink')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
@@ -103,12 +105,12 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
         onPress={handleSubmit(onSubmit)} 
         disabled={!isValid || loading}
       >
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>Entrar</Text>}
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('auth.login')}</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleNavigateToSignUp} style={styles.signupButton}>
         <Text style={globalStyles.textSecondary}>
-          Não tem uma conta? <Text style={globalStyles.linkText}>Cadastre-se</Text>
+          {t('auth.noAccount')} <Text style={globalStyles.linkText}>{t('auth.signUpLink')}</Text>
         </Text>
       </TouchableOpacity>
     </View>

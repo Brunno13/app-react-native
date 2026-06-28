@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { forgotPasswordSchema, type ForgotPasswordFormData } from '../validations/authSchema';
+import { useTranslation } from 'react-i18next';
+import { getForgotPasswordSchema, type ForgotPasswordFormData } from '../validations/authSchema';
 import { globalStyles } from '../../../shared/ui/globalStyles';
 import { theme } from '../../../shared/ui/theme';
 
@@ -13,6 +14,7 @@ interface ForgotPasswordFormProps {
 }
 
 export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin }: ForgotPasswordFormProps) => {
+  const { t } = useTranslation();
   const [statusMsg, setStatusMsg] = useState('');
 
   const {
@@ -20,7 +22,7 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
     handleSubmit,
     formState: { errors, isValid },
   } = useForm<ForgotPasswordFormData>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: zodResolver(getForgotPasswordSchema(t)),
     defaultValues: { email: '' },
     mode: 'onChange',
   });
@@ -30,15 +32,15 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
     const response = await onResetPassword(data.email);
     
     if (response?.error) {
-      setStatusMsg(`Erro: ${response.error.message}`);
+      setStatusMsg(`${t('errors.genericError')}: ${response.error.message}`);
     } else {
-      setStatusMsg('Se o e-mail existir, você receberá um link de recuperação.');
+      setStatusMsg(t('auth.resetLinkSent'));
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={globalStyles.title}>Recuperar Senha</Text>
+      <Text style={globalStyles.title}>{t('auth.recoverPassword')}</Text>
       
       {statusMsg ? (
         <Text style={styles.statusText}>{statusMsg}</Text>
@@ -50,7 +52,7 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={[globalStyles.input, errors.email && globalStyles.inputError]}
-            placeholder="Seu e-mail"
+            placeholder={t('auth.emailPlaceholder')}
             keyboardType="email-address"
             autoCapitalize="none"
             onBlur={onBlur}
@@ -69,11 +71,11 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
         onPress={handleSubmit(onSubmit)} 
         disabled={!isValid || loading}
       >
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>Enviar Link</Text>}
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('auth.sendLink')}</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onNavigateToLogin} style={styles.loginButton}>
-        <Text style={globalStyles.linkText}>Voltar para o Login</Text>
+        <Text style={globalStyles.linkText}>{t('auth.backToLogin')}</Text>
       </TouchableOpacity>
     </View>
   );

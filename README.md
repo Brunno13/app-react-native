@@ -16,11 +16,11 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 - [x] **Over-the-Air (OTA) Updates:** Configuração do `expo-updates` (EAS Update) para envio ágil de correções de interface e lógica JavaScript sem depender de aprovação nas lojas.
 - [x] **Navegação:** Migração para **Expo Router** (baseado em arquivos) para roteamento simplificado e suporte robusto a *deep linking*.
 - [x] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
+- [x] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
 
 ### ⏳ Próximos Passos
-- [ ] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
-- [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
 - [ ] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição de estados/serviços.
+- [ ] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`.
 - [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
 - [ ] **Testes E2E:** Implementação do `Maestro` para testes automatizados de fluxos de usuário e interface end-to-end.
@@ -36,6 +36,7 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 * **Navegação:** Expo Router
 * **Autenticação:** Better Auth (`@better-auth/expo`)
 * **Formulários & Validação:** React Hook Form + Zod
+* **Resiliência & Internacionalização:** React Error Boundary + i18next
 * **Atualizações (OTA):** Expo Updates (EAS)
 * **Arquitetura:** Feature-Sliced Design (FSD)
 * **CI/CD:** Woodpecker CI
@@ -50,24 +51,26 @@ A estrutura principal fica na pasta `src/`:
 
 ```text
 src/
-├── shared/     # Código compartilhado e configurações globais
-│   ├── lib/    # Inicialização de bibliotecas (ex: auth.ts)
-│   └── ui/     # Componentes visuais globais (Botões, Inputs, Temas)
+├── shared/       # Código compartilhado e configurações globais
+│   ├── config/   # Configurações do app (ex: i18n/locales para traduções)
+│   ├── lib/      # Inicialização de bibliotecas (ex: auth.ts)
+│   └── ui/       # Componentes visuais globais (ErrorFallback, Temas)
 │
-├── features/   # Regras de negócio e componentes específicos
-│   └── auth/   # Ex: Funcionalidades de Autenticação
-│       ├── hooks/  # Lógica e consumo de API (useAuth.ts)
-│       └── ui/     # Interface específica (LoginForm.tsx)
+├── features/     # Regras de negócio e componentes específicos
+│   └── auth/     # Ex: Funcionalidades de Autenticação
+│       ├── hooks/    # Lógica e consumo de API (useAuth.ts)
+│       ├── validations/ # Schemas do Zod (authSchema.ts)
+│       └── ui/       # Interface específica (LoginForm.tsx)
 │
-├── screens/    # Telas completas, separadas por contexto
-│   ├── auth/   # Ex: LoginScreen.tsx, SignUpScreen.tsx
-│   ├── main/   # Ex: HomeScreen.tsx
-│   └── settings/ # Ex: ProfileScreen.tsx
+├── screens/      # Telas completas, separadas por contexto
+│   ├── auth/     # Ex: LoginScreen.tsx, SignUpScreen.tsx
+│   ├── main/     # Ex: HomeScreen.tsx
+│   └── profile/  # Ex: ProfileScreen.tsx, SecurityScreen.tsx
 │
-└── app/        # Roteamento de telas (Expo Router)
-    ├── (auth)/ # Rotas públicas (Login, Cadastro)
-    ├── (main)/ # Rotas protegidas (Home, Perfil com abas)
-    └── _layout.tsx # Configuração inicial e proteção de rotas
+└── app/          # Roteamento de telas (Expo Router)
+    ├── (auth)/   # Rotas públicas (Login, Cadastro)
+    ├── (main)/   # Rotas protegidas (Home, Perfil com abas)
+    └── _layout.tsx # Configuração inicial (Providers, ErrorBoundary)
 ```
 
 ### Diretriz de Importação::

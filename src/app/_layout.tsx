@@ -1,5 +1,9 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { ErrorBoundary } from 'react-error-boundary';
+import '../shared/config/i18n'; 
+import { ErrorFallback } from '../shared/ui/ErrorFallback';
+
 import { useAuthFlow } from '../features/auth/hooks/useAuth';
 
 export default function RootLayout() {
@@ -25,9 +29,11 @@ export default function RootLayout() {
   }, [session, isPending, segments]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(main)" />
-    </Stack>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(main)" />
+      </Stack>
+    </ErrorBoundary>
   );
 }
