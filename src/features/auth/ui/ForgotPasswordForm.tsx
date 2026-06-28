@@ -4,8 +4,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getForgotPasswordSchema, type ForgotPasswordFormData } from '../validations/authSchema';
-import { globalStyles } from '../../../shared/ui/globalStyles';
-import { theme } from '../../../shared/ui/theme';
+import { globalStyles } from '@/shared/ui/globalStyles';
+import { theme } from '@/shared/ui/theme';
 
 interface ForgotPasswordFormProps {
   onResetPassword: (email: string) => Promise<{ error: any }>;

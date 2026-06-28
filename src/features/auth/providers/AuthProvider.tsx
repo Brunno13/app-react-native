@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { authClient } from '../../../shared/lib/auth';
+import { authClient } from '@/shared/lib/auth';
 
 interface AuthContextData {
   session: any | null; 
