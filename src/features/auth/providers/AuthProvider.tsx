@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
-import * as Network from 'expo-network';
+import NetInfo from '@react-native-community/netinfo';
 import { authClient } from '@/shared/lib/auth';
 import { db } from '@/shared/db/client';
 import { AuthRepository } from '@/shared/db/repositories/authRepository';
@@ -12,43 +12,35 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({ session: null, isPending: true });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // 1. Escuta nativa e reativa do Better Auth para o estado do servidor
   const { data: serverSession, isPending: serverPending } = authClient.useSession();
   
   const [localSessionData, setLocalSessionData] = useState<any | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // 2. Fluxo de Inicialização: Corre APENAS UMA VEZ quando o aplicativo abre
   useEffect(() => {
     const initializeOfflineAuth = async () => {
       try {
-        const networkState = await Network.getNetworkStateAsync();
-        const isOnline = networkState.isConnected && networkState.isInternetReachable;
+        const state = await NetInfo.fetch();
+        const isOnline = state.isConnected && state.isInternetReachable !== false;
 
-        // Se estiver estritamente sem internet, recorre imediatamente ao banco local
         if (!isOnline) {
-          const cachedSession = await AuthRepository.get(db);
+          const cachedData = await AuthRepository.get(db);
           
-          if (cachedSession) {
+          if (cachedData && cachedData.user && cachedData.session) {
             const now = new Date();
-            const expirationDate = new Date(cachedSession.expiresAt);
+            const expirationDate = new Date(cachedData.user.expiresAt);
 
-            // Valida se o token local ainda está no prazo de validade
             if (expirationDate > now) {
               setLocalSessionData({
                 user: {
-                  id: cachedSession.userId,
-                  email: cachedSession.email,
-                  name: cachedSession.name,
-                  image: cachedSession.image,
+                  id: cachedData.user.userId,
+                  email: cachedData.user.email,
+                  name: cachedData.user.name,
+                  image: cachedData.user.image,
                 },
-                session: {
-                  id: cachedSession.id,
-                  expiresAt: cachedSession.expiresAt,
-                }
+                session: cachedData.session 
               });
             } else {
-              // Token expirado no disco, limpa o registro por segurança
               await AuthRepository.clear(db);
             }
           }
@@ -56,7 +48,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (err) {
         console.error('Falha na inicialização do fluxo de autenticação offline:', err);
       } finally {
-        // Libera a renderização do app após checar o estado offline
         setIsInitializing(false);
       }
     };
@@ -64,18 +55,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeOfflineAuth();
   }, []);
 
-  // 3. Fluxo de Sincronização: Roda de forma isolada sempre que uma sessão online válida surgir
   useEffect(() => {
     if (serverSession) {
       AuthRepository.save(db, serverSession);
-      setLocalSessionData(null); // Limpa o estado local para priorizar o servidor online
+      setLocalSessionData(null); 
     }
   }, [serverSession]);
 
-  // Combinamos as sessões: prioridade para o servidor, fallback para o SQLite local
   const resolvedSession = serverSession || localSessionData;
-  
-  // O app estará pendente se o Better Auth estiver a buscar OU se a checagem do SQLite ainda estiver a correr
   const resolvedPending = serverPending || isInitializing;
 
   return (

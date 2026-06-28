@@ -8,9 +8,7 @@ interface RequestOptions extends RequestInit {
 }
 
 export const httpClient = async <T>(endpoint: string, options: RequestOptions = {}): Promise<T> => {
-  // Por padrão, todas as requisições exigem autenticação, a menos que seja dito o contrário
   const { requireAuth = true, headers, ...customConfig } = options;
-
   const config: RequestInit = {
     ...customConfig,
     headers: {
@@ -21,15 +19,12 @@ export const httpClient = async <T>(endpoint: string, options: RequestOptions = 
 
   if (requireAuth) {
     try {
-      // 1. Busca o token do cofre nativo
       const sessionString = await SecureStore.getItemAsync(SECURE_SESSION_KEY);
       
       if (sessionString) {
         const session = JSON.parse(sessionString);
-        // O Better Auth geralmente valida a sessão pelo ID ou Token retornado no login
         const token = session.token || session.id; 
         
-        // 2. Anexa o token ao cabeçalho padrão de autorização
         (config.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
       }
     } catch (error) {
@@ -42,16 +37,11 @@ export const httpClient = async <T>(endpoint: string, options: RequestOptions = 
   try {
     const response = await fetch(url, config);
 
-    // 3. Interceptador de Erro 401 (Sessão Expirada / Token Inválido)
     if (response.status === 401) {
       console.error('Sessão expirada (401). Iniciando bloqueio de segurança.');
-      // Limpa os cofres instantaneamente. 
-      // Na próxima re-renderização, o AuthProvider notará a falta de sessão e ejetará o usuário para o Login
       await SecureStore.deleteItemAsync(SECURE_SESSION_KEY);
-      // Eventualmente podemos adicionar um disparo de evento global aqui se necessário
     }
 
-    // Tenta fazer o parse do JSON (se houver conteúdo)
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {

@@ -7,11 +7,8 @@ export const usePreferences = () => {
   const { db } = useDatabase();
   const { session } = useGlobalAuth();
   const userId = session?.user?.id;
-
   const [isOffline, setIsOffline] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Carrega os dados do SQLite assim que o hook é chamado
   const loadPreferences = useCallback(async () => {
     if (!userId) return;
     
@@ -28,19 +25,15 @@ export const usePreferences = () => {
     loadPreferences();
   }, [loadPreferences]);
 
-  // Função para a interface atualizar o SQLite
   const toggleOfflineMode = async (value: boolean) => {
     if (!userId) return;
     
-    // Atualização Otimista na UI (Fica rápido para o usuário)
     setIsOffline(value); 
     
-    // Salva no banco local em background
     const success = await PreferencesRepository.upsert(db, userId, { 
       isOfflineModeEnabled: value 
     });
 
-    // Reverte se o banco falhar
     if (!success) {
       setIsOffline(!value);
     }
