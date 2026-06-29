@@ -105,7 +105,7 @@ export const useAuth = () => {
       const userId = sessionData?.user?.id;
 
       if (userId) {
-        console.log(`[Segurança] Varrendo banco de dados local para o usuário: ${userId}`);
+        console.log(`[Segurança] Varrendo banco de dados local para o usuário`);
         await PreferencesRepository.deleteByUser(db, userId);
       } else {
         console.warn('[Segurança] Usuário não encontrado na sessão atual antes do logout.');
