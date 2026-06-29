@@ -61,5 +61,15 @@ export const PreferencesRepository = {
       console.error('Erro ao salvar preferências:', error);
       return false;
     }
+  },
+
+  deleteByUser: async (db: ExpoSQLiteDatabase, userId: string) => {
+    try {
+      await db.delete(userPreferences).where(eq(userPreferences.userId, userId));
+      return true;
+    } catch (error) {
+      console.error('Erro ao deletar dados do usuário:', error);
+      return false;
+    }
   }
 };

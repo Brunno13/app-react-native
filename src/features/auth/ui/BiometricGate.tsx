@@ -17,7 +17,17 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  useEffect(() => {
+    if (!isBiometricsEnabled) {
+      setIsUnlocked(true);
+    } else {
+      setIsUnlocked(false);
+    }
+  }, [isBiometricsEnabled]);
+
   const handleBiometricAuth = async () => {
+    if (isAuthenticating) return;
+    
     setIsAuthenticating(true);
     try {
       const result = await LocalAuthentication.authenticateAsync({
@@ -37,25 +47,18 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
   };
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || isUnlocked || !isBiometricsEnabled) return;
 
-    if (!isBiometricsEnabled) {
-      setIsUnlocked(true);
-      return;
-    }
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+    
+    handleBiometricAuth();
+  }, [loading, isUnlocked, isBiometricsEnabled]);
 
-    if (!isUnlocked && !isAuthenticating) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }).start();
-      
-      handleBiometricAuth();
-    }
-  }, [isBiometricsEnabled, loading, isUnlocked, fadeAnim]);
-
-  if (!isUnlocked) {
+  if (!isUnlocked && isBiometricsEnabled) {
     return (
       <Animated.View style={[styles.lockContainer, { opacity: fadeAnim }]}>
         <Text style={styles.lockTitle}>🔒</Text> 
