@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
-
 import { theme } from '@/shared/ui/theme';
 import { globalStyles } from '@/shared/ui/globalStyles';
 
@@ -16,8 +15,6 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
   const { t } = useTranslation();
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  
-  // 🔥 Usando a animação nativa do React Native (sem bibliotecas externas)
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const handleBiometricAuth = async () => {

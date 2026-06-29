@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet
 import { useTranslation } from 'react-i18next';
 import { FontAwesome } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
-
 import { SecurityForm } from '@/features/profile/ui/SecurityForm';
 import { useAuth, useGlobalAuth } from '@/features/auth';
 import { usePreferences } from '@/features/profile';
@@ -74,15 +73,14 @@ export const SecurityScreen = () => {
 
   const toggleBiometrics = async (value: boolean) => {
     if (value && !hasHardware) {
-      // 🔥 Corrigido para 'info' para respeitar a tipagem estrita do ToastType
       showToast(t('alerts.warning'), t('security.biometricsNotSetup'), 'info');
       return;
     }
 
     if (value) {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t('security.biometricsConfirm'), // 🔥 Traduzido
-        fallbackLabel: t('common.cancel'),             // 🔥 Traduzido
+        promptMessage: t('security.biometricsConfirm'),
+        fallbackLabel: t('common.cancel'),
         disableDeviceFallback: true, 
       });
 
@@ -137,7 +135,7 @@ export const SecurityScreen = () => {
       </View>
       {!hasHardware && !checkingHardware && (
         <Text style={styles.warningText}>
-          {t('security.noHardwareWarning')} {/* 🔥 Traduzido */}
+          {t('security.noHardwareWarning')}
         </Text>
       )}
 
@@ -174,14 +172,13 @@ export const SecurityScreen = () => {
 
 const styles = StyleSheet.create({
   section: { marginTop: theme.spacing.md, marginBottom: theme.spacing.lg },
-  // 🔥 Trocado spacing.xs por spacing.sm
   sessionsTitle: { marginTop: theme.spacing.lg, marginBottom: theme.spacing.sm },
   revokeButton: { padding: theme.spacing.sm },
   biometricCard: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center',
-    marginBottom: theme.spacing.sm // 🔥 Trocado spacing.xs por spacing.sm
+    marginBottom: theme.spacing.sm
   },
   biometricInfo: {
     flexDirection: 'row',
