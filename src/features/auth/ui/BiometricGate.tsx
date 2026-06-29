@@ -62,8 +62,8 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
     return (
       <Animated.View style={[styles.lockContainer, { opacity: fadeAnim }]}>
         <Text style={styles.lockTitle}>🔒</Text> 
-        <Text style={[globalStyles.title, { color: theme.colors.surface, marginTop: 20 }]}>
-          App Bloqueado
+        <Text style={[globalStyles.title, { color: theme.colors.text, marginTop: 20 }]}>
+          {t('security.lockScreenPrompt')}
         </Text>
         
         <TouchableOpacity 
