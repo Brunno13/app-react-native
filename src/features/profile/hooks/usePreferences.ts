@@ -1,22 +1,35 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useDatabase } from '@/shared/providers/DatabaseProvider';
-import { useGlobalAuth } from '@/features/auth';
 import { PreferencesRepository } from '@/shared/db/repositories/preferencesRepository';
 
-export const usePreferences = () => {
+interface UserPreferences {
+  theme?: 'light' | 'dark' | 'system';
+  isOfflineModeEnabled?: boolean;
+  isBiometricsEnabled?: boolean;
+}
+
+export const usePreferences = (userId: string | undefined) => {
   const { db } = useDatabase();
-  const { session } = useGlobalAuth();
-  const userId = session?.user?.id;
-  const [isOffline, setIsOffline] = useState(false);
+  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [loading, setLoading] = useState(true);
+
   const loadPreferences = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     const prefs = await PreferencesRepository.get(db, userId);
     
     if (prefs) {
-      setIsOffline(prefs.isOfflineModeEnabled ?? false);
+      setPreferences(prefs);
+    } else {
+      setPreferences({
+        theme: 'system',
+        isOfflineModeEnabled: false,
+        isBiometricsEnabled: false,
+      });
     }
     setLoading(false);
   }, [db, userId]);
@@ -25,22 +38,28 @@ export const usePreferences = () => {
     loadPreferences();
   }, [loadPreferences]);
 
-  const toggleOfflineMode = async (value: boolean) => {
-    if (!userId) return;
+  const updatePreferences = async (updates: Partial<UserPreferences>) => {
+    if (!userId) return false;
     
-    setIsOffline(value); 
+    const previousPreferences = { ...preferences };
+    setPreferences((prev) => ({ ...prev, ...updates }));
     
-    const success = await PreferencesRepository.upsert(db, userId, { 
-      isOfflineModeEnabled: value 
-    });
+    const success = await PreferencesRepository.upsert(db, userId, updates);
 
     if (!success) {
-      setIsOffline(!value);
+      setPreferences(previousPreferences as UserPreferences);
+      return false;
     }
+    return true;
+  };
+
+  const toggleOfflineMode = async (value: boolean) => {
+    await updatePreferences({ isOfflineModeEnabled: value });
   };
 
   return {
-    isOffline,
+    preferences,
+    updatePreferences,
     toggleOfflineMode,
     loading
   };

@@ -13,12 +13,9 @@ import { theme } from '@/shared/ui/theme';
 export const ProfileScreen = () => {
   const { session } = useGlobalAuth();
   const { signOut } = useAuth();
-
-  const { isOffline, toggleOfflineMode, loading } = usePreferences();
-  
+  const { preferences, toggleOfflineMode, loading } = usePreferences(session?.user?.id);
   const router = useRouter();
   const { t } = useTranslation();
-
   const userAvatar = session?.user?.image;
   const initialLetter = session?.user?.name?.charAt(0).toUpperCase() || 'U';
   const avatarCacheBreaker = session?.user?.updatedAt 
@@ -26,6 +23,8 @@ export const ProfileScreen = () => {
     : new Date().getTime();
 
   const optimizedAvatarUri = userAvatar ? `${userAvatar}?t=${avatarCacheBreaker}` : null;
+
+  const isOfflineEnabled = preferences?.isOfflineModeEnabled ?? false;
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
@@ -65,14 +64,14 @@ export const ProfileScreen = () => {
 
           <View style={[globalStyles.menuItem, { justifyContent: 'space-between' }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <FontAwesome name="wifi" size={20} color={isOffline ? theme.colors.textSecondary : theme.colors.success} />
+              <FontAwesome name="wifi" size={20} color={isOfflineEnabled ? theme.colors.textSecondary : theme.colors.success} />
               <View style={{ marginLeft: theme.spacing.md }}>
                 <Text style={{ fontWeight: 'bold', color: theme.colors.text }}>{t('profileScreen.offlineMode')}</Text>
                 <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>{t('profileScreen.offlineDesc')}</Text>
               </View>
             </View>
             <Switch 
-              value={isOffline} 
+              value={isOfflineEnabled}
               onValueChange={toggleOfflineMode}
               disabled={loading}
               trackColor={{ false: theme.colors.border, true: theme.colors.success }}

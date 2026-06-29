@@ -5,5 +5,6 @@ export const userPreferences = sqliteTable('user_preferences', {
   userId: text('user_id').notNull(),
   theme: text('theme', { enum: ['light', 'dark', 'system'] }).default('system'),
   isOfflineModeEnabled: integer('is_offline_mode_enabled', { mode: 'boolean' }).default(false),
+  isBiometricsEnabled: integer('is_biometrics_enabled', { mode: 'boolean' }).default(false),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
 });

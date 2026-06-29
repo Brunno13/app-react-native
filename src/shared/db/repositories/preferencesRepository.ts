@@ -2,6 +2,12 @@ import { eq } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { userPreferences } from '@/shared/db/schema';
 
+export interface PartialPreferences {
+  theme?: 'light' | 'dark' | 'system';
+  isOfflineModeEnabled?: boolean;
+  isBiometricsEnabled?: boolean;
+}
+
 export const PreferencesRepository = {
   get: async (db: ExpoSQLiteDatabase, userId: string) => {
     try {
@@ -10,7 +16,15 @@ export const PreferencesRepository = {
         .from(userPreferences)
         .where(eq(userPreferences.userId, userId));
       
-      return result[0] || null;
+      const prefs = result[0];
+      
+      if (!prefs) return null;
+
+      return {
+        theme: (prefs.theme as 'light' | 'dark' | 'system') || 'system',
+        isOfflineModeEnabled: prefs.isOfflineModeEnabled ?? false,
+        isBiometricsEnabled: prefs.isBiometricsEnabled ?? false,
+      };
     } catch (error) {
       console.error('Erro ao buscar preferências:', error);
       return null;
@@ -20,7 +34,7 @@ export const PreferencesRepository = {
   upsert: async (
     db: ExpoSQLiteDatabase, 
     userId: string, 
-    data: { theme?: 'light' | 'dark' | 'system', isOfflineModeEnabled?: boolean }
+    data: PartialPreferences
   ) => {
     try {
       const now = new Date();
@@ -31,6 +45,7 @@ export const PreferencesRepository = {
           userId,
           theme: data.theme ?? 'system',
           isOfflineModeEnabled: data.isOfflineModeEnabled ?? false,
+          isBiometricsEnabled: data.isBiometricsEnabled ?? false,
           updatedAt: now,
         })
         .onConflictDoUpdate({

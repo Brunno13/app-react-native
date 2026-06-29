@@ -12,6 +12,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
+
+  locales: {
+    pt: './src/shared/config/i18n/expo-locales/pt.json',
+    en: './src/shared/config/i18n/expo-locales/en.json',
+  },
   
   updates: {
     url: "https://u.expo.dev/0a0df4ff-385b-4b9c-a563-9b9ed7cd39f2",
@@ -52,6 +57,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-status-bar",
     'expo-sqlite',
     'expo-secure-store',
+    'expo-local-authentication',
     [
       "expo-build-properties",
       {
