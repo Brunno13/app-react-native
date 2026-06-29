@@ -64,6 +64,18 @@ export const pt = {
       offlineMode: 'Modo Offline',
       offlineDesc: 'Salvar dados no dispositivo',
     },
+    security: {
+      biometricsTitle: 'Desbloqueio por Biometria',
+      biometricsSubtitle: 'Exigir Face ID ou Touch ID ao abrir o aplicativo',
+      biometricsUnavailable: 'Biometria não suportada ou não configurada neste dispositivo.',
+      lockScreenPrompt: 'Autentique-se para acessar o aplicativo',
+      unlockButton: 'Desbloquear',
+      biometricsSection: 'Autenticação Biométrica',
+      biometricsNotSetup: 'Biometria não configurada no celular.',
+      biometricsConfirm: 'Confirme sua identidade para ativar',
+      biometricsActivated: 'Biometria ativada com sucesso!',
+      noHardwareWarning: '* Seu dispositivo não possui hardware biométrico ou não está configurado.',
+    },
     database: {
       criticalError: 'Erro Crítico de Banco de Dados',
       optimizing: 'Otimizando banco local...',
@@ -77,9 +89,14 @@ export const pt = {
       passwordMin: 'A senha deve ter no mínimo 8 caracteres.',
       passwordsDontMatch: 'As senhas não coincidem.',
     },
+    permissions: {
+      faceIdTitle: 'Permissão de Biometria',
+      faceIdDescription: 'Usamos o Face ID para garantir o acesso seguro à sua conta.',
+    },
     alerts: {
       success: 'Sucesso',
       error: 'Erro',
+      warning: 'Aviso',
       accountCreated: 'Conta criada com sucesso!',
       profileUpdated: 'Perfil atualizado!',
       passwordChanged: 'Sua senha foi alterada. Outros dispositivos foram desconectados.',
@@ -96,6 +113,9 @@ export const pt = {
       catastrophicSubtitle: 'Ocorreu um erro inesperado no aplicativo. Nossa equipe de engenharia já foi notificada.',
       buttonTryAgain: 'Tentar Novamente',
       genericError: 'Erro',
+    },
+    common: {
+      cancel: 'Cancelar',
     }
   }
 };

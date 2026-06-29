@@ -15,6 +15,13 @@
       "when": 1782660427516,
       "tag": "0001_new_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782698176008,
+      "tag": "0002_striped_invaders",
+      "breakpoints": true
     }
   ]
 }

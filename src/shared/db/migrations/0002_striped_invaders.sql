@@ -1,0 +1,1 @@
+ALTER TABLE `user_preferences` ADD `is_biometrics_enabled` integer DEFAULT false;

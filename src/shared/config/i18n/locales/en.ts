@@ -64,6 +64,18 @@ export const en = {
       offlineMode: 'Offline Mode',
       offlineDesc: 'Save data on device',
     },
+    security: {
+      biometricsTitle: 'Biometric Unlock',
+      biometricsSubtitle: 'Require Face ID or Touch ID when opening the app',
+      biometricsUnavailable: 'Biometrics are not supported or set up on this device.',
+      lockScreenPrompt: 'Authenticate to access the app',
+      unlockButton: 'Unlock',
+      biometricsSection: 'Biometric Authentication',
+      biometricsNotSetup: 'Biometrics are not set up on this device.',
+      biometricsConfirm: 'Confirm your identity to activate',
+      biometricsActivated: 'Biometrics activated successfully!',
+      noHardwareWarning: '* Your device does not have biometric hardware or it is not configured.',
+    },
     database: {
       criticalError: 'Critical Database Error',
       optimizing: 'Optimizing local database...',
@@ -77,9 +89,14 @@ export const en = {
       passwordMin: 'Password must be at least 8 characters.',
       passwordsDontMatch: "Passwords don't match.",
     },
+    permissions: {
+      faceIdTitle: 'Biometric Permission',
+      faceIdDescription: 'We use Face ID to ensure secure access to your account.',
+    },
     alerts: {
       success: 'Success',
       error: 'Error',
+      warning: 'Warning',
       accountCreated: 'Account created successfully!',
       profileUpdated: 'Profile updated!',
       passwordChanged: 'Your password has been changed. Other devices have been logged out.',
@@ -96,6 +113,9 @@ export const en = {
       catastrophicSubtitle: 'An unexpected error occurred in the application. Our engineering team has been notified.',
       buttonTryAgain: 'Try Again',
       genericError: 'Error'
+    },
+    common: {
+      cancel: 'Cancel',
     }
   }
 };

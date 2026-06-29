@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
-import { NotificationProvider } from './NotificationProvider';
-import { AuthProvider } from '@/features/auth';
-import { DatabaseProvider } from './DatabaseProvider';
+import { DatabaseProvider } from '@/shared/providers/DatabaseProvider';
+import { NotificationProvider } from '@/shared/providers/NotificationProvider';
+import { AuthProvider } from '@/features/auth/providers/AuthProvider';
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   return (
@@ -14,3 +14,5 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     </DatabaseProvider>
   );
 };
+
+export default AppProvider;

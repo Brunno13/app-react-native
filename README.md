@@ -1,16 +1,16 @@
 # 📱 App React Native (Expo + Bun)
 
-Aplicativo mobile multiplataforma construído com **React Native** e **Expo**, utilizando o **Bun** como gerenciador de pacotes de alta performance. 
+Aplicativo mobile multiplataforma construído com React Native e Expo, utilizando o Bun como gerenciador de pacotes. 
 
-O projeto foi estruturado sob os princípios da arquitetura **Feature-Sliced Design (FSD)** e segue o conceito **Offline-First**, sendo totalmente resiliente a quedas de conexão e focado em segurança de dados em nível de hardware.
+O projeto foi estruturado seguindo a arquitetura Feature-Sliced Design (FSD) e o modelo Offline-First, com foco no funcionamento sem conexão e na segurança dos dados armazenados no dispositivo.
 
 ### 🚀 Recursos Principais
-* **Autenticação Híbrida & Segura:** Integração com `better-auth`, cache de dados visuais em banco local e armazenamento de tokens confidenciais criptografados via hardware (`Secure Store`).
-* **Arquitetura Escalável (FSD):** Código altamente modular, organizado por domínios de negócio e isolado por pontos de entrada estritos (*Public APIs / Barrel Files*).
-* **Persistência Offline-First:** Banco de dados local `Expo SQLite` gerenciado com a tipagem segura do `Drizzle ORM`.
-* **Resiliência e Conectividade:** Monitoramento de rede em tempo real com banner reativo integrado e travas de segurança (*Timeout* de 10s) para evitar travamentos de interface.
-* **Cliente HTTP Inteligente:** Wrapper centralizado sobre a API `fetch` com injeção automática de tokens e interceptador de segurança para sessões expiradas (Erros 401).
-* **Infraestrutura de Produção:** Separação dinâmica de ambientes (Staging / Produção), atualizações remotas instantâneas (OTA via EAS Update) e esteira de CI/CD automatizada com Woodpecker CI.
+* **Autenticação e Segurança:** Integração com `better-auth`, armazenamento de tokens criptografados (`Secure Store`) e bloqueio do aplicativo por biometria nativa (Face ID / Touch ID).
+* **Arquitetura (FSD):** Código modular organizado por domínios de negócio, com dependências controladas através de pontos de exportação (*Barrel Files*).
+* **Persistência de Dados:** Banco de dados local `Expo SQLite` gerenciado com `Drizzle ORM` para cache de interface e modo offline.
+* **Rede e Conectividade:** Monitoramento de rede com banner de aviso visual e limite de tempo de requisição (*timeout*) configurado.
+* **Cliente HTTP:** Abstração sobre a API `fetch` para envio automático de tokens e interceptação centralizada de sessões expiradas (status 401).
+* **Infraestrutura:** Separação de ambientes (Staging/Produção), atualizações assíncronas via código (EAS Update) e esteira de CI/CD configurada no Woodpecker CI.
 
 ---
 
@@ -22,36 +22,36 @@ O projeto foi estruturado sob os princípios da arquitetura **Feature-Sliced Des
 - [x] **Arquitetura:** Organização no padrão Feature-Sliced Design (FSD).
 - [x] **Gestão de Ambientes:** Flavors dinâmicos (Staging / Produção).
 - [x] **Tooling:** Scripts cross-platform para build automatizado.
-- [x] **CI/CD:** Pipeline configurada no Woodpecker (Geração de Release, pacotes e sincronização Gitea/GitHub).
-- [x] **Over-the-Air (OTA) Updates:** Configuração do `expo-updates` (EAS Update) para envio ágil de correções de interface e lógica JavaScript sem depender de aprovação nas lojas.
-- [x] **Navegação:** Migração para **Expo Router** (baseado em arquivos) para roteamento simplificado e suporte robusto a *deep linking*.
-- [x] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form` para validação nas features.
-- [x] **Resiliência e Dicionário:** Integração do `react-error-boundary` para tratamento de erros e `i18next` para internacionalização.
-- [x] **Injeção de Dependências:** Estabelecimento da camada de `Providers` baseada em Context API para distribuição de estados/serviços.
-- [x] **Armazenamento Offline:** Configuração do banco de dados local com `Expo SQLite` e `Drizzle ORM`, combinando cache visual em disco e persistência de dados sensíveis (tokens de sessão) no cofre nativo via `expo-secure-store`.
+- [x] **CI/CD:** Pipeline configurada no Woodpecker.
+- [x] **Atualizações (OTA):** Configuração do `expo-updates` (EAS Update) para envio de correções.
+- [x] **Navegação:** Migração para Expo Router.
+- [x] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form`.
+- [x] **Resiliência e Dicionário:** Tratamento de erros com `react-error-boundary` e internacionalização com `i18next`.
+- [x] **Injeção de Dependências:** Camada de Providers utilizando Context API.
+- [x] **Armazenamento Offline:** Banco local (`Expo SQLite` e `Drizzle ORM`) combinado com cofres nativos (`expo-secure-store`).
+- [x] **Biometria:** Implementação de tela de bloqueio utilizando `expo-local-authentication` atrelada às configurações do perfil do usuário.
 
 ### ⏳ Próximos Passos
-- [ ] **Biometria:** Implementação de tela de bloqueio (Lock Screen) utilizando `expo-local-authentication` para proteger o acesso aos tokens salvos no cofre do sistema operacional.
-- [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
 - [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
-- [ ] **Testes E2E:** Implementação do `Maestro` para testes automatizados de fluxos de usuário e interface end-to-end.
-- [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas e monitoramento em produção.
+- [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
+- [ ] **Testes E2E:** Implementação do `Maestro` para testes automatizados de fluxos de usuário.
+- [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas em produção.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
 * **Framework:** React Native + Expo (SDK 56)
-* **Linguagem:** TypeScript (com Path Aliasing)
+* **Linguagem:** TypeScript
 * **Gerenciador de Pacotes:** Bun
 * **Navegação:** Expo Router
 * **Autenticação:** Better Auth (`@better-auth/expo`)
 * **Banco de Dados & ORM:** Expo SQLite + Drizzle ORM
-* **Segurança de Dados:** Expo Secure Store
-* **Rede & Conectividade:** NetInfo (`@react-native-community/netinfo`)
-* **Estado Global & Injeção:** Context API (Providers Customizados)
-* **Formulários & Validação:** React Hook Form + Zod
-* **Resiliência & Internacionalização:** React Error Boundary + i18next
+* **Segurança e Biometria:** Expo Secure Store + Expo Local Authentication
+* **Rede e Conectividade:** NetInfo (`@react-native-community/netinfo`)
+* **Estado Global e Injeção:** Context API
+* **Formulários e Validação:** React Hook Form + Zod
+* **Resiliência e Internacionalização:** React Error Boundary + i18next
 * **Atualizações (OTA):** Expo Updates (EAS)
 * **Arquitetura:** Feature-Sliced Design (FSD)
 * **CI/CD:** Woodpecker CI
