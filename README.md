@@ -34,7 +34,7 @@ O projeto foi estruturado seguindo a arquitetura Feature-Sliced Design (FSD) e o
 ### ⏳ Próximos Passos
 - [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
-- [ ] **Testes E2E:** Implementação do `Maestro` para testes automatizados de fluxos de usuário.
+- [ ] **Testes E2E:** Implementação do `Detox` para testes automatizados de fluxos de usuário.
 - [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas em produção.
 
 ---
@@ -95,7 +95,7 @@ src/
     └── _layout.tsx       # Inicialização estrutural do app (Injeção de Providers globais e Error Boundary)
 ```
 
-### Diretriz de Importação::
+### Diretriz de Importação:
 
 * **Para garantir a manutenibilidade do código e evitar acoplamento circular, seguimos regras de governança estritas:**
 
