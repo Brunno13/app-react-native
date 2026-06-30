@@ -1,38 +1,36 @@
 import React, { useEffect, useState, useMemo } from 'react';
-// 🔥 Importamos o DeviceEventEmitter do react-native
 import { useColorScheme, DeviceEventEmitter } from 'react-native';
-
+import * as SecureStore from 'expo-secure-store'; 
 import { SharedThemeProvider } from '@/shared/providers/ThemeProvider';
-import { db } from '@/shared/db/client';
-import { AuthRepository } from '@/shared/db/repositories/authRepository';
-import { PreferencesRepository } from '@/shared/db/repositories/preferencesRepository';
 
 export const AppThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const systemColorScheme = useColorScheme();
   const [themePreference, setThemePreference] = useState<'light' | 'dark' | 'system'>('system');
 
   useEffect(() => {
-    const loadThemeFromDB = async () => {
+    const loadTheme = async () => {
       try {
-        const authCache = await AuthRepository.get(db);
-        const userId = authCache?.user?.id || authCache?.user?.userId;
-
-        if (userId) {
-          const prefs = await PreferencesRepository.get(db, userId);
-          if (prefs?.theme) {
-            setThemePreference(prefs.theme as 'light' | 'dark' | 'system');
-          }
+        const cachedTheme = await SecureStore.getItemAsync('app_theme');
+        
+        if (cachedTheme) {
+          setThemePreference(cachedTheme as 'light' | 'dark' | 'system');
         }
       } catch (error) {
-        console.error('Erro ao carregar tema inicial direto do banco:', error);
+        console.error('Erro ao carregar tema do SecureStore:', error);
       }
     };
 
-    loadThemeFromDB();
+    loadTheme();
 
-    const subscription = DeviceEventEmitter.addListener('onThemeChange', (newTheme) => {
+    const subscription = DeviceEventEmitter.addListener('onThemeChange', async (newTheme) => {
       if (newTheme) {
         setThemePreference(newTheme);
+        
+        if (newTheme === 'system') {
+          await SecureStore.deleteItemAsync('app_theme');
+        } else {
+          await SecureStore.setItemAsync('app_theme', newTheme);
+        }
       }
     });
 
