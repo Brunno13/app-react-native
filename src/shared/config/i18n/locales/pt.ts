@@ -1,5 +1,11 @@
 export const pt = {
   translation: {
+    darkMode: {
+      darkModeTitle: "Tema do Aplicativo",
+      darkModeLight: "Claro",
+      darkModeDark: "Escuro",
+      darkModeAuto: "Auto",
+    },
     auth: {
       login: 'Entrar',
       email: 'E-mail',

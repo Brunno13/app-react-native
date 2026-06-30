@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getForgotPasswordSchema, type ForgotPasswordFormData } from '../validations/authSchema';
-import { globalStyles } from '@/shared/ui/globalStyles';
-import { theme } from '@/shared/ui/theme';
+
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
+import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 interface ForgotPasswordFormProps {
   onResetPassword: (email: string) => Promise<{ error: any }>;
@@ -16,6 +17,9 @@ interface ForgotPasswordFormProps {
 export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin }: ForgotPasswordFormProps) => {
   const { t } = useTranslation();
   const [statusMsg, setStatusMsg] = useState('');
+
+  const { colors, spacing } = useAppTheme();
+  const globalStyles = useGlobalStyles();
 
   const {
     control,
@@ -38,6 +42,13 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
     }
   };
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: { width: '100%', maxWidth: 400 },
+    statusText: { color: colors.primary, textAlign: 'center', marginBottom: spacing.lg, fontWeight: 'bold' },
+    submitButton: { marginTop: spacing.sm },
+    loginButton: { marginTop: spacing.xl, alignItems: 'center' },
+  }), [colors, spacing]);
+
   return (
     <View style={styles.container}>
       <Text style={globalStyles.title}>{t('auth.recoverPassword')}</Text>
@@ -53,6 +64,7 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
           <TextInput
             style={[globalStyles.input, errors.email && globalStyles.inputError]}
             placeholder={t('auth.emailPlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             keyboardType="email-address"
             autoCapitalize="none"
             onBlur={onBlur}
@@ -80,10 +92,3 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { width: '100%', maxWidth: 400 },
-  statusText: { color: theme.colors.primary, textAlign: 'center', marginBottom: theme.spacing.lg, fontWeight: 'bold' },
-  submitButton: { marginTop: theme.spacing.sm },
-  loginButton: { marginTop: theme.spacing.xl, alignItems: 'center' },
-});

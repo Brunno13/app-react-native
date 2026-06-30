@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
-import { theme } from '@/shared/ui/theme';
-import { globalStyles } from '@/shared/ui/globalStyles';
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
+import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 interface BiometricGateProps {
   children: React.ReactNode;
@@ -16,6 +16,8 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useAppTheme();
+  const globalStyles = useGlobalStyles();
 
   useEffect(() => {
     if (!isBiometricsEnabled) {
@@ -58,11 +60,23 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
     handleBiometricAuth();
   }, [loading, isUnlocked, isBiometricsEnabled]);
 
+  const styles = useMemo(() => StyleSheet.create({
+    lockContainer: { 
+      flex: 1, 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      backgroundColor: colors.background,
+      padding: 20 
+    },
+    lockTitle: { fontSize: 60 },
+    unlockButton: { marginTop: 40, width: '100%', maxWidth: 300 }
+  }), [colors]);
+
   if (!isUnlocked && isBiometricsEnabled) {
     return (
       <Animated.View style={[styles.lockContainer, { opacity: fadeAnim }]}>
         <Text style={styles.lockTitle}>🔒</Text> 
-        <Text style={[globalStyles.title, { color: theme.colors.text, marginTop: 20 }]}>
+        <Text style={[globalStyles.title, { color: colors.text, marginTop: 20 }]}>
           {t('security.lockScreenPrompt')}
         </Text>
         
@@ -78,9 +92,3 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
 
   return <>{children}</>;
 };
-
-const styles = StyleSheet.create({
-  lockContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background, padding: 20 },
-  lockTitle: { fontSize: 60 },
-  unlockButton: { marginTop: 40, width: '100%', maxWidth: 300 }
-});

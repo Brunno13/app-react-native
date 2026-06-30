@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getEditProfileSchema, type EditProfileFormData } from '../validations/profileSchema';
-import { globalStyles } from '@/shared/ui/globalStyles';
-import { theme } from '@/shared/ui/theme';
+
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
+import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 interface EditProfileFormProps {
   initialName: string;
@@ -19,6 +20,9 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
   const { t } = useTranslation();
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+
+  const { colors, spacing } = useAppTheme();
+  const globalStyles = useGlobalStyles();
 
   const {
     control,
@@ -34,7 +38,7 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ['images'], // Atualizado para a nova tipagem do Expo
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -55,6 +59,23 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
 
   const hasChanges = isDirty || !!localImageUri;
   const canSubmit = isValid && hasChanges;
+
+  const styles = useMemo(() => StyleSheet.create({
+    avatarContainer: { alignSelf: 'center', marginBottom: spacing.xl, position: 'relative' },
+    editBadge: { 
+      position: 'absolute', 
+      bottom: -10, 
+      alignSelf: 'center', 
+      backgroundColor: colors.primary, 
+      paddingHorizontal: 12, 
+      paddingVertical: 4, 
+      borderRadius: 12, 
+      borderWidth: 2, 
+      borderColor: colors.background // A borda da badge acompanha o fundo para um corte perfeito
+    },
+    editBadgeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
+    submitButton: { marginTop: spacing.sm }
+  }), [colors, spacing]);
 
   return (
     <View style={{ width: '100%' }}>
@@ -82,6 +103,7 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
           <TextInput
             style={[globalStyles.input, errors.name && globalStyles.inputError]}
             placeholder={t('profile.fullNamePlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
@@ -103,10 +125,3 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  avatarContainer: { alignSelf: 'center', marginBottom: theme.spacing.xl, position: 'relative' },
-  editBadge: { position: 'absolute', bottom: -10, alignSelf: 'center', backgroundColor: theme.colors.primary, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, borderWidth: 2, borderColor: theme.colors.background },
-  editBadgeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  submitButton: { marginTop: theme.spacing.sm }
-});

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet, Switch } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FontAwesome } from '@expo/vector-icons';
@@ -7,8 +7,10 @@ import { SecurityForm } from '@/features/profile/ui/SecurityForm';
 import { useAuth, useGlobalAuth } from '@/features/auth';
 import { usePreferences } from '@/features/profile';
 import type { ChangePasswordFormData } from '@/features/profile/validations/profileSchema';
-import { globalStyles } from '@/shared/ui/globalStyles';
-import { theme } from '@/shared/ui/theme';
+
+// 🔥 Imports Dinâmicos do Tema
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
+import { useGlobalStyles } from '@/shared/ui/globalStyles';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 
 export const SecurityScreen = () => {
@@ -18,6 +20,10 @@ export const SecurityScreen = () => {
   
   const { t } = useTranslation();
   const { showToast, showModal } = useNotification();
+  
+  // 🔥 Instancia os hooks de estilo
+  const { colors, spacing } = useAppTheme();
+  const globalStyles = useGlobalStyles();
   
   const [sessions, setSessions] = useState<any[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
@@ -92,11 +98,36 @@ export const SecurityScreen = () => {
     await updatePreferences({ isBiometricsEnabled: value });
     
     if (value) {
-      showToast(t('alerts.success'), t('security.biometricsActivated'), 'success'); // 🔥 Traduzido
+      showToast(t('alerts.success'), t('security.biometricsActivated'), 'success'); 
     }
   };
 
   const isBiometricsEnabled = preferences?.isBiometricsEnabled ?? false;
+
+  // 🔥 Estilos reativos
+  const styles = useMemo(() => StyleSheet.create({
+    section: { marginTop: spacing.md, marginBottom: spacing.lg },
+    sessionsTitle: { marginTop: spacing.lg, marginBottom: spacing.sm },
+    revokeButton: { padding: spacing.sm },
+    biometricCard: { 
+      flexDirection: 'row', 
+      justifyContent: 'space-between', 
+      alignItems: 'center',
+      marginBottom: spacing.sm
+    },
+    biometricInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      paddingRight: spacing.md,
+    },
+    warningText: {
+      fontSize: 12,
+      color: colors.danger,
+      textAlign: 'center',
+      marginBottom: spacing.md,
+    }
+  }), [colors, spacing]);
 
   return (
     <ScrollView style={globalStyles.safeArea} contentContainerStyle={globalStyles.scrollContent}>
@@ -106,30 +137,29 @@ export const SecurityScreen = () => {
         <SecurityForm onSubmitPasswordChange={handlePasswordChange} loading={loading} />
       </View>
 
-      {/* 🔥 Título Traduzido */}
       <Text style={[globalStyles.subtitle, styles.sessionsTitle]}>{t('security.biometricsSection')}</Text>
       
       <View style={[globalStyles.card, styles.biometricCard]}>
         <View style={styles.biometricInfo}>
-          <FontAwesome name="lock" size={24} color={isBiometricsEnabled ? theme.colors.primary : theme.colors.textSecondary} />
-          <View style={{ marginLeft: theme.spacing.md, flex: 1 }}>
-            <Text style={{ fontWeight: 'bold', color: theme.colors.text }}>
+          <FontAwesome name="lock" size={24} color={isBiometricsEnabled ? colors.primary : colors.textSecondary} />
+          <View style={{ marginLeft: spacing.md, flex: 1 }}>
+            <Text style={{ fontWeight: 'bold', color: colors.text }}>
               {t('security.biometricsTitle')}
             </Text>
-            <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 }}>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
               {t('security.biometricsSubtitle')}
             </Text>
           </View>
         </View>
 
         {checkingHardware || prefsLoading ? (
-          <ActivityIndicator color={theme.colors.primary} size="small" />
+          <ActivityIndicator color={colors.primary} size="small" />
         ) : (
           <Switch
             value={isBiometricsEnabled}
             onValueChange={toggleBiometrics}
             disabled={!hasHardware}
-            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+            trackColor={{ false: colors.border, true: colors.primary }}
           />
         )}
       </View>
@@ -140,19 +170,19 @@ export const SecurityScreen = () => {
       )}
 
       <Text style={[globalStyles.subtitle, styles.sessionsTitle]}>{t('profileScreen.activeSessions')}</Text>
-      <Text style={[globalStyles.textSecondary, { marginBottom: theme.spacing.md }]}>
+      <Text style={[globalStyles.textSecondary, { marginBottom: spacing.md }]}>
         {t('profileScreen.manageDevices')}
       </Text>
 
       {loadingSessions ? (
-        <ActivityIndicator color={theme.colors.primary} size="large" style={{ marginTop: 20 }} />
+        <ActivityIndicator color={colors.primary} size="large" style={{ marginTop: 20 }} />
       ) : (
         sessions.map((sess) => (
           <View key={sess.token} style={globalStyles.card}>
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-              <FontAwesome name={sess.userAgent?.includes('Mobile') ? 'mobile' : 'desktop'} size={20} color={theme.colors.textSecondary} style={{ marginRight: 15 }} />
+              <FontAwesome name={sess.userAgent?.includes('Mobile') ? 'mobile' : 'desktop'} size={20} color={colors.textSecondary} style={{ marginRight: 15 }} />
               <View>
-                <Text style={{ fontWeight: 'bold', color: theme.colors.text }}>
+                <Text style={{ fontWeight: 'bold', color: colors.text }}>
                   {sess.userAgent || t('profileScreen.unknownDevice')}
                 </Text>
                 <Text style={globalStyles.textSecondary}>
@@ -161,7 +191,7 @@ export const SecurityScreen = () => {
               </View>
             </View>
             <TouchableOpacity onPress={() => handleRevoke(sess.token)} style={styles.revokeButton}>
-              <FontAwesome name="trash" size={20} color={theme.colors.danger} />
+              <FontAwesome name="trash" size={20} color={colors.danger} />
             </TouchableOpacity>
           </View>
         ))
@@ -169,27 +199,3 @@ export const SecurityScreen = () => {
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  section: { marginTop: theme.spacing.md, marginBottom: theme.spacing.lg },
-  sessionsTitle: { marginTop: theme.spacing.lg, marginBottom: theme.spacing.sm },
-  revokeButton: { padding: theme.spacing.sm },
-  biometricCard: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm
-  },
-  biometricInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    paddingRight: theme.spacing.md,
-  },
-  warningText: {
-    fontSize: 12,
-    color: theme.colors.danger,
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
-  }
-});

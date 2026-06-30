@@ -1,11 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getChangePasswordSchema, type ChangePasswordFormData } from '../validations/profileSchema';
-import { globalStyles } from '@/shared/ui/globalStyles';
-import { theme } from '@/shared/ui/theme';
+
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
+import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 interface SecurityFormProps {
   onSubmitPasswordChange: (data: ChangePasswordFormData) => Promise<boolean>;
@@ -15,6 +16,9 @@ interface SecurityFormProps {
 export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormProps) => {
   const { t } = useTranslation();
   const newPasswordRef = useRef<TextInput>(null);
+  
+  const { spacing } = useAppTheme();
+  const globalStyles = useGlobalStyles();
 
   const {
     control,
@@ -32,6 +36,11 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
     if (isSuccess) reset(); 
   };
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: { width: '100%', maxWidth: 400 },
+    submitButton: { marginTop: spacing.sm },
+  }), [spacing]);
+
   return (
     <View style={styles.container}>
       <Controller
@@ -41,6 +50,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
           <TextInput
             style={[globalStyles.input, errors.currentPassword && globalStyles.inputError]}
             placeholder={t('profile.currentPasswordPlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color} // Melhor contraste no placeholder
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -62,6 +72,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
             ref={newPasswordRef}
             style={[globalStyles.input, errors.newPassword && globalStyles.inputError]}
             placeholder={t('profile.newPasswordPlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -84,8 +95,3 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { width: '100%', maxWidth: 400 },
-  submitButton: { marginTop: theme.spacing.sm },
-});
