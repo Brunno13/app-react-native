@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { theme } from '../shared/ui/theme';
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
 
 export default function IndexScreen() {
+  const { colors } = useAppTheme();
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
-      <ActivityIndicator size="large" color={theme.colors.primary} />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+      <ActivityIndicator size="large" color={colors.primary} />
     </View>
   );
 }

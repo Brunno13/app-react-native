@@ -38,7 +38,7 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'], // Atualizado para a nova tipagem do Expo
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -71,7 +71,7 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
       paddingVertical: 4, 
       borderRadius: 12, 
       borderWidth: 2, 
-      borderColor: colors.background // A borda da badge acompanha o fundo para um corte perfeito
+      borderColor: colors.background
     },
     editBadgeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
     submitButton: { marginTop: spacing.sm }

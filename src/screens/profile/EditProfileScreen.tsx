@@ -7,8 +7,6 @@ import { useAuth } from '@/features/auth';
 import { useGlobalAuth } from '@/features/auth';
 import { uploadAvatarImage } from '@/features/profile/api/uploadApi';
 import type { EditProfileFormData } from '@/features/profile/validations/profileSchema';
-
-// 🔥 Apenas a troca para o hook dinâmico
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 import { useNotification } from '@/shared/providers/NotificationProvider'; 
 
@@ -19,7 +17,7 @@ export const EditProfileScreen = () => {
   const { showToast, showModal } = useNotification(); 
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
-  const globalStyles = useGlobalStyles(); // 🔥 Instanciando o hook
+  const globalStyles = useGlobalStyles();
 
   const isSubmitting = authLoading || uploading;
   const serverAvatarUrl = session?.user?.image;

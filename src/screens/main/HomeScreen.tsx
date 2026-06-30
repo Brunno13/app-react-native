@@ -3,8 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useGlobalAuth } from '@/features/auth';
 import { useNotification } from '@/shared/providers/NotificationProvider';
-
-// 🔥 Importando as cores via hook
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 
 export const HomeScreen = () => {

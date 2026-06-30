@@ -3,8 +3,6 @@ import { View, ActivityIndicator, Text, useColorScheme } from 'react-native';
 import { type ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { useTranslation } from 'react-i18next';
-
-// 🔥 Importamos as paletas puras em vez do objeto estático "theme"
 import { lightColors, darkColors } from '@/shared/ui/theme';
 import { db } from '@/shared/db/client'; 
 import migrations from '@/shared/db/migrations/migrations'; 
@@ -18,8 +16,6 @@ const DatabaseContext = createContext<DatabaseContextData>({ db });
 export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
   const { success, error } = useMigrations(db, migrations);
   const { t } = useTranslation();
-  
-  // 🔥 Lemos o tema nativo do celular apenas para esta tela de boot
   const systemTheme = useColorScheme();
   const colors = systemTheme === 'dark' ? darkColors : lightColors;
 

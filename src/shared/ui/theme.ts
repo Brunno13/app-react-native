@@ -9,7 +9,6 @@ export const borderRadius = {
   md: 8,
 };
 
-// 🔥 Cores exatas que você já usava (Modo Claro)
 export const lightColors = {
   primary: '#007BFF',       
   danger: '#DC3545',        
@@ -45,5 +44,4 @@ export const darkColors = {
   infoLight: '#0D47A1',     // Fundo info (azul escuro)
 };
 
-// Tipagem forte para garantir que o Modo Claro e Escuro tenham sempre as mesmas chaves
 export type Colors = typeof lightColors;

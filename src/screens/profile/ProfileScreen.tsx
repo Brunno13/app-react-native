@@ -7,23 +7,17 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useGlobalAuth } from '@/features/auth';
 import { useAuth } from '@/features/auth';
 import { usePreferences } from '@/features/profile';
-
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 export const ProfileScreen = () => {
   const { session } = useGlobalAuth();
   const { signOut } = useAuth();
-  
-  // 🔥 Agora também extraímos o updatePreferences
   const { preferences, toggleOfflineMode, updatePreferences, loading } = usePreferences(session?.user?.id);
   const router = useRouter();
   const { t } = useTranslation();
-  
-  // 🔥 Extraímos o themePreference para saber qual botão deve ficar destacado
   const { colors, spacing, themePreference } = useAppTheme();
   const globalStyles = useGlobalStyles();
-
   const userAvatar = session?.user?.image;
   const initialLetter = session?.user?.name?.charAt(0).toUpperCase() || 'U';
   const avatarCacheBreaker = session?.user?.updatedAt 

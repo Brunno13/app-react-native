@@ -4,14 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { FallbackProps } from 'react-error-boundary';
-
-// 🔥 Importamos estático novamente SÓ PARA A TELA DE CRASH, pois ela roda fora do contexto!
 import { lightColors, darkColors, spacing, borderRadius } from '@/shared/ui/theme'; 
 
 export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
   const { t } = useTranslation();
-  
-  // Lê direto do celular para evitar dependência de Providers mortos
   const systemTheme = useColorScheme();
   const colors = systemTheme === 'dark' ? darkColors : lightColors;
 
@@ -19,7 +15,6 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
     console.error('🚨 [Catastrophic Error Captured]:', error);
   }
 
-  // Recriamos os estilos globais básicos necessários para a tela de erro
   const styles = useMemo(() => StyleSheet.create({
     safeArea: {
       flex: 1,

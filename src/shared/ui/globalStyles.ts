@@ -71,7 +71,7 @@ export const useGlobalStyles = () => {
       borderRadius: borderRadius.md,
       paddingHorizontal: spacing.md,
       marginBottom: spacing.md,
-      color: colors.text, // Adicionado para garantir leitura correta do input no tema escuro
+      color: colors.text,
     },
 
     inputError: {

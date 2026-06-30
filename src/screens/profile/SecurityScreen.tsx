@@ -7,8 +7,6 @@ import { SecurityForm } from '@/features/profile/ui/SecurityForm';
 import { useAuth, useGlobalAuth } from '@/features/auth';
 import { usePreferences } from '@/features/profile';
 import type { ChangePasswordFormData } from '@/features/profile/validations/profileSchema';
-
-// 🔥 Imports Dinâmicos do Tema
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 import { useNotification } from '@/shared/providers/NotificationProvider';
@@ -17,17 +15,12 @@ export const SecurityScreen = () => {
   const { changePassword, getActiveSessions, revokeDeviceSession, loading } = useAuth();
   const { session } = useGlobalAuth();
   const { preferences, updatePreferences, loading: prefsLoading } = usePreferences(session?.user?.id);
-  
   const { t } = useTranslation();
   const { showToast, showModal } = useNotification();
-  
-  // 🔥 Instancia os hooks de estilo
   const { colors, spacing } = useAppTheme();
   const globalStyles = useGlobalStyles();
-  
   const [sessions, setSessions] = useState<any[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
-  
   const [hasHardware, setHasHardware] = useState(false);
   const [checkingHardware, setCheckingHardware] = useState(true);
 
