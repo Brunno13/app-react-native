@@ -30,11 +30,12 @@ O projeto foi estruturado seguindo a arquitetura Feature-Sliced Design (FSD) e o
 - [x] **Injeção de Dependências:** Camada de Providers utilizando Context API.
 - [x] **Armazenamento Offline:** Banco local (`Expo SQLite` e `Drizzle ORM`) combinado com cofres nativos (`expo-secure-store`).
 - [x] **Biometria:** Implementação de tela de bloqueio utilizando `expo-local-authentication` atrelada às configurações do perfil do usuário.
+- [x] **Darkmode:** Implementação de `darkmode` onde o usuário poderá escolher entre Light, Dark e Auto (configurações do sistema operacional).
 
 ### ⏳ Próximos Passos
-- [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
 - [ ] **Testes E2E:** Implementação do `Detox` para testes automatizados de fluxos de usuário.
+- [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas em produção.
 
 ---
