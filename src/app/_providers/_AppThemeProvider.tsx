@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useColorScheme, DeviceEventEmitter } from 'react-native';
 import * as SecureStore from 'expo-secure-store'; 
-import { SharedThemeProvider } from '@/shared/providers';
+import { SharedThemeProvider } from '@/shared/providers/ThemeProvider';
 
 export const AppThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const systemColorScheme = useColorScheme();

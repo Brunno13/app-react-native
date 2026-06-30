@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 
 // Providers Compartilhados
-import { DatabaseProvider } from '@/shared/providers';
+import { DatabaseProvider } from '@/shared/providers/DatabaseProvider';
 import { NotificationProvider } from '@/shared/providers/NotificationProvider';
 
 // Providers Locais da Camada App
