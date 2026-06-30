@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { EditProfileForm } from '@/features/profile';
-import { useAuth } from '@/features/auth';
-import { useGlobalAuth } from '@/features/auth';
-import { uploadAvatarImage } from '@/features/profile/api/uploadApi';
-import type { EditProfileFormData } from '@/features/profile/validations/profileSchema';
+import { EditProfileForm, type EditProfileFormData, usePreferences, uploadAvatarImage } from '@/features/profile';
+import { useAuth, useGlobalAuth } from '@/features/auth';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 import { useNotification } from '@/shared/providers/NotificationProvider'; 
 
@@ -30,7 +27,7 @@ export const EditProfileScreen = () => {
     if (localImageUri && imageBase64) {
       try {
         setUploading(true);
-        updatePayload.image = await uploadAvatarImage(imageBase64, localImageUri);
+        updatePayload.image = (await uploadAvatarImage(imageBase64, localImageUri)).url;
       } catch (error) {
         showModal(t('alerts.error'), t('alerts.uploadError'), 'error');
         setUploading(false);

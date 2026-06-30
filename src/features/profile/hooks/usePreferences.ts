@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DeviceEventEmitter } from 'react-native';
-import { useDatabase } from '@/shared/providers/DatabaseProvider';
+import { useDatabase } from '@/shared/providers';
 import { PreferencesRepository } from '@/shared/db/repositories/preferencesRepository';
 
 interface UserPreferences {

@@ -8,7 +8,7 @@ import { NotificationProvider } from '@/shared/providers/NotificationProvider';
 import { AppThemeProvider } from './_AppThemeProvider';
 
 // Providers de Features
-import { AuthProvider } from '@/features/auth/providers/AuthProvider';
+import { AuthProvider } from '@/features/auth';
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   return (
