@@ -1,11 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getLoginSchema, type LoginFormData } from '../validations/authSchema';
-import { globalStyles } from '@/shared/ui/globalStyles';
-import { theme } from '@/shared/ui/theme';
+
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
+import { useGlobalStyles } from '@/shared/ui/globalStyles';
 import { useNotification } from '@/shared/providers/NotificationProvider'; 
 
 interface LoginFormProps {
@@ -19,6 +20,9 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
   const { t } = useTranslation();
   const { showModal } = useNotification();
   const passwordRef = useRef<TextInput>(null);
+
+  const { spacing } = useAppTheme();
+  const globalStyles = useGlobalStyles();
 
   const {
     control,
@@ -64,6 +68,12 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
     onNavigateToForgot();
   };
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: { width: '100%', maxWidth: 400 },
+    forgotButton: { alignSelf: 'flex-end', marginBottom: spacing.lg },
+    signupButton: { marginTop: spacing.xl, alignItems: 'center' },
+  }), [spacing]);
+
   return (
     <View style={styles.container}>
       <Text style={globalStyles.title}>{t('auth.welcomeBack')}</Text>
@@ -75,6 +85,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
           <TextInput
             style={[globalStyles.input, errors.email && globalStyles.inputError]}
             placeholder={t('auth.emailPlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             keyboardType="email-address"
             autoCapitalize="none"
             onBlur={onBlur}
@@ -97,6 +108,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
             ref={passwordRef}
             style={[globalStyles.input, errors.password && globalStyles.inputError]}
             placeholder={t('auth.passwordPlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -129,9 +141,3 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { width: '100%', maxWidth: 400 },
-  forgotButton: { alignSelf: 'flex-end', marginBottom: theme.spacing.lg },
-  signupButton: { marginTop: theme.spacing.xl, alignItems: 'center' },
-});

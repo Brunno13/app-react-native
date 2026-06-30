@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { ErrorBoundary } from 'react-error-boundary';
+
 import '../shared/config/i18n'; 
 import { ErrorFallback } from '../shared/ui/ErrorFallback';
 import { useGlobalAuth } from '@/features/auth/providers/AuthProvider';
-import { AppProvider } from './_providers/AppProvider'; 
+import { AppProvider } from './_providers/_AppProvider'; 
 
 function AppNavigation() {
   const { session, isPending } = useGlobalAuth(); 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import { useDatabase } from '@/shared/providers/DatabaseProvider';
 import { PreferencesRepository } from '@/shared/db/repositories/preferencesRepository';
 
@@ -50,6 +51,11 @@ export const usePreferences = (userId: string | undefined) => {
       setPreferences(previousPreferences as UserPreferences);
       return false;
     }
+
+    if (updates.theme) {
+      DeviceEventEmitter.emit('onThemeChange', updates.theme);
+    }
+
     return true;
   };
 

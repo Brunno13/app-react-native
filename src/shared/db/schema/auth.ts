@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export const localSession = sqliteTable('local_session', {
-  id: text('id').primaryKey(), // ID único da sessão do servidor
+  id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
   email: text('email').notNull(),
   name: text('name').notNull(),

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { Text, StyleSheet, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { theme } from '@/shared/ui/theme';
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
 
 interface NetworkBannerProps {
   isOffline: boolean;
@@ -10,6 +10,7 @@ interface NetworkBannerProps {
 export const NetworkBanner = ({ isOffline }: NetworkBannerProps) => {
   const { t } = useTranslation();
   const slideAnim = useRef(new Animated.Value(-150)).current;
+  const { colors } = useAppTheme();
 
   useEffect(() => {
     if (isOffline) {
@@ -27,6 +28,27 @@ export const NetworkBanner = ({ isOffline }: NetworkBannerProps) => {
     }
   }, [isOffline, slideAnim]);
 
+  const styles = useMemo(() => StyleSheet.create({
+    offlineBanner: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.dangerDark,
+      paddingTop: 55,
+      paddingBottom: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9998, 
+    },
+    offlineText: {
+      color: colors.surface,
+      fontSize: 12,
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+    }
+  }), [colors]);
+
   return (
     <Animated.View 
       style={[
@@ -40,24 +62,3 @@ export const NetworkBanner = ({ isOffline }: NetworkBannerProps) => {
     </Animated.View>
   );
 };
-
-const styles = StyleSheet.create({
-  offlineBanner: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: theme.colors.dangerDark,
-    paddingTop: 55,
-    paddingBottom: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9998, 
-  },
-  offlineText: {
-    color: theme.colors.surface,
-    fontSize: 12,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-  }
-});

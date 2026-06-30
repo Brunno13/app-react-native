@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import * as Network from 'expo-network';
+import * as SecureStore from 'expo-secure-store';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { authClient } from '@/shared/lib/auth';
 import { db } from '@/shared/db/client';
 import { AuthRepository } from '@/shared/db/repositories/authRepository';
-import { PreferencesRepository } from '@/shared/db/repositories/preferencesRepository';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -101,26 +102,16 @@ export const useAuth = () => {
     setLoading(true);
     
     try {
-      const { data: sessionData } = await authClient.getSession();
-      const userId = sessionData?.user?.id;
-
-      if (userId) {
-        console.log(`[Segurança] Varrendo banco de dados local para o usuário`);
-        await PreferencesRepository.deleteByUser(db, userId);
-      } else {
-        console.warn('[Segurança] Usuário não encontrado na sessão atual antes do logout.');
-      }
-    } catch (error) {
-      console.error('Erro durante a limpeza de dados locais (LGPD):', error);
-    }
-
-    try {
       await AuthRepository.clear(db);
+      
+      await SecureStore.deleteItemAsync('app_theme');
+      DeviceEventEmitter.emit('onThemeChange', 'system');
+      
       await authClient.signOut();
       
       router.replace('/(auth)/login');
     } catch (error) {
-      console.error('Erro durante a revogação de credenciais:', error);
+      console.error('Erro durante o logout:', error);
     } finally {
       setLoading(false);
     }

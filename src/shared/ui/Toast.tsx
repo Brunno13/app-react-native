@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { Animated, Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { theme } from '@/shared/ui/theme';
-import { globalStyles } from '@/shared/ui/globalStyles';
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
+import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -16,6 +16,8 @@ interface ToastProps {
 
 export const Toast = ({ visible, title, message, type, onHide }: ToastProps) => {
   const translateY = useRef(new Animated.Value(-100)).current;
+  const { colors } = useAppTheme();
+  const globalStyles = useGlobalStyles();
 
   useEffect(() => {
     if (visible) {
@@ -25,7 +27,6 @@ export const Toast = ({ visible, title, message, type, onHide }: ToastProps) => 
         bounciness: 12,
       }).start();
 
-      // Esconde automaticamente após 3 segundos
       const timer = setTimeout(() => {
         hideToast();
       }, 3000);
@@ -45,25 +46,46 @@ export const Toast = ({ visible, title, message, type, onHide }: ToastProps) => 
     });
   };
 
-  const getColors = () => {
+  const getToastColors = () => {
     switch (type) {
       case 'success': 
-        return { bg: theme.colors.successLight, border: theme.colors.success, icon: theme.colors.success, iconName: 'check-circle' as const };
+        return { bg: colors.successLight, border: colors.success, icon: colors.success, iconName: 'check-circle' as const };
       case 'error': 
-        return { bg: theme.colors.dangerLight, border: theme.colors.danger, icon: theme.colors.danger, iconName: 'exclamation-circle' as const };
+        return { bg: colors.dangerLight, border: colors.danger, icon: colors.danger, iconName: 'exclamation-circle' as const };
       default: 
-        return { bg: theme.colors.infoLight, border: theme.colors.info, icon: theme.colors.info, iconName: 'info-circle' as const };
+        return { bg: colors.infoLight, border: colors.info, icon: colors.info, iconName: 'info-circle' as const };
     }
   };
 
-  const colors = getColors();
+  const toastTheme = getToastColors();
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      position: 'absolute',
+      top: 0,
+      left: 20,
+      right: 20,
+      borderRadius: 8,
+      borderLeftWidth: 6,
+      padding: 16,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
+      elevation: 5,
+      zIndex: 9999,
+    },
+    content: { flexDirection: 'row', alignItems: 'center' },
+    icon: { marginRight: 16 },
+    textContainer: { flex: 1 },
+    title: { fontWeight: 'bold', fontSize: 16, color: colors.text, marginBottom: 4 },
+  }), [colors]);
 
   if (!visible) return null;
 
   return (
-    <Animated.View style={[styles.container, { transform: [{ translateY }], borderLeftColor: colors.border, backgroundColor: colors.bg }]}>
+    <Animated.View style={[styles.container, { transform: [{ translateY }], borderLeftColor: toastTheme.border, backgroundColor: toastTheme.bg }]}>
       <TouchableOpacity style={styles.content} onPress={hideToast} activeOpacity={0.8}>
-        <FontAwesome name={colors.iconName} size={24} color={colors.icon} style={styles.icon} />
+        <FontAwesome name={toastTheme.iconName} size={24} color={toastTheme.icon} style={styles.icon} />
         <View style={styles.textContainer}>
           <Text style={styles.title}>{title}</Text>
           <Text style={globalStyles.textSecondary}>{message}</Text>
@@ -72,24 +94,3 @@ export const Toast = ({ visible, title, message, type, onHide }: ToastProps) => 
     </Animated.View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 0,
-    left: 20,
-    right: 20,
-    borderRadius: 8,
-    borderLeftWidth: 6,
-    padding: 16,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-    zIndex: 9999,
-  },
-  content: { flexDirection: 'row', alignItems: 'center' },
-  icon: { marginRight: 16 },
-  textContainer: { flex: 1 },
-  title: { fontWeight: 'bold', fontSize: 16, color: theme.colors.text, marginBottom: 4 },
-});

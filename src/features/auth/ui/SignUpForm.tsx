@@ -1,11 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getRegisterSchema, type RegisterFormData } from '../validations/authSchema';
-import { globalStyles } from '@/shared/ui/globalStyles';
-import { theme } from '@/shared/ui/theme';
+
+import { useAppTheme } from '@/shared/providers/ThemeProvider';
+import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 interface SignUpFormProps {
   onSignUp: (data: RegisterFormData) => Promise<{ error: any }>; 
@@ -18,6 +19,9 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
+
+  const { spacing } = useAppTheme();
+  const globalStyles = useGlobalStyles();
 
   const {
     control,
@@ -46,6 +50,12 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
     onNavigateToLogin();
   };
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: { width: '100%', maxWidth: 400 },
+    submitButton: { marginTop: spacing.sm },
+    loginButton: { marginTop: spacing.xl, alignItems: 'center' },
+  }), [spacing]);
+
   return (
     <View style={styles.container}>
       <Text style={globalStyles.title}>{t('auth.createAccount')}</Text>
@@ -57,6 +67,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
           <TextInput
             style={[globalStyles.input, errors.name && globalStyles.inputError]}
             placeholder={t('auth.namePlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
@@ -77,6 +88,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
             ref={emailRef}
             style={[globalStyles.input, errors.email && globalStyles.inputError]}
             placeholder={t('auth.emailPlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             keyboardType="email-address"
             autoCapitalize="none"
             onBlur={onBlur}
@@ -99,6 +111,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
             ref={passwordRef}
             style={[globalStyles.input, errors.password && globalStyles.inputError]}
             placeholder={t('auth.passwordPlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -120,6 +133,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
             ref={confirmPasswordRef}
             style={[globalStyles.input, errors.confirmPassword && globalStyles.inputError]}
             placeholder={t('auth.confirmPasswordPlaceholder')}
+            placeholderTextColor={globalStyles.textSecondary.color}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -148,9 +162,3 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { width: '100%', maxWidth: 400 },
-  submitButton: { marginTop: theme.spacing.sm },
-  loginButton: { marginTop: theme.spacing.xl, alignItems: 'center' },
-});
