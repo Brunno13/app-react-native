@@ -7,13 +7,22 @@ interface UploadAvatarResponse {
   message?: string;
 }
 
+export interface AvatarUploadResult {
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
+/**
+ * Serviço de upload de avatar — encapsula lógica de upload e validação.
+ */
 export const uploadAvatarImage = async (
   base64: string, 
   localUri: string
-): Promise<string> => {
+): Promise<AvatarUploadResult> => {
   try {
     const filename = localUri.split('/').pop() || 'avatar.jpg';
-    const match = /\.(\w+)$/.exec(filename);
+    const match = /\.(\\w+)$/.exec(filename);
     const fileType = match ? `image/${match[1]}` : 'image/jpeg';
     const endpoint = `${ENV.API_URL}${API_ENDPOINTS.UPLOAD_AVATAR}`;
 
@@ -33,17 +42,26 @@ export const uploadAvatarImage = async (
 
     if (error) {
       console.error('❌ Falha na API:', error.status, error.statusText);
-      throw new Error(`Erro do Servidor: ${error.status}`);
+      return { 
+        success: false, 
+        error: `Erro do Servidor: ${error.status}` 
+      };
     }
 
     if (!data || !data.url) {
-      throw new Error('A API não retornou a URL da imagem.');
+      return { 
+        success: false, 
+        error: 'A API não retornou a URL da imagem.' 
+      };
     }
 
-    return data.url;
+    return { success: true, url: data.url };
     
   } catch (error) {
     console.error('❌ Erro fatal no serviço de upload:', error);
-    throw error;
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Erro desconhecido' 
+    };
   }
 };

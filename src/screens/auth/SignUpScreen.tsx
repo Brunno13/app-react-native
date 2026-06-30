@@ -3,9 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { SignUpForm } from '@/features/auth/ui/SignUpForm';
+import { SignUpForm, type RegisterFormData } from '@/features/auth';
 import { authClient } from '@/shared/lib/auth';
-import type { RegisterFormData } from '@/features/auth/validations/authSchema';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 
 export const SignUpScreen = () => {

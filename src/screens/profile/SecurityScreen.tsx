@@ -3,10 +3,8 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet
 import { useTranslation } from 'react-i18next';
 import { FontAwesome } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { SecurityForm } from '@/features/profile/ui/SecurityForm';
+import { SecurityForm, usePreferences, type ChangePasswordFormData } from '@/features/profile';
 import { useAuth, useGlobalAuth } from '@/features/auth';
-import { usePreferences } from '@/features/profile';
-import type { ChangePasswordFormData } from '@/features/profile/validations/profileSchema';
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 import { useNotification } from '@/shared/providers/NotificationProvider';
