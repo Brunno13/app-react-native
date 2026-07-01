@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Switch, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -65,76 +65,75 @@ export const ProfileScreen = () => {
             {session?.user?.email || t('profileScreen.defaultEmail')}
           </Text>
         </View>
+        <ScrollView style={globalStyles.safeArea} contentContainerStyle={globalStyles.scrollContent}>
+          <View style={styles.menuContainer}>
+            <TouchableOpacity style={globalStyles.menuItem} onPress={() => router.push('/(main)/edit-profile')}>
+              <FontAwesome name="pencil" size={20} color={colors.text} />
+              <Text style={globalStyles.menuItemText}>{t('profileScreen.editProfile')}</Text>
+              <FontAwesome name="chevron-right" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
 
-        <View style={styles.menuContainer}>
-          <TouchableOpacity style={globalStyles.menuItem} onPress={() => router.push('/(main)/edit-profile')}>
-            <FontAwesome name="pencil" size={20} color={colors.text} />
-            <Text style={globalStyles.menuItemText}>{t('profileScreen.editProfile')}</Text>
-            <FontAwesome name="chevron-right" size={16} color={colors.textSecondary} />
-          </TouchableOpacity>
+            <TouchableOpacity style={globalStyles.menuItem} onPress={() => router.push('/(main)/security')}>
+              <FontAwesome name="shield" size={20} color={colors.text} />
+              <Text style={globalStyles.menuItemText}>{t('profileScreen.securityAndSessions')}</Text>
+              <FontAwesome name="chevron-right" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
 
-          <TouchableOpacity style={globalStyles.menuItem} onPress={() => router.push('/(main)/security')}>
-            <FontAwesome name="shield" size={20} color={colors.text} />
-            <Text style={globalStyles.menuItemText}>{t('profileScreen.securityAndSessions')}</Text>
-            <FontAwesome name="chevron-right" size={16} color={colors.textSecondary} />
-          </TouchableOpacity>
-
-          {/* Seção de Controle do Tema (Dark Mode) */}
-          <View style={[globalStyles.menuItem, { flexDirection: 'column', alignItems: 'flex-start' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
-              <FontAwesome name="moon-o" size={20} color={colors.text} />
-              <Text style={[globalStyles.menuItemText, { marginLeft: spacing.md }]}>{t('darkMode.darkModeTitle')}</Text>
-            </View>
-            
-            <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', marginTop: spacing.sm }}>
-              {['light', 'dark', 'system'].map((themeOption) => {
-                const isActive = themePreference === themeOption;
-                return (
-                  <TouchableOpacity
-                    key={themeOption}
-                    onPress={() => updatePreferences({ theme: themeOption as any })}
-                    style={[
-                      styles.themeOptionButton,
-                      {
-                        backgroundColor: isActive ? colors.primary : colors.background,
-                        borderColor: isActive ? colors.primary : colors.border
-                      }
-                    ]}
-                  >
-                    <Text style={{
-                      color: isActive ? '#FFFFFF' : colors.text,
-                      fontWeight: 'bold',
-                      fontSize: 12,
-                      textTransform: 'uppercase'
-                    }}>
-                      {themeOption === 'light' ? t('darkMode.darkModeLight') : themeOption === 'dark' ? t('darkMode.darkModeDark') : t('darkMode.darkModeAuto')}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={[globalStyles.menuItem, { justifyContent: 'space-between' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <FontAwesome name="wifi" size={20} color={isOfflineEnabled ? colors.textSecondary : colors.success} />
-              <View style={{ marginLeft: spacing.md }}>
-                <Text style={{ fontWeight: 'bold', color: colors.text }}>{t('profileScreen.offlineMode')}</Text>
-                <Text style={{ fontSize: 12, color: colors.textSecondary }}>{t('profileScreen.offlineDesc')}</Text>
+            <View style={[globalStyles.menuItem, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
+                <FontAwesome name="moon-o" size={20} color={colors.text} />
+                <Text style={[globalStyles.menuItemText, { marginLeft: spacing.md }]}>{t('darkMode.darkModeTitle')}</Text>
+              </View>
+              
+              <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', marginTop: spacing.sm }}>
+                {['light', 'dark', 'system'].map((themeOption) => {
+                  const isActive = themePreference === themeOption;
+                  return (
+                    <TouchableOpacity
+                      key={themeOption}
+                      onPress={() => updatePreferences({ theme: themeOption as any })}
+                      style={[
+                        styles.themeOptionButton,
+                        {
+                          backgroundColor: isActive ? colors.primary : colors.background,
+                          borderColor: isActive ? colors.primary : colors.border
+                        }
+                      ]}
+                    >
+                      <Text style={{
+                        color: isActive ? '#FFFFFF' : colors.text,
+                        fontWeight: 'bold',
+                        fontSize: 12,
+                        textTransform: 'uppercase'
+                      }}>
+                        {themeOption === 'light' ? t('darkMode.darkModeLight') : themeOption === 'dark' ? t('darkMode.darkModeDark') : t('darkMode.darkModeAuto')}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
-            <Switch
-              value={isOfflineEnabled}
-              onValueChange={toggleOfflineMode}
-              disabled={loading}
-              trackColor={{ false: colors.border, true: colors.primary }}
-            />
+
+            <View style={[globalStyles.menuItem, { justifyContent: 'space-between' }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <FontAwesome name="wifi" size={20} color={isOfflineEnabled ? colors.textSecondary : colors.success} />
+                <View style={{ marginLeft: spacing.md }}>
+                  <Text style={{ fontWeight: 'bold', color: colors.text }}>{t('profileScreen.offlineMode')}</Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary }}>{t('profileScreen.offlineDesc')}</Text>
+                </View>
+              </View>
+              <Switch
+                value={isOfflineEnabled}
+                onValueChange={toggleOfflineMode}
+                disabled={loading}
+                trackColor={{ false: colors.border, true: colors.primary }}
+              />
+            </View>
           </View>
-        </View>
-        
-        <TouchableOpacity style={globalStyles.buttonDanger} onPress={signOut}>
-          <Text style={globalStyles.buttonText}>{t('profileScreen.logout')}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={globalStyles.buttonDanger} onPress={signOut}>
+            <Text style={globalStyles.buttonText}>{t('profileScreen.logout')}</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
