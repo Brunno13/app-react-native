@@ -69,6 +69,7 @@ A estrutura principal de pastas dentro de `src/` está organizada da seguinte fo
 ```text
 src/
 ├── shared/               # Infraestrutura corporativa, utilitários e configurações globais (sem regras de negócio)
+│   ├── api/              # Cliente HTTP centralizado (apiClient.ts com interceptadores de token e tratamento de 401)
 │   ├── config/           # Configurações do ecossistema do app (ex: i18n/locales para internacionalização)
 │   ├── db/               # Motor Offline-First (Cliente Drizzle ORM, migrações SQL, repositórios e schemas isolados)
 │   ├── lib/              # Inicialização e pontes de bibliotecas externas (ex: auth.ts para Better Auth)
@@ -200,7 +201,7 @@ O script configura o caminho do Android SDK e as propriedades de memória da JVM
     ```bash
     bun run build:ios:prod
     ```
-
+    
 * **Resultado:** O pacote `.app` para simuladores será exportado compactado na raiz do projeto como `app-react-native-ios-staging.zip` ou `app-react-native-ios-production.zip`.
 
 ---
