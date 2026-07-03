@@ -1,6 +1,8 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
 import NetInfo from '@react-native-community/netinfo';
 import { db } from '@/shared/db/client';
+import { setUnauthorizedInterceptor } from '@/shared/api/apiClient';
 import { AuthStorageService } from '../services/authStorageService';
 import { AuthApi } from '../api/authApi';
 
@@ -12,10 +14,30 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({ session: null, isPending: true });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
   const { data: serverSession, isPending: serverPending } = AuthApi.useSession();
   
   const [localSessionData, setLocalSessionData] = useState<any | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    setUnauthorizedInterceptor(async () => {
+      console.warn('⚠️ [AuthFeature] API retornou 401. Orquestrando logout...');
+      
+      try {
+        await AuthStorageService.clearHybridSession(db);
+        await AuthApi.signOut();
+      } catch (error) {
+        console.error('Erro ao limpar sessão local durante o 401:', error);
+      } finally {
+        router.replace('/(auth)/login');
+      }
+    });
+
+    return () => {
+      setUnauthorizedInterceptor(() => {});
+    };
+  }, [router]);
 
   useEffect(() => {
     const initializeOfflineAuth = async () => {
