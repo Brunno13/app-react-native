@@ -69,7 +69,7 @@ A estrutura principal de pastas dentro de `src/` está organizada da seguinte fo
 ```text
 src/
 ├── shared/               # Infraestrutura corporativa, utilitários e configurações globais (sem regras de negócio)
-│   ├── api/              # Cliente HTTP centralizado (httpClient.ts com interceptadores de token e tratamento de 401)
+│   ├── api/              # Cliente HTTP centralizado (apiClient.ts com interceptadores de token e tratamento de 401)
 │   ├── config/           # Configurações do ecossistema do app (ex: i18n/locales para internacionalização)
 │   ├── db/               # Motor Offline-First (Cliente Drizzle ORM, migrações SQL, repositórios e schemas isolados)
 │   ├── lib/              # Inicialização e pontes de bibliotecas externas (ex: auth.ts para Better Auth)
@@ -77,52 +77,44 @@ src/
 │   └── ui/               # Design System atomizado (Toast, AlertModal, NetworkBanner e tokens do theme.ts)
 │
 ├── features/             # Fatias de negócio independentes, acopladas a domínios comerciais específicos
-│   ├── auth/             # Domínio de Autenticação e Sessão Híbrida
+│   ├── auth/             # Domínio de Autenticação, Segurança e Sessão Híbrida
 │   │   ├── index.ts      # Public API (Barrel File: expõe estritamente o necessário para consumo externo)
-│   │   ├── hooks/        # Lógica de estados, ações de login e travas de rede/timeout (useAuth.ts)
-│   │   ├── ui/           # Componentes e formulários de interface específicos da feature (LoginForm.tsx)
-│   │   └── validations/  # Schemas de validação de dados em tempo de execução com Zod (authSchema.ts)
+│   │   ├── api/          # Isolamento de chamadas de rede do domínio de autenticação
+│   │   ├── hooks/        # Lógica de estados e ações de autenticação (useAuth.ts)
+│   │   ├── services/     # Regras de negócio complexas (authStorageService.ts)
+│   │   ├── ui/           # Componentes visuais específicos (LoginForm.tsx, BiometricGate.tsx)
+│   │   └── domain/       # Schemas de validação de dados em tempo de execução com Zod
 │   └── profile/          # Domínio de Perfil de Usuário e Configurações locais
 │       ├── index.ts      # Public API (Barrel File)
-│       └── hooks/        # Manipulação de preferências persistidas e síncronas no SQLite (usePreferences.ts)
+│       ├── services/     # Manipulação de preferências persistidas e síncronas (preferenceService.ts)
+│       └── ui/           # Formulários e componentes do domínio de perfil (EditProfileForm.tsx)
 │
-├── screens/              # Telas completas e composições de blocos, atuando como orquestradoras visuais
-│   ├── auth/             # LoginScreen.tsx, SignUpScreen.tsx, ForgotPasswordScreen.tsx
-│   ├── main/             # HomeScreen.tsx
-│   └── profile/          # ProfileScreen.tsx, SecurityScreen.tsx
-│
-└── app/                  # Ponto de entrada e roteamento nativo (Expo Router baseado no sistema de arquivos)
-    ├── (auth)/           # Fluxo público de acesso (Telas de autenticação)
-    ├── (main)/           # Fluxo protegido por sessão (Home, Perfil e navegação por abas)
+└── app/                  # Ponto de entrada, roteamento nativo e orquestração visual (Expo Router)
+    ├── (auth)/           # Fluxo público de acesso (login.tsx, signup.tsx, forgot-password.tsx)
+    ├── (main)/           # Fluxo protegido por sessão e biometria
+    │   ├── (tabs)/       # Navegação inferior por abas (home.tsx, profile.tsx)
+    │   ├── edit-profile.tsx 
+    │   └── security.tsx
     └── _layout.tsx       # Inicialização estrutural do app (Injeção de Providers globais e Error Boundary)
 ```
 
-### Diretriz de Importação:
+### 📏 Diretrizes de Arquitetura
 
-* **Para garantir a manutenibilidade do código e evitar acoplamento circular, seguimos regras de governança estritas:**
+Para manter o código limpo, escalável e livre de acoplamento, seguimos 3 regras básicas:
 
-1. **Fluxo Unidirecional de Dependências (Cima para Baixo):** 
-    
-    * A pasta `app` importa composições das telas de `screens`.
+**1. Fluxo de Dependências (De cima para baixo)**
+* **`app`** ➔ Pode importar de `features` e `shared`.
+* **`features`** ➔ Pode importar apenas de `shared`.
+* **`shared`** ➔ Componentes agnósticos. Jamais deve importar de `features` ou `app`.
 
-    * A pasta `screens` importa fatias expostas em `features` e bases de `shared`.
+**2. Encapsulamento de Features (Barrel Files)**
+* É **estritamente proibido** acessar arquivos internos de uma feature por fora dela. Nosso linter (CI/CD) bloqueia quebras dessa regra automaticamente.
+* ❌ *Errado:* `import { LoginForm } from '@/features/auth/ui/LoginForm'`
+* ✅ *Correto:* `import { LoginForm } from '@/features/auth'`
 
-    * A pasta `features` consome utilitários de infraestrutura apenas de `shared`.
-
-    * Atenção: O caminho inverso é estritamente proibido. Um arquivo em `shared` jamais pode importar algo de `features` ou `screens`.
-
-2. **Regra de Encapsulamento (Public APIs):**
-
-    * Nenhuma camada ou componente externo tem permissão para importar arquivos de subpastas profundas dentro de uma fatia de `features` (ex: `import { useGlobalAuth } from '@/features/auth/providers/AuthProvider'`).
-
-    * Todo acesso deve ser mediado obrigatoriamente através da Public API da feature (`index.ts`). O consumo externo deve ser limpo e centralizado:
-        `import { useGlobalAuth, useAuth, LoginForm } from '@/features/auth';`
-
-3. **Segurança e Persistência Híbrida:**
-
-    * Dados rápidos de visualização para construção de interfaces responsivas e offline ficam em cache na estrutura SQLite (`shared/db`).
-
-    * Informações sensíveis de criptografia e tokens de segurança de autenticação são salvos fora do banco convencional, utilizando o armazenamento encriptado em nível de hardware via `expo-secure-store`.
+**3. Persistência Híbrida Inteligente**
+* **Cache e Modo Offline:** Dados de interface e preferências ficam no banco relacional (`Expo SQLite` + `Drizzle ORM`).
+* **Segurança:** Tokens, chaves e dados sensíveis são guardados na criptografia nativa do aparelho (`Secure Store`).
 
 ---
 
@@ -199,13 +191,17 @@ O script configura o caminho do Android SDK e as propriedades de memória da JVM
 *Requer macOS*. O script executa o pré-build, instala as dependências da Apple e compila o projeto em modo Release.
 
 * **Gerar pacote iOS de Staging:**
+
     ```bash
     bun run build:ios
     ```
+
 * **Gerar pacote iOS de Produção:**
+
     ```bash
     bun run build:ios:prod
     ```
+    
 * **Resultado:** O pacote `.app` para simuladores será exportado compactado na raiz do projeto como `app-react-native-ios-staging.zip` ou `app-react-native-ios-production.zip`.
 
 ---
