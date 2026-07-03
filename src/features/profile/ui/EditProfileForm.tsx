@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { getEditProfileSchema, type EditProfileFormData } from '../validations/profileSchema';
+import { getEditProfileSchema, type EditProfileFormData } from '../domain/profileSchema';
 
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';

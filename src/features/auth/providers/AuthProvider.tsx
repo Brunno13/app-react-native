@@ -1,8 +1,8 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import { authClient } from '@/shared/lib/auth';
 import { db } from '@/shared/db/client';
-import { AuthRepository } from '@/shared/db/repositories/authRepository';
+import { AuthStorageService } from '@/features/auth/services/authStorageService';
+import { AuthApi } from '@/features/auth/api/authApi';
 
 interface AuthContextData {
   session: any | null; 
@@ -12,7 +12,7 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({ session: null, isPending: true });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { data: serverSession, isPending: serverPending } = authClient.useSession();
+  const { data: serverSession, isPending: serverPending } = AuthApi.useSession();
   
   const [localSessionData, setLocalSessionData] = useState<any | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const isOnline = state.isConnected && state.isInternetReachable !== false;
 
         if (!isOnline) {
-          const cachedData = await AuthRepository.get(db);
+          const cachedData = await AuthStorageService.getValidSession(db);
           
           if (cachedData && cachedData.user && cachedData.session) {
             const now = new Date();
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 session: cachedData.session 
               });
             } else {
-              await AuthRepository.clear(db);
+              await AuthStorageService.clearHybridSession(db);
             }
           }
         }
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (serverSession) {
-      AuthRepository.save(db, serverSession);
+      AuthStorageService.saveHybridSession(db, serverSession.session, serverSession.user);
       setLocalSessionData(null); 
     }
   }, [serverSession]);

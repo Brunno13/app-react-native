@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import { useDatabase } from '@/shared/providers';
-import { PreferencesRepository } from '@/shared/db/repositories/preferencesRepository';
+import { PreferenceService } from '@/features/profile/services/preferenceService';
 
 interface UserPreferences {
   theme?: 'light' | 'dark' | 'system';
@@ -21,17 +21,10 @@ export const usePreferences = (userId: string | undefined) => {
     }
     
     setLoading(true);
-    const prefs = await PreferencesRepository.get(db, userId);
     
-    if (prefs) {
-      setPreferences(prefs);
-    } else {
-      setPreferences({
-        theme: 'system',
-        isOfflineModeEnabled: false,
-        isBiometricsEnabled: false,
-      });
-    }
+    const prefs = await PreferenceService.getUserPreferences(db, userId);
+    setPreferences(prefs);
+    
     setLoading(false);
   }, [db, userId]);
 
@@ -45,7 +38,7 @@ export const usePreferences = (userId: string | undefined) => {
     const previousPreferences = { ...preferences };
     setPreferences((prev) => ({ ...prev, ...updates }));
     
-    const success = await PreferencesRepository.upsert(db, userId, updates);
+    const success = await PreferenceService.updateUserPreferences(db, userId, updates);
 
     if (!success) {
       setPreferences(previousPreferences as UserPreferences);

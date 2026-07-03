@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, AppState } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
@@ -20,6 +20,19 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
   const globalStyles = useGlobalStyles();
 
   useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState.match(/inactive|background/) && isBiometricsEnabled) {
+        setIsUnlocked(false);
+        fadeAnim.setValue(0);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isBiometricsEnabled, fadeAnim]);
+
+  useEffect(() => {
     if (!isBiometricsEnabled) {
       setIsUnlocked(true);
     } else {
@@ -34,7 +47,7 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
     try {
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: t('security.lockScreenPrompt'),
-        fallbackLabel: 'Usar Senha do Dispositivo',
+        fallbackLabel: t('security.devicePasswordFallback', 'Usar Senha do Dispositivo'),
         disableDeviceFallback: false,
       });
 
@@ -72,7 +85,7 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
     unlockButton: { marginTop: 40, width: '100%', maxWidth: 300 }
   }), [colors]);
 
-  if (!isUnlocked && isBiometricsEnabled) {
+  if (!isUnlocked && isBiometricsEnabled && !loading) {
     return (
       <Animated.View style={[styles.lockContainer, { opacity: fadeAnim }]}>
         <Text style={styles.lockTitle}>🔒</Text> 

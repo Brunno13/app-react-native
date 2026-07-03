@@ -18,6 +18,4 @@ export const authClient = createAuthClient({
             Origin: apiUrl, 
         },
     },
-})
-
-export const { signIn, signUp, useSession, signOut } = authClient;
+});
