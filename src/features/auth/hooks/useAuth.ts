@@ -6,12 +6,14 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { db } from '@/shared/db/client';
 import { AuthStorageService } from '@/features/auth/services/authStorageService';
-import { AuthApi } from '@/features/auth/api/authApi'; 
+import { AuthApi } from '@/features/auth/api/authApi';
+import { useNotification } from '@/shared/providers/NotificationProvider';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
   const router = useRouter();
+  const { showToast } = useNotification();
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
@@ -104,6 +106,7 @@ export const useAuth = () => {
       router.replace('/(auth)/login');
     } catch (error) {
       console.error('Erro durante o logout:', error);
+      showToast(t('alerts.error'), t('alerts.logoutFailed'), 'error');
     } finally {
       setLoading(false);
     }
