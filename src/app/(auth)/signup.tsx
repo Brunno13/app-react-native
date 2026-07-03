@@ -3,19 +3,19 @@ import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { SignUpForm, type RegisterFormData } from '@/features/auth';
+import { useAuth, SignUpForm, type RegisterFormData } from '@/features/auth';
 import { useNotification } from '@/shared/providers/NotificationProvider';
-import { AuthApi } from '@/features/auth/api/authApi';
 
 export default function SignUpScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { showToast } = useNotification();
   const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
 
   const handleSignUp = async (data: RegisterFormData) => {
     setLoading(true);
-    const { error } = await AuthApi.signUpWithEmail(data.email, data.password, data.name);
+    const { error } = await signUp(data.email, data.password, data.name);
     setLoading(false);
 
     if (error) {
