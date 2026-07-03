@@ -7,9 +7,9 @@ O projeto foi estruturado seguindo a arquitetura Feature-Sliced Design (FSD) e o
 ### 🚀 Recursos Principais
 * **Autenticação e Segurança:** Integração com `better-auth`, armazenamento de tokens criptografados (`Secure Store`) e bloqueio do aplicativo por biometria nativa (Face ID / Touch ID).
 * **Arquitetura (FSD):** Código modular organizado por domínios de negócio, com dependências controladas através de pontos de exportação (*Barrel Files*).
+* **Qualidade de Código (Linting):** Validação arquitetural rigorosa via ESLint nativo, bloqueando violações de fronteiras do FSD e garantindo padronização automatizada (*Fail Fast*) na esteira de CI/CD.
 * **Persistência de Dados:** Banco de dados local `Expo SQLite` gerenciado com `Drizzle ORM` para cache de interface e modo offline.
 * **Rede e Conectividade:** Monitoramento de rede com banner de aviso visual e limite de tempo de requisição (*timeout*) configurado.
-* **Cliente HTTP:** Abstração sobre a API `fetch` para envio automático de tokens e interceptação centralizada de sessões expiradas (status 401).
 * **Infraestrutura:** Separação de ambientes (Staging/Produção), atualizações assíncronas via código (EAS Update) e esteira de CI/CD configurada no Woodpecker CI.
 
 ---
@@ -31,6 +31,7 @@ O projeto foi estruturado seguindo a arquitetura Feature-Sliced Design (FSD) e o
 - [x] **Armazenamento Offline:** Banco local (`Expo SQLite` e `Drizzle ORM`) combinado com cofres nativos (`expo-secure-store`).
 - [x] **Biometria:** Implementação de tela de bloqueio utilizando `expo-local-authentication` atrelada às configurações do perfil do usuário.
 - [x] **Darkmode:** Implementação de `darkmode` onde o usuário poderá escolher entre Light, Dark e Auto (configurações do sistema operacional).
+- [x] **Governança de Código:** Configuração nativa de ESLint com bloqueio de fronteiras para blindar a arquitetura FSD contra acoplamento indevido, integrada às pipelines (Fail Fast).
 
 ### ⏳ Próximos Passos
 - [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
