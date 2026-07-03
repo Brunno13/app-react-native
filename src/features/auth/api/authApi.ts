@@ -30,4 +30,6 @@ export const AuthApi = {
 
   signOut: () => 
     authClient.signOut(),
+
+  useSession: () => authClient.useSession(),
 };

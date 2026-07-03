@@ -1,8 +1,8 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import { authClient } from '@/shared/lib/auth';
 import { db } from '@/shared/db/client';
 import { AuthStorageService } from '@/features/auth/services/authStorageService';
+import { AuthApi } from '@/features/auth/api/authApi';
 
 interface AuthContextData {
   session: any | null; 
@@ -12,7 +12,7 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({ session: null, isPending: true });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { data: serverSession, isPending: serverPending } = authClient.useSession();
+  const { data: serverSession, isPending: serverPending } = AuthApi.useSession();
   
   const [localSessionData, setLocalSessionData] = useState<any | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);

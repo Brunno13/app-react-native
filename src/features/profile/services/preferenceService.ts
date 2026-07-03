@@ -25,6 +25,11 @@ export const PreferenceService = {
   },
 
   updateUserPreferences: async (db: ExpoSQLiteDatabase, userId: string, updates: PartialPreferences) => {
-    return await PreferencesRepository.upsert(db, userId, updates);
+    try {
+      return await PreferencesRepository.upsert(db, userId, updates);
+    } catch (error) {
+      console.error('Falha ao atualizar preferências no serviço:', error);
+      return false; 
+    }
   }
 };
