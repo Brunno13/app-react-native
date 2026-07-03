@@ -16,26 +16,14 @@ export const PreferencesRepository = {
         .from(userPreferences)
         .where(eq(userPreferences.userId, userId));
       
-      const prefs = result[0];
-      
-      if (!prefs) return null;
-
-      return {
-        theme: (prefs.theme as 'light' | 'dark' | 'system') || 'system',
-        isOfflineModeEnabled: prefs.isOfflineModeEnabled ?? false,
-        isBiometricsEnabled: prefs.isBiometricsEnabled ?? false,
-      };
+      return result[0] || null; 
     } catch (error) {
-      console.error('Erro ao buscar preferências:', error);
-      return null;
+      console.error('Erro no repositório Preferences (get):', error);
+      throw error;
     }
   },
 
-  upsert: async (
-    db: ExpoSQLiteDatabase, 
-    userId: string, 
-    data: PartialPreferences
-  ) => {
+  upsert: async (db: ExpoSQLiteDatabase, userId: string, data: PartialPreferences) => {
     try {
       const now = new Date();
       
@@ -43,9 +31,9 @@ export const PreferencesRepository = {
         .values({
           id: userId,
           userId,
-          theme: data.theme ?? 'system',
-          isOfflineModeEnabled: data.isOfflineModeEnabled ?? false,
-          isBiometricsEnabled: data.isBiometricsEnabled ?? false,
+          theme: data.theme, 
+          isOfflineModeEnabled: data.isOfflineModeEnabled,
+          isBiometricsEnabled: data.isBiometricsEnabled,
           updatedAt: now,
         })
         .onConflictDoUpdate({
@@ -58,8 +46,8 @@ export const PreferencesRepository = {
         
       return true;
     } catch (error) {
-      console.error('Erro ao salvar preferências:', error);
-      return false;
+      console.error('Erro no repositório Preferences (upsert):', error);
+      throw error;
     }
   },
 
@@ -68,8 +56,8 @@ export const PreferencesRepository = {
       await db.delete(userPreferences).where(eq(userPreferences.userId, userId));
       return true;
     } catch (error) {
-      console.error('Erro ao deletar dados do usuário:', error);
-      return false;
+      console.error('Erro no repositório Preferences (delete):', error);
+      throw error;
     }
   }
 };

@@ -4,9 +4,9 @@ import * as Network from 'expo-network';
 import * as SecureStore from 'expo-secure-store';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
-import { authClient } from '@/shared/lib/auth';
 import { db } from '@/shared/db/client';
-import { AuthRepository } from '@/shared/db/repositories/authRepository';
+import { AuthStorageService } from '@/features/auth/services/authStorageService';
+import { AuthApi } from '@/features/auth/api/authApi'; 
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -29,8 +29,7 @@ export const useAuth = () => {
         setTimeout(() => resolve({ data: null, error: { code: 'TIMEOUT', message: t('alerts.timeoutMessage') } }), 10000)
       );
 
-      const authPromise = authClient.signIn.email({ email, password });
-
+      const authPromise = AuthApi.signInWithEmail(email, password);
       const response = await Promise.race([authPromise, timeoutPromise]) as { data: any, error: any };
 
       setLoading(false);
@@ -44,56 +43,49 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, name: string) => {
     setLoading(true);
-    const { data, error } = await authClient.signUp.email({ email, password, name });
+    const { data, error } = await AuthApi.signUpWithEmail(email, password, name);
     setLoading(false);
     return { data, error };
   };
 
   const forgetPassword = async (email: string) => {
     setLoading(true);
-    const { data, error } = await (authClient as any).forgetPassword({ 
-      email, 
-      redirectTo: 'app-react-native://reset-password'
-    });
+    const { data, error } = await AuthApi.forgetPassword(email);
     setLoading(false);
     return { data, error };
   };
 
   const signInWithSocial = async (provider: 'google' | 'github') => {
     setLoading(true);
-    const { data, error } = await authClient.signIn.social({ provider });
+    const { data, error } = await AuthApi.signInWithSocial(provider);
     setLoading(false);
     return { data, error };
   };
 
   const updateUser = async (updateData: { name?: string; image?: string }) => {
     setLoading(true);
-    const { data, error } = await authClient.updateUser(updateData);
+    const { data, error } = await AuthApi.updateUser(updateData);
     setLoading(false);
     return { data, error };
   };
 
   const changePassword = async (newPassword: string, currentPassword: string) => {
     setLoading(true);
-    const { data, error } = await authClient.changePassword({ 
-      newPassword, 
-      currentPassword,
-      revokeOtherSessions: true 
-    });
+    const { data, error } = await AuthApi.changePassword(newPassword, currentPassword);
     setLoading(false);
     return { data, error };
   };
 
   const getActiveSessions = async () => {
     setLoading(true);
-    const { data, error } = await authClient.listSessions();
+    const { data, error } = await AuthApi.listSessions();
     setLoading(false);
     return { data, error };
   };
 
   const revokeDeviceSession = async (sessionToken: string) => {
     setLoading(true);
-    const { data, error } = await authClient.revokeSession({ token: sessionToken });
+    const { data, error } = await AuthApi.revokeSession(sessionToken);
     setLoading(false);
     return { data, error };
   };
@@ -102,12 +94,12 @@ export const useAuth = () => {
     setLoading(true);
     
     try {
-      await AuthRepository.clear(db);
+      await AuthStorageService.clearHybridSession(db);
       
       await SecureStore.deleteItemAsync('app_theme');
       DeviceEventEmitter.emit('onThemeChange', 'system');
       
-      await authClient.signOut();
+      await AuthApi.signOut();
       
       router.replace('/(auth)/login');
     } catch (error) {

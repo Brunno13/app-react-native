@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { getLoginSchema, type LoginFormData } from '../validations/authSchema';
+import { getLoginSchema, type LoginFormData } from '../domain/authSchema';
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 import { useNotification } from '@/shared/providers/NotificationProvider'; 
