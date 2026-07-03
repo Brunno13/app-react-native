@@ -1,8 +1,8 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import { db } from '@/shared/db/client';
-import { AuthStorageService } from '@/features/auth/services/authStorageService';
-import { AuthApi } from '@/features/auth/api/authApi';
+import { AuthStorageService } from '../services/authStorageService';
+import { AuthApi } from '../api/authApi';
 
 interface AuthContextData {
   session: any | null; 

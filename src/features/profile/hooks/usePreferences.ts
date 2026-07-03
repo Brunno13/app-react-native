@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import { useDatabase } from '@/shared/providers';
-import { PreferenceService } from '@/features/profile/services/preferenceService';
+import { PreferenceService } from '../services/preferenceService';
 
 interface UserPreferences {
   theme?: 'light' | 'dark' | 'system';

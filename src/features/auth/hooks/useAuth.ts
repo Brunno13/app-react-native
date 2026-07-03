@@ -5,8 +5,8 @@ import * as SecureStore from 'expo-secure-store';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { db } from '@/shared/db/client';
-import { AuthStorageService } from '@/features/auth/services/authStorageService';
-import { AuthApi } from '@/features/auth/api/authApi';
+import { AuthStorageService } from '../services/authStorageService';
+import { AuthApi } from '../api/authApi';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 
 export const useAuth = () => {
