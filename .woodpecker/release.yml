@@ -10,6 +10,8 @@ steps:
     commands:
       - echo "📦 Instalando dependências do projeto..."
       - bun install
+      - echo "🧹 Verificando Arquitetura (FSD) e Linter..."
+      - bun run lint
       - echo "🤖 Compilando o APK Android (Produção)..."
       - bun run build:apk:prod
       - echo "🍎 Compilando o pacote iOS (Produção)..."

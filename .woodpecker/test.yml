@@ -11,6 +11,8 @@ steps:
     commands:
       - echo "📦 Instalando dependências..."
       - bun install
+      - echo "🧹 Verificando Arquitetura (FSD) e Linter..."
+      - bun run lint
       - echo "🔍 Verificando tipagem do App..."
       - bunx tsc --noEmit
       - echo "🔍 Verificando tipagem dos Scripts..."
