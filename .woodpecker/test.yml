@@ -17,6 +17,8 @@ steps:
       - bunx tsc --noEmit
       - echo "🔍 Verificando tipagem dos Scripts..."
       - bunx tsc --project scripts/tsconfig.json --noEmit
+      - echo "🧪 Executando a suíte de testes..."
+      - bun run test
 
   - name: deploy-ota-staging
     image: bash
