@@ -1,6 +1,6 @@
 import { apiClient, setUnauthorizedInterceptor } from './apiClient';
 
-global.fetch = jest.fn();
+(global as any).fetch = jest.fn();
 
 describe('apiClient', () => {
   afterEach(() => {
@@ -9,7 +9,7 @@ describe('apiClient', () => {
 
   it('deve realizar a requisição com sucesso e retornar os dados', async () => {
     const mockData = { name: 'Brunno' };
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
+    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockData,
     });
@@ -24,7 +24,7 @@ describe('apiClient', () => {
   });
 
   it('deve acionar o interceptor de 401 quando a sessão expirar', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
+    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       status: 401,
       json: async () => ({ message: 'Unauthorized' }),
