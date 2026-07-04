@@ -2,7 +2,6 @@ import { AuthStorageService } from './authStorageService';
 import * as SecureStore from 'expo-secure-store';
 import { AuthRepository } from '@/shared/db/repositories/authRepository';
 
-// Mocks
 jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(),
   getItemAsync: jest.fn(),

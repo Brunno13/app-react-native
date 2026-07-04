@@ -7,8 +7,6 @@ import { AuthApi } from '../api/authApi';
 import { AuthStorageService } from '../services/authStorageService';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 
-// --- MOCKS ---
-
 jest.mock('expo-network', () => ({
   getNetworkStateAsync: jest.fn(),
 }));
@@ -68,8 +66,6 @@ describe('useAuth Hook', () => {
   afterEach(() => {
     jest.useRealTimers();
   });
-
-  // --- SUÍTE 1: LOGIN ---
 
   it('deve bloquear o login e retornar erro se o dispositivo estiver offline', async () => {
     (Network.getNetworkStateAsync as jest.Mock).mockResolvedValueOnce({
@@ -138,8 +134,6 @@ describe('useAuth Hook', () => {
     
     jest.runOnlyPendingTimers();
   });
-
-  // --- SUÍTE 2: LOGOUT ---
 
   it('deve limpar dados, redefinir tema e redirecionar no signOut', async () => {
     const { result } = await renderHook(() => useAuth());

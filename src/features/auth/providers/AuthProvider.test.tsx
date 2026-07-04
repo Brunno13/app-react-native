@@ -7,7 +7,6 @@ import { AuthApi } from '../api/authApi';
 import { AuthStorageService } from '../services/authStorageService';
 import { setUnauthorizedInterceptor } from '@/shared/api/apiClient';
 
-// --- MOCKS ---
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: jest.fn() }),
 }));
@@ -37,7 +36,6 @@ jest.mock('../services/authStorageService', () => ({
 
 jest.mock('@/shared/db/client', () => ({ db: {} }));
 
-// Componente "Dublê" apenas para ler o que o Provider está distribuindo
 const DummyChild = () => {
   const { session, isPending } = useGlobalAuth();
   return (

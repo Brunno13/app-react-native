@@ -4,7 +4,6 @@ import { Text, AppState } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { BiometricGate } from './BiometricGate';
 
-// --- MOCKS ---
 jest.mock('expo-local-authentication', () => ({
   authenticateAsync: jest.fn(),
 }));
