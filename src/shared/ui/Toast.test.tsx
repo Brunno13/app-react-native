@@ -3,7 +3,6 @@ import { render, fireEvent, act } from '@testing-library/react-native';
 import { Animated } from 'react-native';
 import { Toast } from './Toast';
 
-// --- MOCKS ---
 jest.mock('@/shared/providers/ThemeProvider', () => ({
   useAppTheme: () => ({
     colors: {
