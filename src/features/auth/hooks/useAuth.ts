@@ -9,92 +9,81 @@ import { AuthStorageService } from '../services/authStorageService';
 import { AuthApi } from '../api/authApi';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 
+const withTimeout = async <T>(
+  promise: Promise<{ data: T | null; error: any }>, 
+  ms: number, 
+  timeoutMessage: string
+) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  
+  const timeoutPromise = new Promise<{ data: null; error: any }>((resolve) => {
+    timeoutId = setTimeout(() => resolve({ data: null, error: { code: 'TIMEOUT', message: timeoutMessage } }), ms);
+  });
+
+  const response = await Promise.race([promise, timeoutPromise]);
+  if (timeoutId) clearTimeout(timeoutId);
+  return response;
+};
+
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
   const router = useRouter();
   const { showToast } = useNotification();
 
-  const signIn = async (email: string, password: string) => {
+  const executeAction = async <T>(action: () => Promise<{ data: T | null; error: any }>) => {
     setLoading(true);
-    
     try {
-      const networkState = await Network.getNetworkStateAsync();
-      const isOnline = networkState.isConnected && networkState.isInternetReachable;
-
-      if (!isOnline) {
-        setLoading(false);
-        return { data: null, error: { code: 'OFFLINE', message: t('alerts.networkOfflineMessage') } };
-      }
-
-      const timeoutPromise = new Promise<{ data: null, error: any }>((resolve) =>
-        setTimeout(() => resolve({ data: null, error: { code: 'TIMEOUT', message: t('alerts.timeoutMessage') } }), 10000)
-      );
-
-      const authPromise = AuthApi.signInWithEmail(email, password);
-      const response = await Promise.race([authPromise, timeoutPromise]) as { data: any, error: any };
-
-      setLoading(false);
-      return response;
-
+      return await action();
     } catch (err: any) {
-      setLoading(false);
       return { data: null, error: { code: 'UNKNOWN', message: err.message || t('alerts.unknownError') } };
+    } finally {
+      setLoading(false);
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
-    setLoading(true);
-    const { data, error } = await AuthApi.signUpWithEmail(email, password, name);
-    setLoading(false);
-    return { data, error };
-  };
-
-  const forgetPassword = async (email: string) => {
-    setLoading(true);
-    const { data, error } = await AuthApi.forgetPassword(email);
-    setLoading(false);
-    return { data, error };
-  };
-
-  const signInWithSocial = async (provider: 'google' | 'github') => {
-    setLoading(true);
-    const { data, error } = await AuthApi.signInWithSocial(provider);
-    setLoading(false);
-    return { data, error };
-  };
-
-  const updateUser = async (updateData: { name?: string; image?: string }) => {
-    setLoading(true);
-    const { data, error } = await AuthApi.updateUser(updateData);
-    setLoading(false);
-    return { data, error };
-  };
-
-  const changePassword = async (newPassword: string, currentPassword: string) => {
-    setLoading(true);
-    const { data, error } = await AuthApi.changePassword(newPassword, currentPassword);
-    setLoading(false);
-    return { data, error };
-  };
-
-  const getActiveSessions = async () => {
-    setLoading(true);
-    const { data, error } = await AuthApi.listSessions();
-    setLoading(false);
-    return { data, error };
-  };
-
-  const revokeDeviceSession = async (sessionToken: string) => {
-    setLoading(true);
-    const { data, error } = await AuthApi.revokeSession(sessionToken);
-    setLoading(false);
-    return { data, error };
-  };
-
-  const signOut = async () => {
-    setLoading(true);
+  const signIn = (email: string, password: string) => executeAction(async () => {
+    const networkState = await Network.getNetworkStateAsync();
     
+    if (!(networkState.isConnected && networkState.isInternetReachable)) {
+      return { data: null, error: { code: 'OFFLINE', message: t('alerts.networkOfflineMessage') } };
+    }
+
+    const authPromise = AuthApi.signInWithEmail(email, password);
+    return withTimeout(authPromise, 10000, t('alerts.timeoutMessage'));
+  });
+
+  const signUp = (email: string, password: string, name: string) => 
+    executeAction(() => AuthApi.signUpWithEmail(email, password, name));
+
+  const forgetPassword = (email: string) => 
+    executeAction(() => AuthApi.forgetPassword(email));
+
+  const signInWithSocial = (provider: 'google' | 'github') => 
+    executeAction(() => AuthApi.signInWithSocial(provider));
+
+  const changePassword = (newPassword: string, currentPassword: string) => 
+    executeAction(() => AuthApi.changePassword(newPassword, currentPassword));
+
+  const getActiveSessions = () => 
+    executeAction(() => AuthApi.listSessions());
+
+  const revokeDeviceSession = (sessionToken: string) => 
+    executeAction(() => AuthApi.revokeSession(sessionToken));
+
+  const updateUser = (updateData: { name?: string; image?: string }) => executeAction(async () => {
+    const response = await AuthApi.updateUser(updateData);
+    
+    if (!response.error) {
+      const freshSession = await AuthApi.getSession();
+      if (freshSession.data) {
+        await AuthStorageService.saveHybridSession(db, freshSession.data.session, freshSession.data.user);
+      }
+    }
+    return response;
+  });
+
+  const signOut = () => executeAction(async () => {
     try {
       await AuthStorageService.clearHybridSession(db);
       
@@ -102,15 +91,15 @@ export const useAuth = () => {
       DeviceEventEmitter.emit('onThemeChange', 'system');
       
       await AuthApi.signOut();
-      
       router.replace('/(auth)/login');
+      
+      return { data: true, error: null };
     } catch (error) {
       console.error('Erro durante o logout:', error);
       showToast(t('alerts.error'), t('alerts.logoutFailed'), 'error');
-    } finally {
-      setLoading(false);
+      return { data: null, error: { code: 'LOGOUT_ERROR', message: t('alerts.logoutFailed') } };
     }
-  };
+  });
 
   return { 
     signIn, 
