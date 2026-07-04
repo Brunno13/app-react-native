@@ -104,9 +104,7 @@ describe('Validações Zod (authSchema)', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        // Verifica se o erro acusou a chave certa
         expect(result.error.issues[0].message).toBe('validation.passwordsDontMatch');
-        // Verifica se o Zod anexou o erro no campo correto (confirmPassword)
         expect(result.error.issues[0].path).toContain('confirmPassword');
       }
     });

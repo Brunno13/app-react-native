@@ -75,11 +75,9 @@ describe('AuthProvider', () => {
   });
 
   it('deve carregar a sessão offline do banco de dados se estiver sem internet e a sessão for válida', async () => {
-    // 1. Simula falta de internet
     (NetInfo.fetch as jest.Mock).mockResolvedValue({ isConnected: false, isInternetReachable: false });
     (AuthApi.useSession as jest.Mock).mockReturnValue({ data: null, isPending: false });
     
-    // 2. Simula um cache válido no SQLite (expira apenas amanhã)
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 1);
     
@@ -94,7 +92,6 @@ describe('AuthProvider', () => {
       </AuthProvider>
     );
 
-    // 3. Garante que a interface recebe os dados do banco local
     await waitFor(() => {
       expect(getByTestId('user-name').props.children).toBe('Brunno Offline');
     });
