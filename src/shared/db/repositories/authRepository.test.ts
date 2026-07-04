@@ -2,8 +2,6 @@ import { AuthRepository } from './authRepository';
 import { localSession } from '../schema/auth';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 
-// --- MOCKS ---
-// Mockamos o schema para podermos validar se as funções do Drizzle recebem a tabela certa
 jest.mock('../schema/auth', () => ({
   localSession: {
     id: 'mock-session-id-column',
@@ -11,14 +9,12 @@ jest.mock('../schema/auth', () => ({
 }));
 
 describe('AuthRepository', () => {
-  // Declaramos as funções espiãs para os finais da cadeia do Drizzle
   let mockFrom: jest.Mock;
   let mockOnConflictDoUpdate: jest.Mock;
   let mockDelete: jest.Mock;
   let mockDb: ExpoSQLiteDatabase;
 
   beforeAll(() => {
-    // 🔥 Mutamos o console.error para o terminal não ficar vermelho nos testes de exceção
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
@@ -29,12 +25,10 @@ describe('AuthRepository', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Recriamos os mocks internos a cada teste para garantir isolamento
     mockFrom = jest.fn();
     mockOnConflictDoUpdate = jest.fn();
     mockDelete = jest.fn();
 
-    // Construímos o objeto de banco de dados mockado respeitando o encadeamento do Drizzle
     mockDb = {
       select: jest.fn(() => ({
         from: mockFrom,
@@ -51,7 +45,7 @@ describe('AuthRepository', () => {
   describe('get', () => {
     it('deve retornar a primeira sessão se existir no banco', async () => {
       const mockSessionData = { id: 1, token: 'abc-123' };
-      mockFrom.mockResolvedValueOnce([mockSessionData]); // Drizzle select().from() retorna array
+      mockFrom.mockResolvedValueOnce([mockSessionData]);
 
       const result = await AuthRepository.get(mockDb);
 
