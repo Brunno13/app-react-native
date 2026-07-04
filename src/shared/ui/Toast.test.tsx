@@ -40,7 +40,6 @@ describe('Toast', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Mockamos as animações garantindo o engate dos callbacks
     const mockStart = jest.fn((callback) => {
       if (callback) callback({ finished: true });
     });
@@ -48,7 +47,6 @@ describe('Toast', () => {
     springSpy = jest.spyOn(Animated, 'spring').mockReturnValue({ start: mockStart } as any);
     timingSpy = jest.spyOn(Animated, 'timing').mockReturnValue({ start: mockStart } as any);
     
-    // 🔥 Capturamos o setTimeout sem alterar o relógio global
     setTimeoutSpy = jest.spyOn(global, 'setTimeout');
   });
 
@@ -90,11 +88,9 @@ describe('Toast', () => {
     expect(springSpy).toHaveBeenCalledTimes(1);
     expect(timingSpy).not.toHaveBeenCalled();
 
-    // 🔥 Mágica: Achamos a exata chamada de 3000ms que o Toast registrou
     const timeoutCall = setTimeoutSpy.mock.calls.find(call => call[1] === 3000);
     expect(timeoutCall).toBeDefined();
 
-    // Pegamos a função que estava guardada para o futuro e executamos AGORA
     const timerCallback = timeoutCall![0];
     await act(async () => {
       timerCallback();
@@ -109,7 +105,6 @@ describe('Toast', () => {
       <Toast visible={true} title="Erro" message="Falha na rede." type="error" onHide={mockOnHide} />
     );
 
-    // Agora o React teve tempo natural para renderizar a árvore!
     expect(getByText('Erro')).toBeTruthy();
     expect(springSpy).toHaveBeenCalledTimes(1);
     
