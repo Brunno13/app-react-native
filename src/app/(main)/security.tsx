@@ -146,6 +146,7 @@ export default function SecurityRoute() {
           <ActivityIndicator color={colors.primary} size="small" />
         ) : (
           <Switch
+            testID="biometrics-switch"
             value={isBiometricsEnabled}
             onValueChange={toggleBiometrics}
             disabled={!hasHardware}

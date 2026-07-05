@@ -48,7 +48,8 @@ export default function ProfileRoute() {
       <View style={styles.container}>
         <View style={styles.header}>
           {optimizedAvatarUri ? (
-            <Image 
+            <Image
+              testID="profile-avatar"
               source={{ uri: optimizedAvatarUri }} 
               style={[globalStyles.avatarLarge, styles.avatarSpacing]} 
             />
@@ -123,6 +124,7 @@ export default function ProfileRoute() {
                 </View>
               </View>
               <Switch
+                testID="offline-switch"
                 value={isOfflineEnabled}
                 onValueChange={toggleOfflineMode}
                 disabled={loading}
