@@ -1,16 +1,15 @@
 # 📱 App React Native (Expo + Bun)
 
-Aplicativo mobile multiplataforma construído com React Native e Expo, utilizando o Bun como gerenciador de pacotes. 
-
-O projeto foi estruturado seguindo a arquitetura Feature-Sliced Design (FSD) e o modelo Offline-First, com foco no funcionamento sem conexão e na segurança dos dados armazenados no dispositivo.
+Aplicativo mobile multiplataforma construído com React Native e Expo, utilizando o Bun como gerenciador de pacotes. O projeto adota a arquitetura Feature-Sliced Design (FSD) e o modelo Offline-First, garantindo o funcionamento do app sem internet e a segurança dos dados armazenados no dispositivo.
 
 ### 🚀 Recursos Principais
-* **Autenticação e Segurança:** Integração com `better-auth`, armazenamento de tokens criptografados (`Secure Store`) e bloqueio do aplicativo por biometria nativa (Face ID / Touch ID).
-* **Arquitetura (FSD):** Código modular organizado por domínios de negócio, com dependências controladas através de pontos de exportação (*Barrel Files*).
-* **Qualidade de Código (Linting):** Validação arquitetural rigorosa via ESLint nativo, bloqueando violações de fronteiras do FSD e garantindo padronização automatizada (*Fail Fast*) na esteira de CI/CD.
-* **Persistência de Dados:** Banco de dados local `Expo SQLite` gerenciado com `Drizzle ORM` para cache de interface e modo offline.
-* **Rede e Conectividade:** Monitoramento de rede com banner de aviso visual e limite de tempo de requisição (*timeout*) configurado.
-* **Infraestrutura:** Separação de ambientes (Staging/Produção), atualizações assíncronas via código (EAS Update) e esteira de CI/CD configurada no Woodpecker CI.
+* **Autenticação e Segurança:** Login via `better-auth`, armazenamento criptografado no dispositivo (`Secure Store`) e bloqueio do app por biometria nativa (Face ID / Touch ID).
+* **Arquitetura (FSD):** Organização modular por domínios de negócio, com regras rígidas que evitam o acoplamento desnecessário de código.
+* **Persistência Offline:** Banco de dados local `Expo SQLite` com `Drizzle ORM` para cache de dados e funcionamento 100% offline.
+* **Testes Automatizados:** Suíte de testes unitários e de integração com `Jest` e `React Native Testing Library`, validando roteamento, regras de negócio e estados globais.
+* **Governança e Qualidade:** Validação automática com ESLint integrado ao pipeline de CI/CD, bloqueando erros arquiteturais antes do deploy (*Fail Fast*).
+* **Conectividade:** Monitoramento do status da rede em tempo real com avisos visuais e controle de limite de tempo (*timeout*) em requisições.
+* **Infraestrutura:** Separação de ambientes (Staging/Produção), atualizações remotas instantâneas (EAS Update) e esteira de automação configurada no Woodpecker CI.
 
 ---
 
@@ -32,9 +31,9 @@ O projeto foi estruturado seguindo a arquitetura Feature-Sliced Design (FSD) e o
 - [x] **Biometria:** Implementação de tela de bloqueio utilizando `expo-local-authentication` atrelada às configurações do perfil do usuário.
 - [x] **Darkmode:** Implementação de `darkmode` onde o usuário poderá escolher entre Light, Dark e Auto (configurações do sistema operacional).
 - [x] **Governança de Código:** Configuração nativa de ESLint com bloqueio de fronteiras para blindar a arquitetura FSD contra acoplamento indevido, integrada às pipelines (Fail Fast).
+- [x] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
 
 ### ⏳ Próximos Passos
-- [ ] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
 - [ ] **Testes E2E:** Implementação do `Detox` para testes automatizados de fluxos de usuário.
 - [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas em produção.
@@ -50,12 +49,13 @@ O projeto foi estruturado seguindo a arquitetura Feature-Sliced Design (FSD) e o
 * **Autenticação:** Better Auth (`@better-auth/expo`)
 * **Banco de Dados & ORM:** Expo SQLite + Drizzle ORM
 * **Segurança e Biometria:** Expo Secure Store + Expo Local Authentication
+* **Testes Automatizados:** Jest + React Native Testing Library
 * **Rede e Conectividade:** NetInfo (`@react-native-community/netinfo`)
 * **Estado Global e Injeção:** Context API
 * **Formulários e Validação:** React Hook Form + Zod
 * **Resiliência e Internacionalização:** React Error Boundary + i18next
 * **Atualizações (OTA):** Expo Updates (EAS)
-* **Arquitetura:** Feature-Sliced Design (FSD)
+* **Arquitetura & Qualidade:** Feature-Sliced Design (FSD) + ESLint (FSD boundaries)
 * **CI/CD:** Woodpecker CI
 
 ---
@@ -68,26 +68,29 @@ A estrutura principal de pastas dentro de `src/` está organizada da seguinte fo
 
 ```text
 src/
-├── shared/               # Infraestrutura corporativa, utilitários e configurações globais (sem regras de negócio)
-│   ├── api/              # Cliente HTTP centralizado (apiClient.ts com interceptadores de token e tratamento de 401)
-│   ├── config/           # Configurações do ecossistema do app (ex: i18n/locales para internacionalização)
-│   ├── db/               # Motor Offline-First (Cliente Drizzle ORM, migrações SQL, repositórios e schemas isolados)
-│   ├── lib/              # Inicialização e pontes de bibliotecas externas (ex: auth.ts para Better Auth)
-│   ├── providers/        # Provedores globais de contexto (AppProvider, DatabaseProvider, NotificationProvider)
-│   └── ui/               # Design System atomizado (Toast, AlertModal, NetworkBanner e tokens do theme.ts)
+├── __tests__/            # Refúgio de testes estritamente para contornar o File-Based Routing do Expo Router
+│   └── app/              # Testes de integração e roteamento das telas (isolados da pasta src/app)
+│
+├── shared/               # Infraestrutura corporativa, utilitários e configurações globais
+│   ├── api/              # Cliente HTTP centralizado (apiClient.ts, apiClient.test.ts)
+│   ├── config/           # Configurações do ecossistema do app (ex: i18n/locales)
+│   ├── db/               # Motor Offline-First (Cliente Drizzle, migrações e repositórios)
+│   ├── lib/              # Inicialização e pontes de bibliotecas externas
+│   ├── providers/        # Provedores globais de contexto (AppProvider.tsx, AppProvider.test.tsx)
+│   └── ui/               # Design System atomizado (Toast.tsx, Toast.test.tsx)
 │
 ├── features/             # Fatias de negócio independentes, acopladas a domínios comerciais específicos
 │   ├── auth/             # Domínio de Autenticação, Segurança e Sessão Híbrida
-│   │   ├── index.ts      # Public API (Barrel File: expõe estritamente o necessário para consumo externo)
-│   │   ├── api/          # Isolamento de chamadas de rede do domínio de autenticação
-│   │   ├── hooks/        # Lógica de estados e ações de autenticação (useAuth.ts)
-│   │   ├── services/     # Regras de negócio complexas (authStorageService.ts)
-│   │   ├── ui/           # Componentes visuais específicos (LoginForm.tsx, BiometricGate.tsx)
+│   │   ├── index.ts      # Public API (Barrel File)
+│   │   ├── api/          # Isolamento de chamadas de rede
+│   │   ├── hooks/        # Lógica de estados e ações (useAuth.ts, useAuth.test.ts)
+│   │   ├── services/     # Regras de negócio complexas
+│   │   ├── ui/           # Componentes visuais co-localizados com seus testes (LoginForm.tsx, LoginForm.test.tsx)
 │   │   └── domain/       # Schemas de validação de dados em tempo de execução com Zod
 │   └── profile/          # Domínio de Perfil de Usuário e Configurações locais
 │       ├── index.ts      # Public API (Barrel File)
-│       ├── services/     # Manipulação de preferências persistidas e síncronas (preferenceService.ts)
-│       └── ui/           # Formulários e componentes do domínio de perfil (EditProfileForm.tsx)
+│       ├── services/     # Manipulação de preferências persistidas (preferenceService.ts, preferenceService.test.ts)
+│       └── ui/           # Formulários e componentes do domínio de perfil (EditProfileForm.tsx, EditProfileForm.test.tsx)
 │
 └── app/                  # Ponto de entrada, roteamento nativo e orquestração visual (Expo Router)
     ├── (auth)/           # Fluxo público de acesso (login.tsx, signup.tsx, forgot-password.tsx)
@@ -95,7 +98,8 @@ src/
     │   ├── (tabs)/       # Navegação inferior por abas (home.tsx, profile.tsx)
     │   ├── edit-profile.tsx 
     │   └── security.tsx
-    └── _layout.tsx       # Inicialização estrutural do app (Injeção de Providers globais e Error Boundary)
+    ├── _providers/       # Composição limpa de provedores locais e globais
+    └── _layout.tsx       # Inicialização estrutural do app (Injeção da árvore de Providers e Error Boundary)
 ```
 
 ### 📏 Diretrizes de Arquitetura
