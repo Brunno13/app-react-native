@@ -1,3 +1,5 @@
+import { ENV } from '@/shared/config/env';
+
 export class ApiError extends Error {
   constructor(public status: number, public message: string, public data?: any) {
     super(message);
@@ -5,10 +7,9 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://api-bun-staging.brunnoserver.duckdns.org';
+const BASE_URL = ENV.API_URL;
 
 let onUnauthorizedCallback: (() => void) | null = null;
-
 let onServerErrorCallback: ((endpoint: string, status: number, errorData: any) => void) | null = null;
 
 export const setUnauthorizedInterceptor = (callback: () => void) => {
@@ -56,6 +57,7 @@ export const apiClient = async <T>(endpoint: string, options: RequestInit = {}):
         onServerErrorCallback(endpoint, 0, { message: 'Network connection failed / Server offline' });
       }
       throw new ApiError(0, 'Não foi possível conectar ao servidor. Verifique sua conexão.');
+      // throw new ApiError(0, `Falha de rede. O app tentou conectar em: ${BASE_URL}${endpoint}`); //TODO for debug
     }
     throw error;
   }

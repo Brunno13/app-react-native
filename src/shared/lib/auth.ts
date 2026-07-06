@@ -1,12 +1,10 @@
 import { createAuthClient } from "better-auth/react"
 import { expoClient } from "@better-auth/expo/client"
 import * as SecureStore from "expo-secure-store"
-import Constants from 'expo-constants'
-
-const apiUrl = Constants.expoConfig?.extra?.apiUrl;
+import { ENV } from "@/shared/config/env"
 
 export const authClient = createAuthClient({
-    baseURL: apiUrl,
+    baseURL: ENV.API_URL,
     plugins: [
         expoClient({
             scheme: "app-react-native", 
@@ -15,7 +13,7 @@ export const authClient = createAuthClient({
     ],
     fetchOptions: {
         headers: {
-            Origin: apiUrl, 
+            Origin: ENV.API_URL, 
         },
     },
 });

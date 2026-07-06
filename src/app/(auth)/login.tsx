@@ -9,7 +9,7 @@ export default function LoginScreen() {
   const router = useRouter(); 
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} testID="login-screen">
       <View style={styles.container}>
         <LoginForm 
           onLogin={signIn} 

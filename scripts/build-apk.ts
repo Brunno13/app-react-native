@@ -18,7 +18,8 @@ try {
       stdio: ['inherit', 'inherit', 'inherit'] as any,
       env: {
         ...process.env,
-        APP_ENV: appEnv
+        APP_ENV: appEnv,
+        EXPO_PUBLIC_APP_ENV: appEnv
       }
     }
   );
@@ -78,6 +79,7 @@ try {
       env: {
         ...process.env,
         APP_ENV: appEnv,
+        EXPO_PUBLIC_APP_ENV: appEnv,
         CMAKE_BUILD_PARALLEL_LEVEL: '2' 
       }
     }

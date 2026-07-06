@@ -55,8 +55,8 @@ export default function HomeRoute() {
   }), [colors]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <View style={styles.container} testID="home-screen">
+      <Text style={styles.title} testID="welcome-text">
         {t('home.welcome')}, {session?.user?.name || t('home.defaultUser')}!
       </Text>
       

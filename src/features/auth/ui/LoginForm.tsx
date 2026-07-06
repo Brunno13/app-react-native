@@ -49,6 +49,13 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
         showModal(t('alerts.timeoutError'), response.error.message, 'info');
         return; 
       }
+      
+      //TODO for debug
+      // showModal(
+      //   t('alerts.error') || 'Erro de Conexão', 
+      //   response.error.message || t('auth.invalidCredentials'), 
+      //   'error'
+      // );
 
       setError('email', { type: 'manual', message: t('auth.invalidCredentials') });
       setError('password', { type: 'manual', message: t('auth.checkPassword') });
@@ -74,7 +81,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
   }), [spacing]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="login-form-container">
       <Text style={globalStyles.title}>{t('auth.welcomeBack')}</Text>
 
       <Controller
@@ -82,6 +89,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
         name="email"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            testID="input-email"
             style={[globalStyles.input, errors.email && globalStyles.inputError]}
             placeholder={t('auth.emailPlaceholder')}
             placeholderTextColor={globalStyles.textSecondary.color}
@@ -104,6 +112,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
         name="password"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            testID="input-password"
             ref={passwordRef}
             style={[globalStyles.input, errors.password && globalStyles.inputError]}
             placeholder={t('auth.passwordPlaceholder')}
@@ -120,11 +129,12 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
       />
       {errors.password && <Text style={globalStyles.formErrorText}>{errors.password.message}</Text>}
 
-      <TouchableOpacity onPress={handleNavigateToForgot} style={styles.forgotButton}>
+      <TouchableOpacity testID="link-to-forgot" onPress={handleNavigateToForgot} style={styles.forgotButton}>
         <Text style={globalStyles.linkText}>{t('auth.forgotPasswordLink')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
+        testID="button-login"
         style={[globalStyles.buttonPrimary, (!isValid || loading) && { opacity: 0.6 }]} 
         onPress={handleSubmit(onSubmit)} 
         disabled={!isValid || loading}
@@ -132,7 +142,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('auth.login')}</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleNavigateToSignUp} style={styles.signupButton}>
+      <TouchableOpacity testID="link-to-signup" onPress={handleNavigateToSignUp} style={styles.signupButton}>
         <Text style={globalStyles.textSecondary}>
           {t('auth.noAccount')} <Text style={globalStyles.linkText}>{t('auth.signUpLink')}</Text>
         </Text>

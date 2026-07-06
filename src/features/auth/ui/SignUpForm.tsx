@@ -65,6 +65,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
         name="name"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            testID="input-signup-name"
             style={[globalStyles.input, errors.name && globalStyles.inputError]}
             placeholder={t('auth.namePlaceholder')}
             placeholderTextColor={globalStyles.textSecondary.color}
@@ -85,6 +86,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
         name="email"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            testID="input-signup-email"
             ref={emailRef}
             style={[globalStyles.input, errors.email && globalStyles.inputError]}
             placeholder={t('auth.emailPlaceholder')}
@@ -108,6 +110,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
         name="password"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            testID="input-signup-password"
             ref={passwordRef}
             style={[globalStyles.input, errors.password && globalStyles.inputError]}
             placeholder={t('auth.passwordPlaceholder')}
@@ -130,6 +133,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
         name="confirmPassword"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            testID="input-signup-confirm-password"
             ref={confirmPasswordRef}
             style={[globalStyles.input, errors.confirmPassword && globalStyles.inputError]}
             placeholder={t('auth.confirmPasswordPlaceholder')}
@@ -147,6 +151,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
       {errors.confirmPassword && <Text style={globalStyles.formErrorText}>{errors.confirmPassword.message}</Text>}
 
       <TouchableOpacity 
+        testID="button-signup"
         style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]} 
         onPress={handleSubmit(onSubmit)} 
         disabled={!isValid || loading}
@@ -154,7 +159,7 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('auth.createAccountButton')}</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleNavigateToLogin} style={styles.loginButton}>
+      <TouchableOpacity testID="link-to-login" onPress={handleNavigateToLogin} style={styles.loginButton}>
         <Text style={globalStyles.textSecondary}>
           {t('auth.alreadyHaveAccount')} <Text style={globalStyles.linkText}>{t('auth.login')}</Text>
         </Text>

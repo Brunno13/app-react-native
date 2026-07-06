@@ -120,7 +120,7 @@ export default function SecurityRoute() {
   }), [colors, spacing]);
 
   return (
-    <ScrollView style={globalStyles.safeArea} contentContainerStyle={globalStyles.scrollContent}>
+    <ScrollView testID="security-screen" style={globalStyles.safeArea} contentContainerStyle={globalStyles.scrollContent}>
       <Text style={globalStyles.subtitle}>{t('profile.securityTitle')}</Text>
       
       <View style={styles.section}>
