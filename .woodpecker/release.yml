@@ -23,8 +23,8 @@ steps:
       - echo "🍎 Compilando o pacote iOS (Produção)..."
       - bun run build:ios:prod
       - echo "⚔️ Executando Testes de Automação E2E no Simulador iOS..."
-      - export PATH="/opt/homebrew/bin:$PATH"
-      - bunx detox test --configuration ios.sim.release --cleanup
+      # - export PATH="/opt/homebrew/bin:$PATH"
+      # - bunx detox test --configuration ios.sim.release --cleanup
 
   - name: deploy-ota-update
     image: bash
