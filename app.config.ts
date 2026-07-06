@@ -92,7 +92,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: IS_PROD ? 'App Bun' : 'App Bun (Staging)',
     slug: 'app-react-native',
     scheme: 'app-react-native',
-    version: '1.0.7',
+    version: '1.0.8',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'automatic',
