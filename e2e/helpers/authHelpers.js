@@ -201,7 +201,7 @@ export const performPasswordChange = async (currentPass, newPass) => {
   if (device.getPlatform() === 'android') {
     await device.pressBack();
   } else {
-    await element(by.id('security-screen')).swipe('right', 'fast', 0.2);
+    await element(by.id('security-screen')).swipe('right', 'fast', 0.05);
   }
   
   await waitFor(element(by.id('profile-scroll-view')))
