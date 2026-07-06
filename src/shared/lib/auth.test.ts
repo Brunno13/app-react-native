@@ -1,8 +1,6 @@
-jest.mock('expo-constants', () => ({
-  expoConfig: {
-    extra: {
-      apiUrl: 'https://api.meuappseguro.com',
-    },
+jest.mock('@/shared/config/env', () => ({
+  ENV: {
+    API_URL: 'https://api.meuappseguro.com',
   },
 }));
 
