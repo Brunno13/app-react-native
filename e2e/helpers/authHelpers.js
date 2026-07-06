@@ -210,3 +210,17 @@ export const performPasswordChange = async (currentPass, newPass) => {
 
   await pause(1000);
 };
+
+export const ensureAppIsLoggedOut = async () => {
+  try {
+    await waitFor(element(by.id('tab-profile')))
+      .toBeVisible()
+      .withTimeout(3000);
+
+    console.log('🔄 Sessão fantasma detectada no iOS. Forçando logout de limpeza...');
+    
+    await performLogout();
+  } catch (error) {
+    
+  }
+};
