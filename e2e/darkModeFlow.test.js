@@ -1,7 +1,8 @@
 import { device } from 'detox';
 import {
   performLogin,
-  performLogout
+  performLogout,
+  ensureAppIsLoggedOut
 } from './helpers/authHelpers';
 
 describe('Fluxo de Configuração de Tema (Dark Mode)', () => {
@@ -14,6 +15,7 @@ describe('Fluxo de Configuração de Tema (Dark Mode)', () => {
       delete: true,
       launchArgs: { detoxInstrumentationLib: 'true' },
     });
+    await ensureAppIsLoggedOut();
   });
 
   it('deve navegar pelas opções de tema e alterar para Dark Mode', async () => {

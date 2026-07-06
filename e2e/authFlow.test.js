@@ -2,7 +2,8 @@ import { device } from 'detox';
 import {
   performLogin,
   performLogout,
-  performPasswordChange
+  performPasswordChange,
+  ensureAppIsLoggedOut
 } from './helpers/authHelpers';
 
 describe('Fluxo Circular de Alteração de Senha', () => {
@@ -16,6 +17,7 @@ describe('Fluxo Circular de Alteração de Senha', () => {
       delete: true,
       launchArgs: { detoxInstrumentationLib: 'true' },
     });
+    await ensureAppIsLoggedOut();
   });
 
   it('deve realizar o ciclo completo de alteração de senha e restaurar o estado', async () => {

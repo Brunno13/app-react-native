@@ -1,6 +1,6 @@
 import { by, element, device, waitFor } from 'detox';
 
-const STEP_DELAY_MS = 0;
+const STEP_DELAY_MS = 1000;
 
 export const pause = async (ms = STEP_DELAY_MS) => {
   await new Promise((resolve) => setTimeout(resolve, ms));
