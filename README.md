@@ -56,7 +56,7 @@ Aplicativo mobile multiplataforma (Android e iOS) construído com React Native e
 * **Resiliência e Internacionalização:** React Error Boundary + i18next
 * **Atualizações (OTA):** Expo Updates (EAS)
 * **Arquitetura & Qualidade:** Feature-Sliced Design (FSD) + ESLint (FSD boundaries)
-* **CI/CD:** Woodpecker CI
+* **CI/CD:** Woodpecker CI 
 
 ---
 
