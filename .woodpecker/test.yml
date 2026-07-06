@@ -23,6 +23,9 @@ steps:
   - name: deploy-ota-staging
     image: bash
     environment:
+      EXPO_PUBLIC_API_URL:
+        from_secret: api_url_staging
+      EXPO_PUBLIC_APP_ENV: "staging"
       APP_ENV: staging
       EXPO_TOKEN:
         from_secret: expo_token

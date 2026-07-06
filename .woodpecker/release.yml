@@ -7,6 +7,10 @@ labels:
 steps:
   - name: build-artifacts
     image: bash
+    environment:
+      EXPO_PUBLIC_API_URL:
+        from_secret: api_url_production
+      EXPO_PUBLIC_APP_ENV: "production"
     commands:
       - echo "📦 Instalando dependências do projeto..."
       - bun install
@@ -18,10 +22,15 @@ steps:
       - bun run build:apk:prod
       - echo "🍎 Compilando o pacote iOS (Produção)..."
       - bun run build:ios:prod
+      - echo "⚔️ Executando Testes de Automação E2E no Simulador iOS..."
+      - bunx detox test --configuration ios.sim.release --cleanup
 
   - name: deploy-ota-update
     image: bash
     environment:
+      EXPO_PUBLIC_API_URL:
+        from_secret: api_url_production
+      EXPO_PUBLIC_APP_ENV: "production"
       EXPO_TOKEN:
         from_secret: expo_token
       CI: "true"
@@ -74,7 +83,7 @@ steps:
         echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
 
   # =========================================================
-  # FASE 2: ESPELHAMENTO PARA O GITHUB (Apenas na Tag)
+  # FASE 2: Morroring to GITHUB (only Tag)
   # =========================================================
   - name: espelhar-github
     image: bash

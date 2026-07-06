@@ -1,11 +1,18 @@
 import { z } from 'zod';
 
+const currentEnv = process.env.EXPO_PUBLIC_APP_ENV || 'staging';
+
+const URLS = {
+  production: 'https://api-bun.brunnoserver.duckdns.org',
+  staging: 'http://api-bun-staging.brunnoserver.duckdns.org',
+};
+
 const envSchema = z.object({
-  API_URL: z.string().url().default('http://api-bun-staging.brunnoserver.duckdns.org'),
+  API_URL: z.string().url(),
 });
 
 const parsedEnv = envSchema.safeParse({
-  API_URL: process.env.EXPO_PUBLIC_API_URL,
+  API_URL: process.env.EXPO_PUBLIC_API_URL || URLS[currentEnv as keyof typeof URLS],
 });
 
 if (!parsedEnv.success) {

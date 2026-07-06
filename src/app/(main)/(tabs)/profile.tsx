@@ -66,7 +66,10 @@ export default function ProfileRoute() {
             {session?.user?.email || t('profileScreen.defaultEmail')}
           </Text>
         </View>
-        <ScrollView style={globalStyles.safeArea} contentContainerStyle={globalStyles.scrollContent}>
+        <ScrollView 
+          testID="profile-scroll-view" 
+          style={globalStyles.safeArea} 
+          contentContainerStyle={[globalStyles.scrollContent, { paddingBottom: 100 }]}>
           <View style={styles.menuContainer}>
             <TouchableOpacity style={globalStyles.menuItem} onPress={() => router.push('/(main)/edit-profile')}>
               <FontAwesome name="pencil" size={20} color={colors.text} />
@@ -74,7 +77,7 @@ export default function ProfileRoute() {
               <FontAwesome name="chevron-right" size={16} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={globalStyles.menuItem} onPress={() => router.push('/(main)/security')}>
+            <TouchableOpacity testID="link-to-security" style={globalStyles.menuItem} onPress={() => router.push('/(main)/security')}>
               <FontAwesome name="shield" size={20} color={colors.text} />
               <Text style={globalStyles.menuItemText}>{t('profileScreen.securityAndSessions')}</Text>
               <FontAwesome name="chevron-right" size={16} color={colors.textSecondary} />
@@ -92,6 +95,7 @@ export default function ProfileRoute() {
                   return (
                     <TouchableOpacity
                       key={themeOption}
+                      testID={`theme-option-${themeOption}`}
                       onPress={() => updatePreferences({ theme: themeOption as any })}
                       style={[
                         styles.themeOptionButton,
@@ -132,7 +136,7 @@ export default function ProfileRoute() {
               />
             </View>
           </View>
-          <TouchableOpacity style={globalStyles.buttonDanger} onPress={signOut}>
+          <TouchableOpacity testID="button-logout" style={globalStyles.buttonDanger} onPress={signOut}>
             <Text style={globalStyles.buttonText}>{t('profileScreen.logout')}</Text>
           </TouchableOpacity>
         </ScrollView>

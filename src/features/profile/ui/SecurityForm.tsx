@@ -48,9 +48,10 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
         name="currentPassword"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            testID="input-current-password"
             style={[globalStyles.input, errors.currentPassword && globalStyles.inputError]}
             placeholder={t('profile.currentPasswordPlaceholder')}
-            placeholderTextColor={globalStyles.textSecondary.color} // Melhor contraste no placeholder
+            placeholderTextColor={globalStyles.textSecondary.color}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
@@ -69,6 +70,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
         name="newPassword"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            testID="input-new-password"
             ref={newPasswordRef}
             style={[globalStyles.input, errors.newPassword && globalStyles.inputError]}
             placeholder={t('profile.newPasswordPlaceholder')}
@@ -86,6 +88,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
       {errors.newPassword && <Text style={globalStyles.formErrorText}>{errors.newPassword.message}</Text>}
 
       <TouchableOpacity 
+        testID="button-update-password"
         style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]} 
         onPress={handleSubmit(onSubmit)} 
         disabled={!isValid || loading}

@@ -20,7 +20,8 @@ try {
       stdio: ['inherit', 'inherit', 'inherit'] as any,
       env: {
         ...process.env,
-        APP_ENV: appEnv
+        APP_ENV: appEnv,
+        EXPO_PUBLIC_APP_ENV: appEnv
       }
     }
   );
@@ -57,6 +58,7 @@ export USE_WATCHMAN=false
 export NODE_BINARY="${nodeFullPath}"
 export PATH="${nodeDir}:${bunDir}:$PATH:/opt/homebrew/bin:/usr/local/bin"
 export APP_ENV="${appEnv}"
+export EXPO_PUBLIC_APP_ENV="${appEnv}" 
 export CI="true"
   `;
   

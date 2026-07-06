@@ -28,8 +28,8 @@ export default function SignUpScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea} testID="signup-screen">
+      <View style={styles.container} testID="signup-form-container">
         <SignUpForm 
           onSignUp={handleSignUp} 
           loading={loading}

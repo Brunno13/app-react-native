@@ -56,15 +56,34 @@ export const AlertModal = ({ visible, title, message, type, onConfirm, confirmTe
 
   return (
     <Modal transparent visible={visible} animationType="fade">
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <FontAwesome name={iconData.name} size={60} color={iconData.color} style={styles.icon} />
-          
-          <Text style={[globalStyles.title, styles.centerText]}>{title}</Text>
-          <Text style={[globalStyles.textSecondary, styles.centerText, styles.messageSpacing]}>{message}</Text>
-          
-          <TouchableOpacity 
-            style={[globalStyles.buttonPrimary, { backgroundColor: iconData.color }]} 
+      <View testID="notification-modal" style={styles.overlay}>
+        <View testID={`notification-modal-${type}`} style={styles.modalContainer}>
+          <FontAwesome
+            name={iconData.name}
+            size={60}
+            color={iconData.color}
+            style={styles.icon}
+          />
+          <Text
+            testID="notification-modal-title"
+            style={[globalStyles.title, styles.centerText]}
+          >
+            {title}
+          </Text>
+          <Text
+            testID="notification-modal-message"
+            style={[
+              globalStyles.textSecondary,
+              styles.centerText,
+              styles.messageSpacing,
+            ]}
+          >
+            {message}
+          </Text>
+
+          <TouchableOpacity
+            testID="notification-modal-ok-button"
+            style={[globalStyles.buttonPrimary, { backgroundColor: iconData.color }]}
             onPress={onConfirm}
           >
             <Text style={globalStyles.buttonText}>{confirmText}</Text>

@@ -1,7 +1,9 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
-import { withStringsXml } from 'expo/config-plugins';
+import { withStringsXml, withAndroidManifest, withDangerousMod } from 'expo/config-plugins';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const APP_ENV = process.env.APP_ENV || 'staging';
+const APP_ENV = process.env.EXPO_PUBLIC_APP_ENV || process.env.APP_ENV || 'staging';
 const IS_PROD = APP_ENV === 'production';
 const withDefaultFaceIDString = (config: ExpoConfig) => {
   return withStringsXml(config, (configProps) => {
@@ -24,7 +26,67 @@ const withDefaultFaceIDString = (config: ExpoConfig) => {
   });
 };
 
+// Plugin de Bypass de Rede (Roda APENAS em Staging/Dev)
+const withNetworkSecurityConfig = (config: ExpoConfig) => {
+  config = withDangerousMod(config, [
+    'android',
+    async (configProps) => {
+      const resPath = path.join(configProps.modRequest.platformProjectRoot, 'app/src/main/res/xml');
+      if (!fs.existsSync(resPath)) {
+        fs.mkdirSync(resPath, { recursive: true });
+      }
+      
+      fs.writeFileSync(
+        path.join(resPath, 'network_security_config.xml'),
+        `<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">brunnoserver.duckdns.org</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">192.168.1.100</domain> 
+    </domain-config>
+</network-security-config>`
+      );
+      return configProps;
+    },
+  ]);
+
+  return withAndroidManifest(config, async (configProps) => {
+    const androidManifest = configProps.modResults;
+    const application = androidManifest.manifest.application?.[0];
+
+    if (application) {
+      application.$['android:networkSecurityConfig'] = '@xml/network_security_config';
+      application.$['android:usesCleartextTraffic'] = 'true';
+    }
+
+    return configProps;
+  });
+};
+
 export default ({ config }: ConfigContext): ExpoConfig => {
+  const plugins: any[] = [
+    "expo-router",
+    "expo-status-bar",
+    'expo-sqlite',
+    'expo-secure-store',
+    'expo-local-authentication',
+    "@config-plugins/detox"
+  ];
+
+  if (!IS_PROD) {
+    plugins.push([
+      "expo-build-properties",
+      {
+        android: {
+          usesCleartextTraffic: true
+        }
+      }
+    ]);
+  }
+
   const baseConfig: ExpoConfig = {
     ...config,
     name: IS_PROD ? 'App Bun' : 'App Bun (Staging)',
@@ -65,31 +127,19 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     
     extra: {
-      apiUrl: IS_PROD 
-        ? 'http://api-bun.brunnoserver.duckdns.org' 
-        : 'http://api-bun-staging.brunnoserver.duckdns.org',
-        
       eas: {
         projectId: "0a0df4ff-385b-4b9c-a563-9b9ed7cd39f2"
       }
     },
     
-    plugins: [
-      "expo-router",
-      "expo-status-bar",
-      'expo-sqlite',
-      'expo-secure-store',
-      'expo-local-authentication',
-      [
-        "expo-build-properties",
-        {
-          android: {
-            usesCleartextTraffic: true
-          }
-        }
-      ]
-    ]
+    plugins
   };
 
-  return withDefaultFaceIDString(baseConfig);
+  let finalConfig = withDefaultFaceIDString(baseConfig);
+
+  if (!IS_PROD) {
+    finalConfig = withNetworkSecurityConfig(finalConfig);
+  }
+
+  return finalConfig;
 };
