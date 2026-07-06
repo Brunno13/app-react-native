@@ -1,15 +1,15 @@
 # 📱 App React Native (Expo + Bun)
 
-Aplicativo mobile multiplataforma construído com React Native e Expo, utilizando o Bun como gerenciador de pacotes. O projeto adota a arquitetura Feature-Sliced Design (FSD) e o modelo Offline-First, garantindo o funcionamento do app sem internet e a segurança dos dados armazenados no dispositivo.
+Aplicativo mobile multiplataforma (Android e iOS) construído com React Native e Expo, utilizando o Bun para máxima performance no gerenciamento de pacotes e scripts. O projeto adota a arquitetura **Feature-Sliced Design (FSD)** e o modelo **Offline-First**, garantindo navegação fluida sem internet e segurança total dos dados no dispositivo.
 
 ### 🚀 Recursos Principais
-* **Autenticação e Segurança:** Login via `better-auth`, armazenamento criptografado no dispositivo (`Secure Store`) e bloqueio do app por biometria nativa (Face ID / Touch ID).
-* **Arquitetura (FSD):** Organização modular por domínios de negócio, com regras rígidas que evitam o acoplamento desnecessário de código.
-* **Persistência Offline:** Banco de dados local `Expo SQLite` com `Drizzle ORM` para cache de dados e funcionamento 100% offline.
-* **Testes Automatizados:** Suíte de testes unitários e de integração com `Jest` e `React Native Testing Library`, validando roteamento, regras de negócio e estados globais.
-* **Governança e Qualidade:** Validação automática com ESLint integrado ao pipeline de CI/CD, bloqueando erros arquiteturais antes do deploy (*Fail Fast*).
-* **Conectividade:** Monitoramento do status da rede em tempo real com avisos visuais e controle de limite de tempo (*timeout*) em requisições.
-* **Infraestrutura:** Separação de ambientes (Staging/Produção), atualizações remotas instantâneas (EAS Update) e esteira de automação configurada no Woodpecker CI.
+* **Autenticação e Segurança:** Login via `better-auth`, armazenamento nativo criptografado (`Secure Store`) e bloqueio de tela por biometria (Face ID / Touch ID).
+* **Arquitetura (FSD):** Organização modular focada no domínio do negócio, com regras estritas que blindam o código contra acoplamento indevido.
+* **Persistência Offline:** Banco de dados local ultrarrápido utilizando `Expo SQLite` em conjunto com o `Drizzle ORM`.
+* **Qualidade e Governança:** ESLint integrado à pipeline (Fail Fast) para garantir a integridade da arquitetura antes de qualquer deploy.
+* **Testes Automatizados:** Cobertura de ponta a ponta. Testes unitários com `Jest` e testes visuais de fluxo real (E2E) com `Detox`, rodando de forma autônoma em emuladores Android (incluindo responsividade em tablets) e simuladores iOS.
+* **Conectividade Inteligente:** Monitoramento de rede em tempo real com alertas visuais amigáveis e controle de *timeout* em chamadas de API.
+* **Infraestrutura e CI/CD:** Ambientes isolados (Staging e Produção), builds nativos multiplataforma automatizados no Woodpecker CI e atualizações instantâneas Over-The-Air (EAS Update).
 
 ---
 
@@ -32,9 +32,9 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 - [x] **Darkmode:** Implementação de `darkmode` onde o usuário poderá escolher entre Light, Dark e Auto (configurações do sistema operacional).
 - [x] **Governança de Código:** Configuração nativa de ESLint com bloqueio de fronteiras para blindar a arquitetura FSD contra acoplamento indevido, integrada às pipelines (Fail Fast).
 - [x] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
+- [x] **Testes E2E:** Implementação do `Detox` multiplataforma (Android/iOS) para testes automatizados de fluxos de usuário, com suporte nativo a múltiplos formatos de tela (celulares e tablets).
 
 ### ⏳ Próximos Passos
-- [ ] **Testes E2E:** Implementação do `Detox` para testes automatizados de fluxos de usuário.
 - [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
 - [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas em produção.
 
@@ -49,7 +49,7 @@ Aplicativo mobile multiplataforma construído com React Native e Expo, utilizand
 * **Autenticação:** Better Auth (`@better-auth/expo`)
 * **Banco de Dados & ORM:** Expo SQLite + Drizzle ORM
 * **Segurança e Biometria:** Expo Secure Store + Expo Local Authentication
-* **Testes Automatizados:** Jest + React Native Testing Library
+* **Testes Automatizados:** Jest + React Native Testing Library (Unitários e Integração) + Detox (E2E Multiplataforma)
 * **Rede e Conectividade:** NetInfo (`@react-native-community/netinfo`)
 * **Estado Global e Injeção:** Context API
 * **Formulários e Validação:** React Hook Form + Zod
@@ -67,39 +67,44 @@ O projeto segue rigorosamente o padrão **Feature-Sliced Design (FSD)**, focando
 A estrutura principal de pastas dentro de `src/` está organizada da seguinte forma:
 
 ```text
-src/
-├── __tests__/            # Refúgio de testes estritamente para contornar o File-Based Routing do Expo Router
-│   └── app/              # Testes de integração e roteamento das telas (isolados da pasta src/app)
+/ (Raiz do Projeto)
+├── e2e/                  # Testes automatizados de ponta a ponta (End-to-End) com Detox
+│   ├── helpers/          # Funções auxiliares e fluxos reutilizáveis (authHelpers.js)
+│   └── *.test.js         # Cenários de teste visuais e de fluxo do usuário (authFlow.test.js)
 │
-├── shared/               # Infraestrutura corporativa, utilitários e configurações globais
-│   ├── api/              # Cliente HTTP centralizado (apiClient.ts, apiClient.test.ts)
-│   ├── config/           # Configurações do ecossistema do app (ex: i18n/locales)
-│   ├── db/               # Motor Offline-First (Cliente Drizzle, migrações e repositórios)
-│   ├── lib/              # Inicialização e pontes de bibliotecas externas
-│   ├── providers/        # Provedores globais de contexto (AppProvider.tsx, AppProvider.test.tsx)
-│   └── ui/               # Design System atomizado (Toast.tsx, Toast.test.tsx)
-│
-├── features/             # Fatias de negócio independentes, acopladas a domínios comerciais específicos
-│   ├── auth/             # Domínio de Autenticação, Segurança e Sessão Híbrida
-│   │   ├── index.ts      # Public API (Barrel File)
-│   │   ├── api/          # Isolamento de chamadas de rede
-│   │   ├── hooks/        # Lógica de estados e ações (useAuth.ts, useAuth.test.ts)
-│   │   ├── services/     # Regras de negócio complexas
-│   │   ├── ui/           # Componentes visuais co-localizados com seus testes (LoginForm.tsx, LoginForm.test.tsx)
-│   │   └── domain/       # Schemas de validação de dados em tempo de execução com Zod
-│   └── profile/          # Domínio de Perfil de Usuário e Configurações locais
-│       ├── index.ts      # Public API (Barrel File)
-│       ├── services/     # Manipulação de preferências persistidas (preferenceService.ts, preferenceService.test.ts)
-│       └── ui/           # Formulários e componentes do domínio de perfil (EditProfileForm.tsx, EditProfileForm.test.tsx)
-│
-└── app/                  # Ponto de entrada, roteamento nativo e orquestração visual (Expo Router)
-    ├── (auth)/           # Fluxo público de acesso (login.tsx, signup.tsx, forgot-password.tsx)
-    ├── (main)/           # Fluxo protegido por sessão e biometria
-    │   ├── (tabs)/       # Navegação inferior por abas (home.tsx, profile.tsx)
-    │   ├── edit-profile.tsx 
-    │   └── security.tsx
-    ├── _providers/       # Composição limpa de provedores locais e globais
-    └── _layout.tsx       # Inicialização estrutural do app (Injeção da árvore de Providers e Error Boundary)
+└── src/                  # Código-fonte principal da aplicação
+    ├── __tests__/        # Refúgio de testes estritamente para contornar o File-Based Routing do Expo Router
+    │   └── app/          # Testes de integração e roteamento das telas (isolados da pasta src/app)
+    │
+    ├── shared/           # Infraestrutura corporativa, utilitários e configurações globais
+    │   ├── api/          # Cliente HTTP centralizado (apiClient.ts, apiClient.test.ts)
+    │   ├── config/       # Configurações do ecossistema do app (ex: i18n/locales)
+    │   ├── db/           # Motor Offline-First (Cliente Drizzle, migrações e repositórios)
+    │   ├── lib/          # Inicialização e pontes de bibliotecas externas
+    │   ├── providers/    # Provedores globais de contexto (AppProvider.tsx, AppProvider.test.tsx)
+    │   └── ui/           # Design System atomizado (Toast.tsx, Toast.test.tsx)
+    │
+    ├── features/         # Fatias de negócio independentes, acopladas a domínios comerciais específicos
+    │   ├── auth/         # Domínio de Autenticação, Segurança e Sessão Híbrida
+    │   │   ├── index.ts  # Public API (Barrel File)
+    │   │   ├── api/      # Isolamento de chamadas de rede
+    │   │   ├── hooks/    # Lógica de estados e ações (useAuth.ts, useAuth.test.ts)
+    │   │   ├── services/ # Regras de negócio complexas
+    │   │   ├── ui/       # Componentes visuais co-localizados com seus testes (LoginForm.tsx, LoginForm.test.tsx)
+    │   │   └── domain/   # Schemas de validação de dados em tempo de execução com Zod
+    │   └── profile/      # Domínio de Perfil de Usuário e Configurações locais
+    │       ├── index.ts  # Public API (Barrel File)
+    │       ├── services/ # Manipulação de preferências persistidas (preferenceService.ts, preferenceService.test.ts)
+    │       └── ui/       # Formulários e componentes do domínio de perfil (EditProfileForm.tsx, EditProfileForm.test.tsx)
+    │
+    └── app/              # Ponto de entrada, roteamento nativo e orquestração visual (Expo Router)
+        ├── (auth)/       # Fluxo público de acesso (login.tsx, signup.tsx, forgot-password.tsx)
+        ├── (main)/       # Fluxo protegido por sessão e biometria
+        │   ├── (tabs)/   # Navegação inferior por abas (home.tsx, profile.tsx)
+        │   ├── edit-profile.tsx 
+        │   └── security.tsx
+        ├── _providers/   # Composição limpa de provedores locais e globais
+        └── _layout.tsx   # Inicialização estrutural do app (Injeção da árvore de Providers e Error Boundary)
 ```
 
 ### 📏 Diretrizes de Arquitetura
