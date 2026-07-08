@@ -146,11 +146,13 @@ The app uses `app.config.ts` alongside `cross-env` to switch between Staging and
 ### 💻 Development Mode (Live Reload)
 
 1. **Install dependencies:**
+
     ```bash
     bun install
     ```
 
 2. **Start the development server via Expo Go (Staging Environment):**
+
     ```bash
     bun run android  # Opens in Android Emulator
     # or
@@ -160,6 +162,7 @@ The app uses `app.config.ts` alongside `cross-env` to switch between Staging and
     ```
 
 3. **To test on Expo Go with Production settings:**
+
     ```bash
     bun run android:prod
     # or
@@ -168,6 +171,7 @@ The app uses `app.config.ts` alongside `cross-env` to switch between Staging and
 
 4. **To run with local native compilation (Dev Client):**
     If the project uses Prebuild-generated native libraries, compile directly to the emulator/simulator:
+
     ```bash
     bun run run:android  # Compile and run natively on Android
     # or
@@ -181,10 +185,12 @@ Automated scripts detect the environment and configure local build variables.
 The script configures the Android SDK path and JVM memory properties.
 
 * **Generate Staging APK (Allows local HTTP):**
+
     ```bash
     bun run build:apk
     ```
 * **Generate Production APK (Requires secure HTTPS):**
+
     ```bash
     bun run build:apk:prod
     ```
@@ -194,10 +200,12 @@ The script configures the Android SDK path and JVM memory properties.
 *Requires macOS*. The script runs prebuild, installs Apple dependencies, and compiles the project in Release mode.
 
 * **Generate Staging iOS package:**
+
     ```bash
     bun run build:ios
     ```
 * **Generate Production iOS package:**
+
     ```bash
     bun run build:ios:prod
     ```
@@ -209,7 +217,7 @@ The script configures the Android SDK path and JVM memory properties.
 #### **Unit & Integration Tests (Jest)**
 Run the fast unit and integration tests (isolated from E2E files) to validate business logic and components:
 
-    ```bash
+    ```
     bun run test
     ```
 
