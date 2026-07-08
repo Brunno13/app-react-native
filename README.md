@@ -216,10 +216,9 @@ The script configures the Android SDK path and JVM memory properties.
 
 #### **Unit & Integration Tests (Jest)**
 Run the fast unit and integration tests (isolated from E2E files) to validate business logic and components:
-
-    ```
+    
     bun run test
-    ```
+    
 
 #### **End-to-End (E2E) Tests (Detox)**
 E2E tests interact with the compiled app on the emulator/simulator from the outside in.
