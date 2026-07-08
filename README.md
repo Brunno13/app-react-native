@@ -1,244 +1,278 @@
-# 📱 App React Native (Expo + Bun)
+# 📱 React Native App (Expo + Bun)
 
-Aplicativo mobile multiplataforma (Android e iOS) construído com React Native e Expo, utilizando o Bun para máxima performance no gerenciamento de pacotes e scripts. O projeto adota a arquitetura **Feature-Sliced Design (FSD)** e o modelo **Offline-First**, garantindo navegação fluida sem internet e segurança total dos dados no dispositivo.
+Multiplatform mobile application (Android and iOS) built with React Native and Expo, using Bun for package management and scripts. The project adopts the **Feature-Sliced Design (FSD)** architecture and an **Offline-First** model, ensuring smooth navigation without internet and complete data security on the device.
 
-### 🚀 Recursos Principais
-* **Autenticação e Segurança:** Login via `better-auth`, armazenamento nativo criptografado (`Secure Store`) e bloqueio de tela por biometria (Face ID / Touch ID).
-* **Arquitetura (FSD):** Organização modular focada no domínio do negócio, com regras estritas que blindam o código contra acoplamento indevido.
-* **Persistência Offline:** Banco de dados local ultrarrápido utilizando `Expo SQLite` em conjunto com o `Drizzle ORM`.
-* **Qualidade e Governança:** ESLint integrado à pipeline (Fail Fast) para garantir a integridade da arquitetura antes de qualquer deploy.
-* **Testes Automatizados:** Cobertura de ponta a ponta. Testes unitários com `Jest` e testes visuais de fluxo real (E2E) com `Detox`, rodando de forma autônoma em emuladores Android (incluindo responsividade em tablets) e simuladores iOS.
-* **Conectividade Inteligente:** Monitoramento de rede em tempo real com alertas visuais amigáveis e controle de *timeout* em chamadas de API.
-* **Infraestrutura e CI/CD:** Ambientes isolados (Staging e Produção), builds nativos multiplataforma automatizados no Woodpecker CI e atualizações instantâneas Over-The-Air (EAS Update).
-
----
-
-## 🗺️ Roadmap do Projeto
-
-### ✅ Concluído 
-- [x] **Setup Inicial:** Inicialização com React Native, Expo e Bun.
-- [x] **Autenticação:** Integração do cliente `@better-auth/expo`.
-- [x] **Arquitetura:** Organização no padrão Feature-Sliced Design (FSD).
-- [x] **Gestão de Ambientes:** Flavors dinâmicos (Staging / Produção).
-- [x] **Tooling:** Scripts cross-platform para build automatizado.
-- [x] **CI/CD:** Pipeline configurada no Woodpecker.
-- [x] **Atualizações (OTA):** Configuração do `expo-updates` (EAS Update) para envio de correções.
-- [x] **Navegação:** Migração para Expo Router.
-- [x] **Tipagem e Formulários:** Implementação de `zod` e `react-hook-form`.
-- [x] **Resiliência e Dicionário:** Tratamento de erros com `react-error-boundary` e internacionalização com `i18next`.
-- [x] **Injeção de Dependências:** Camada de Providers utilizando Context API.
-- [x] **Armazenamento Offline:** Banco local (`Expo SQLite` e `Drizzle ORM`) combinado com cofres nativos (`expo-secure-store`).
-- [x] **Biometria:** Implementação de tela de bloqueio utilizando `expo-local-authentication` atrelada às configurações do perfil do usuário.
-- [x] **Darkmode:** Implementação de `darkmode` onde o usuário poderá escolher entre Light, Dark e Auto (configurações do sistema operacional).
-- [x] **Governança de Código:** Configuração nativa de ESLint com bloqueio de fronteiras para blindar a arquitetura FSD contra acoplamento indevido, integrada às pipelines (Fail Fast).
-- [x] **Testes Unitários:** Cobertura de testes utilizando `Jest` e `React Native Testing Library`.
-- [x] **Testes E2E:** Implementação do `Detox` multiplataforma (Android/iOS) para testes automatizados de fluxos de usuário, com suporte nativo a múltiplos formatos de tela (celulares e tablets).
-
-### ⏳ Próximos Passos
-- [ ] **Documentação de UI:** Configuração do `Storybook` para mapear e testar componentes da camada `shared/ui`.
-- [ ] **Observabilidade:** Integração do `Firebase Crashlytics` para rastreamento de falhas em produção.
+### 🚀 Key Features
+* **Authentication and Security:** Login via `better-auth`, encrypted native storage (`Secure Store`), and screen lock with biometrics (Face ID / Touch ID).
+* **Architecture (FSD):** Modular organization focused on business domains, with strict rules to prevent improper coupling.
+* **Offline Persistence:** Fast local database using `Expo SQLite` combined with `Drizzle ORM`.
+* **Quality and Governance:** ESLint integrated into the pipeline (Fail Fast) to ensure architectural integrity before any deployment.
+* **Automated Testing:** End-to-end coverage. Unit tests with `Jest` and E2E visual flow tests with `Detox`, running on Android emulators (including tablet responsiveness) and iOS simulators.
+* **Smart Connectivity:** Real-time network monitoring with user-friendly alerts and API timeout control.
+* **Infrastructure and CI/CD:** Isolated environments (Staging and Production), automated cross-platform native builds via Woodpecker CI, and instant Over-The-Air updates (EAS Update).
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🗺️ Project Roadmap
+
+### ✅ Completed 
+- [x] **Initial Setup:** React Native, Expo, and Bun initialization.
+- [x] **Authentication:** Integration of the `@better-auth/expo` client.
+- [x] **Architecture:** Implementation of Feature-Sliced Design (FSD).
+- [x] **Environment Management:** Dynamic flavors (Staging / Production).
+- [x] **Tooling:** Cross-platform scripts for automated builds.
+- [x] **CI/CD:** Pipeline configured in Woodpecker CI.
+- [x] **Updates (OTA):** `expo-updates` (EAS Update) configuration for instant logic and interface fixes.
+- [x] **Navigation:** Migration to Expo Router.
+- [x] **Typing and Forms:** Implementation of `zod` and `react-hook-form`.
+- [x] **Resilience and Internationalization:** Error handling with `react-error-boundary` and internationalization with `i18next`.
+- [x] **Dependency Injection:** Provider layer using Context API.
+- [x] **Offline Storage:** Local database (`Expo SQLite` + `Drizzle ORM`) combined with native vaults (`expo-secure-store`).
+- [x] **Biometrics:** Screen lock implementation using `expo-local-authentication` linked to user profile settings.
+- [x] **Dark Mode:** Implementation of `darkmode` where users can choose between Light, Dark, and System default settings.
+- [x] **Code Governance:** Native ESLint configuration with boundary blocking to prevent FSD architecture coupling, integrated into CI/CD pipelines (Fail Fast).
+- [x] **Unit Testing:** Test coverage using `Jest` and `React Native Testing Library`.
+- [x] **E2E Testing:** Multiplatform implementation of `Detox` for automated user flow testing, with native support for multiple screen formats (mobile and tablets).
+
+### ⏳ Next Steps
+- [ ] **UI Documentation:** Storybook configuration to map and test components in the `shared/ui` layer.
+- [ ] **Observability:** Firebase Crashlytics integration for tracking production crashes.
+
+---
+
+## 🛠️ Tech Stack
 
 * **Framework:** React Native + Expo (SDK 56)
-* **Linguagem:** TypeScript
-* **Gerenciador de Pacotes:** Bun
-* **Navegação:** Expo Router
-* **Autenticação:** Better Auth (`@better-auth/expo`)
-* **Banco de Dados & ORM:** Expo SQLite + Drizzle ORM
-* **Segurança e Biometria:** Expo Secure Store + Expo Local Authentication
-* **Testes Automatizados:** Jest + React Native Testing Library (Unitários e Integração) + Detox (E2E Multiplataforma)
-* **Rede e Conectividade:** NetInfo (`@react-native-community/netinfo`)
-* **Estado Global e Injeção:** Context API
-* **Formulários e Validação:** React Hook Form + Zod
-* **Resiliência e Internacionalização:** React Error Boundary + i18next
-* **Atualizações (OTA):** Expo Updates (EAS)
-* **Arquitetura & Qualidade:** Feature-Sliced Design (FSD) + ESLint (FSD boundaries)
+* **Language:** TypeScript
+* **Package Manager:** Bun
+* **Navigation:** Expo Router
+* **Authentication:** Better Auth (`@better-auth/expo`)
+* **Database & ORM:** Expo SQLite + Drizzle ORM
+* **Security and Biometrics:** Expo Secure Store + Expo Local Authentication
+* **Automated Testing:** Jest + React Native Testing Library (Unit and Integration) + Detox (Multiplatform E2E)
+* **Network and Connectivity:** NetInfo (`@react-native-community/netinfo`)
+* **Global State and Injection:** Context API
+* **Forms and Validation:** React Hook Form + Zod
+* **Resilience and Internationalization:** React Error Boundary + i18next
+* **Updates (OTA):** Expo Updates (EAS)
+* **Architecture & Quality:** Feature-Sliced Design (FSD) + ESLint (FSD boundaries)
 * **CI/CD:** Woodpecker CI 
 
 ---
 
-## 🏗️ Arquitetura do Projeto
+## 🏗️ Project Architecture
 
-O projeto segue rigorosamente o padrão **Feature-Sliced Design (FSD)**, focando em alta coesão, baixo acoplamento e escalabilidade previsível. A separação é feita em camadas estruturadas, indo da infraestrutura base e global até as regras de negócio puras e o roteamento físico.
+The project strictly follows the **Feature-Sliced Design (FSD)** pattern, focusing on high cohesion, low coupling, and predictable scalability. The structure is organized into layers ranging from core infrastructure to business rules and physical routing.
 
-A estrutura principal de pastas dentro de `src/` está organizada da seguinte forma:
+The main folder structure within `src/` is as follows:
 
 ```text
-/ (Raiz do Projeto)
-├── e2e/                  # Testes automatizados de ponta a ponta (End-to-End) com Detox
-│   ├── helpers/          # Funções auxiliares e fluxos reutilizáveis (authHelpers.js)
-│   └── *.test.js         # Cenários de teste visuais e de fluxo do usuário (authFlow.test.js)
+/ (Project Root)
+├── e2e/                  # End-to-End automated tests with Detox
+│   ├── helpers/          # Reusable auxiliary functions and flows (authHelpers.js)
+│   └── *.test.js         # Visual scenarios and user flow tests (authFlow.test.js)
 │
-└── src/                  # Código-fonte principal da aplicação
-    ├── __tests__/        # Refúgio de testes estritamente para contornar o File-Based Routing do Expo Router
-    │   └── app/          # Testes de integração e roteamento das telas (isolados da pasta src/app)
+└── src/                  # Main application source code
+    ├── __tests__/        # Testing refuge for Expo Router File-Based Routing bypasses
+    │   └── app/          # Integration and routing tests of screens (isolated from src/app)
     │
-    ├── shared/           # Infraestrutura corporativa, utilitários e configurações globais
-    │   ├── api/          # Cliente HTTP centralizado (apiClient.ts, apiClient.test.ts)
-    │   ├── config/       # Configurações do ecossistema do app (ex: i18n/locales)
-    │   ├── db/           # Motor Offline-First (Cliente Drizzle, migrações e repositórios)
-    │   ├── lib/          # Inicialização e pontes de bibliotecas externas
-    │   ├── providers/    # Provedores globais de contexto (AppProvider.tsx, AppProvider.test.tsx)
-    │   └── ui/           # Design System atomizado (Toast.tsx, Toast.test.tsx)
+    ├── shared/           # Corporate infrastructure, utilities, and global configurations
+    │   ├── api/          # Centralized HTTP client (apiClient.ts, apiClient.test.ts)
+    │   ├── config/       # App ecosystem configs (e.g., i18n/locales)
+    │   ├── db/           # Offline-First engine (Drizzle Client, migrations, and repositories)
+    │   ├── lib/          # Library initializations and bridges
+    │   ├── providers/    # Global context providers (AppProvider.tsx, AppProvider.test.tsx)
+    │   └── ui/           # Atomized Design System (Toast.tsx, Toast.test.tsx)
     │
-    ├── features/         # Fatias de negócio independentes, acopladas a domínios comerciais específicos
-    │   ├── auth/         # Domínio de Autenticação, Segurança e Sessão Híbrida
+    ├── features/         # Independent business slices, coupled to specific commercial domains
+    │   ├── auth/         # Authentication, Security, and Hybrid Session Domain
     │   │   ├── index.ts  # Public API (Barrel File)
-    │   │   ├── api/      # Isolamento de chamadas de rede
-    │   │   ├── hooks/    # Lógica de estados e ações (useAuth.ts, useAuth.test.ts)
-    │   │   ├── services/ # Regras de negócio complexas
-    │   │   ├── ui/       # Componentes visuais co-localizados com seus testes (LoginForm.tsx, LoginForm.test.tsx)
-    │   │   └── domain/   # Schemas de validação de dados em tempo de execução com Zod
-    │   └── profile/      # Domínio de Perfil de Usuário e Configurações locais
+    │   │   ├── api/      # Network call isolation
+    │   │   ├── hooks/    # State and action logic (useAuth.ts, useAuth.test.ts)
+    │   │   ├── services/ # Complex business rules
+    │   │   ├── ui/       # Co-located UI components and tests (LoginForm.tsx, LoginForm.test.tsx)
+    │   │   └── domain/   # Runtime data validation schemas with Zod
+    │   └── profile/      # User Profile Domain and local settings
     │       ├── index.ts  # Public API (Barrel File)
-    │       ├── services/ # Manipulação de preferências persistidas (preferenceService.ts, preferenceService.test.ts)
-    │       └── ui/       # Formulários e componentes do domínio de perfil (EditProfileForm.tsx, EditProfileForm.test.tsx)
+    │       ├── services/ # Persistent preference manipulation (preferenceService.ts, preferenceService.test.ts)
+    │       └── ui/       # Profile domain forms and components (EditProfileForm.tsx, EditProfileForm.test.tsx)
     │
-    └── app/              # Ponto de entrada, roteamento nativo e orquestração visual (Expo Router)
-        ├── (auth)/       # Fluxo público de acesso (login.tsx, signup.tsx, forgot-password.tsx)
-        ├── (main)/       # Fluxo protegido por sessão e biometria
-        │   ├── (tabs)/   # Navegação inferior por abas (home.tsx, profile.tsx)
+    └── app/              # Entry point, native routing, and visual orchestration (Expo Router)
+        ├── (auth)/       # Public access flow (login.tsx, signup.tsx, forgot-password.tsx)
+        ├── (main)/       # Session and biometric protected flow
+        │   ├── (tabs)/   # Bottom tab navigation (home.tsx, profile.tsx)
         │   ├── edit-profile.tsx 
         │   └── security.tsx
-        ├── _providers/   # Composição limpa de provedores locais e globais
-        └── _layout.tsx   # Inicialização estrutural do app (Injeção da árvore de Providers e Error Boundary)
+        ├── _providers/   # Clean composition of local and global providers
+        └── _layout.tsx   # App structural initialization (Provider Tree & Error Boundary injection)
 ```
 
-### 📏 Diretrizes de Arquitetura
+### 📏 Architecture Guidelines
 
-Para manter o código limpo, escalável e livre de acoplamento, seguimos 3 regras básicas:
+To maintain clean, scalable, and loosely coupled code, we follow three basic rules:
 
-**1. Fluxo de Dependências (De cima para baixo)**
-* **`app`** ➔ Pode importar de `features` e `shared`.
-* **`features`** ➔ Pode importar apenas de `shared`.
-* **`shared`** ➔ Componentes agnósticos. Jamais deve importar de `features` ou `app`.
+**1. Dependency Flow (Top-Down)**
+* **`app`** ➔ Can import from `features` and `shared`.
+* **`features`** ➔ Can only import from `shared`.
+* **`shared`** ➔ Agnostic components. Must never import from `features` or `app`.
 
-**2. Encapsulamento de Features (Barrel Files)**
-* É **estritamente proibido** acessar arquivos internos de uma feature por fora dela. Nosso linter (CI/CD) bloqueia quebras dessa regra automaticamente.
-* ❌ *Errado:* `import { LoginForm } from '@/features/auth/ui/LoginForm'`
-* ✅ *Correto:* `import { LoginForm } from '@/features/auth'`
+**2. Feature Encapsulation (Barrel Files)**
+* It is **strictly prohibited** to access internal files of a feature from outside it. Our linter (CI/CD) automatically blocks violations of this rule.
+* ❌ *Wrong:* `import { LoginForm } from '@/features/auth/ui/LoginForm'`
+* ✅ *Correct:* `import { LoginForm } from '@/features/auth'`
 
-**3. Persistência Híbrida Inteligente**
-* **Cache e Modo Offline:** Dados de interface e preferências ficam no banco relacional (`Expo SQLite` + `Drizzle ORM`).
-* **Segurança:** Tokens, chaves e dados sensíveis são guardados na criptografia nativa do aparelho (`Secure Store`).
-
----
-
-## 🌍 Ambientes (Flavors Dinâmicos)
-
-O aplicativo utiliza o app.config.ts em conjunto com o cross-env para alternar entre ambientes de Staging e Produção dinamicamente, sem a necessidade de flavors nativos do Android/iOS.
-
-* **Staging:** O app se chama App Bun (Staging), utiliza o pacote com.brunno.app.staging e aponta para a API local.
-
-* **Produção:** O app se chama App Bun, utiliza o pacote com.brunno.app e aponta para o servidor com suporte a tráfego HTTPS.
+**3. Smart Hybrid Persistence**
+* **Cache and Offline Mode:** UI data and preferences are stored in the relational database (`Expo SQLite` + `Drizzle ORM`).
+* **Security:** Tokens, keys, and sensitive data are stored in the device's native encryption (`Secure Store`).
 
 ---
 
-## 🚀 Como Rodar e Buildar o Projeto Localmente
+## 🌍 Environments (Dynamic Flavors)
 
-### Pré-requisitos
-* [Bun](https://bun.sh/) instalado.
-* **Para Android:** Android Studio (Emulador) configurado ou dispositivo físico com Expo Go.
-* **Para iOS (Apenas macOS):** Xcode instalado, Command Line Tools configurado, CocoaPods instalado (brew install cocoapods) e o Simulador de iOS ativo.
+The app uses `app.config.ts` alongside `cross-env` to switch between Staging and Production environments dynamically, without needing native Android/iOS flavors.
 
-### 💻 Modo de Desenvolvimento (Live Reload)
+* **Staging:** App named "App Bun (Staging)", uses package `com.brunno.app.staging`, and points to the local API.
+* **Production:** App named "App Bun", uses package `com.brunno.app`, and points to the server with HTTPS support.
 
-1. **Instale as dependências:**
+---
+
+## 🚀 How to Run and Build Locally
+
+### Prerequisites
+* [Bun](https://bun.sh/) installed.
+* **For Android:** Android Studio (Emulator) configured or a physical device with Expo Go.
+* **For iOS (macOS only):** Xcode installed, Command Line Tools configured, CocoaPods installed (`brew install cocoapods`), and the iOS Simulator active.
+
+### 💻 Development Mode (Live Reload)
+
+1. **Install dependencies:**
     ```bash
     bun install
     ```
 
-2. **Inicie o servidor de desenvolvimento via Expo Go (Ambiente Staging):**
-
+2. **Start the development server via Expo Go (Staging Environment):**
     ```bash
-    bun run android  # Abre no Emulador Android
-    # ou
-    bun run ios      # Abre no Simulador iOS via Expo Go
-    # ou
-    bun start        # Abre o painel geral do Metro Bundler
+    bun run android  # Opens in Android Emulator
+    # or
+    bun run ios      # Opens in iOS Simulator via Expo Go
+    # or
+    bun start        # Opens the Metro Bundler panel
     ```
 
-3. **Para testar no Expo Go com configurações de Produção:**
-
+3. **To test on Expo Go with Production settings:**
     ```bash
     bun run android:prod
-    # ou
+    # or
     bun run ios:prod
     ```
 
-4. **Para rodar com compilação nativa local (Dev Client):**
-    Caso o projeto utilize bibliotecas nativas geradas pelo Prebuild, compile diretamente no emulador/simulador:
-
+4. **To run with local native compilation (Dev Client):**
+    If the project uses Prebuild-generated native libraries, compile directly to the emulator/simulator:
     ```bash
-    bun run run:android  # Compila e roda nativamente no Android
-    # ou
-    bun run run:ios      # Executa os Pods e compila nativamente no Simulador Apple
+    bun run run:android  # Compile and run natively on Android
+    # or
+    bun run run:ios      # Install Pods and compile natively on Apple Simulator
     ```
 
-### 📦 Gerando os Binários Localmente
-Os scripts automatizados detectam o ambiente e configuram as variáveis locais de build.
+### 📦 Generating Binaries Locally
+Automated scripts detect the environment and configure local build variables.
 
-#### 🤖 Android (Geração de APK via Gradle)
-O script configura o caminho do Android SDK e as propriedades de memória da JVM.
+#### 🤖 Android (APK Generation via Gradle)
+The script configures the Android SDK path and JVM memory properties.
 
-* **Gerar APK de Staging (Permite HTTP local):**
-    
+* **Generate Staging APK (Allows local HTTP):**
     ```bash
     bun run build:apk
     ```
-* **Gerar APK de Produção (Exige HTTPS seguro):**
-    
+* **Generate Production APK (Requires secure HTTPS):**
     ```bash
     bun run build:apk:prod
     ```
-* **Resultado:** Os arquivos ficarão na raiz do projeto como `app-react-native-staging.apk` ou `app-react-native-production.apk`.
+* **Result:** Files will be in the project root as `app-react-native-staging.apk` or `app-react-native-production.apk`.
 
-#### 🍎 iOS (Geração de Pacote via xcodebuild)
-*Requer macOS*. O script executa o pré-build, instala as dependências da Apple e compila o projeto em modo Release.
+#### 🍎 iOS (Package Generation via xcodebuild)
+*Requires macOS*. The script runs prebuild, installs Apple dependencies, and compiles the project in Release mode.
 
-* **Gerar pacote iOS de Staging:**
-
+* **Generate Staging iOS package:**
     ```bash
     bun run build:ios
     ```
-
-* **Gerar pacote iOS de Produção:**
-
+* **Generate Production iOS package:**
     ```bash
     bun run build:ios:prod
     ```
     
-* **Resultado:** O pacote `.app` para simuladores será exportado compactado na raiz do projeto como `app-react-native-ios-staging.zip` ou `app-react-native-ios-production.zip`.
+* **Result:** The `.app` package for simulators will be exported as a compressed file in the root as `app-react-native-ios-staging.zip` or `app-react-native-ios-production.zip`.
+
+### 🧪 Testing
+
+#### **Unit & Integration Tests (Jest)**
+Run the fast unit and integration tests (isolated from E2E files) to validate business logic and components:
+
+    ```bash
+    bun run test
+    ```
+
+#### **End-to-End (E2E) Tests (Detox)**
+E2E tests interact with the compiled app on the emulator/simulator from the outside in.
+
+**E2E Prerequisites:**
+* **iOS:** Install applesimutils (required for Detox to communicate with the iOS Simulator):
+
+    ```bash
+    brew tap wix/brew
+    brew install applesimutils
+    ```
+
+* **Android:** Ensure your Android Emulator (AVD) is currently running.
+
+**Running iOS E2E Tests:**
+1. **Build the app for the testing environment:**
+
+    ```bash
+    bunx detox build --configuration ios.sim.release
+    ```
+
+2. **Run the test suite:**
+
+    ```bash
+    bunx detox test --configuration ios.sim.release --cleanup
+    ```
+    **(Tip: To run a single test file and save time, append its path:** `bunx detox test e2e/authFlow.test.js --configuration ios.sim.release` **)**
+
+**Running Android E2E Tests:**
+1. **Build the app for the testing environment:**
+
+    ```bash
+    bunx detox build --configuration android.emu.release
+    ```
+
+2. **Run the test suite:**
+
+    ```bash
+    bunx detox test --configuration android.emu.release --cleanup
+    ```
 
 ---
 
-## 📦 CI/CD, Automação Multiplataforma e Espelhamento
+## 📦 CI/CD, Automation and Mirroring
 
-A pipeline configurada no Woodpecker CI (`.woodpecker/release.yml`) automatiza a geração de pacotes (Android e iOS), o envio de atualizações sem fio (OTA) e a sincronização do repositório.
+The Woodpecker CI pipeline (`.woodpecker/release.yml`) automates APK/package generation, Over-the-Air updates (OTA), and repository mirroring.
 
-**Fluxo da Pipeline de Release:**
-1. **Trigger:** A criação de uma Tag (ex: `v1.0.5`) no Gitea inicia a pipeline.
-
-2. **Agente Nativo:** A execução ocorre em um agente macOS (`darwin/arm64`) para utilizar o Xcode e o Apple Silicon.
-
-3. **Compilação Dupla:**
-   * Injeção da variável `APP_ENV=production`.
-   * **Android:** Execução do `expo prebuild` e empacotamento via Gradle gerando o `.apk`.
-   * **iOS:** Instalação dos Pods e compilação via `xcodebuild`, gerando um `.zip`.
-
-4. **Atualização OTA (Over-the-Air):** O bundle JavaScript é sincronizado com a nuvem do Expo (`eas update`), enviando correções instantâneas de lógica e interface para os usuários sem necessidade de aprovação nas lojas.
-
-5. **Release Interna:** O Woodpecker gera o changelog, cria a versão no servidor Gitea e anexa os artefatos compilados.
-
-6. **Espelhamento (GitHub):** O código-fonte associado à Tag é enviado para o GitHub, onde uma Release pública idêntica é criada com o `.apk` e o `.zip`.
+**Release Pipeline Workflow:**
+1. **Trigger:** Creation of a Tag (e.g., `v1.0.5`) on Gitea starts the pipeline.
+2. **Native Agent:** Execution occurs on a macOS agent (`darwin/arm64`) to use Xcode and Apple Silicon.
+3. **Dual Compilation:**
+   * Injection of `APP_ENV=production` variable.
+   * **Android:** Executes `expo prebuild` and Gradle packaging to generate the `.apk`.
+   * **iOS:** Installs Pods and compiles via `xcodebuild`, generating the `.zip`.
+4. **OTA Updates (Over-the-Air):** The JavaScript bundle is synced with Expo cloud (`eas update`), allowing instant logic and UI fixes without store approval.
+5. **Internal Release:** Woodpecker generates the changelog, creates a version on the Gitea server, and attaches compiled artifacts.
+6. **Mirroring (GitHub):** The source code associated with the Tag is pushed to GitHub, where an identical public Release is created with the `.apk` and `.zip`.
 
 ---
 
-## 🔐 Segurança e Tráfego Local
+## 🔐 Security and Local Traffic
 
-Em Staging, o aplicativo permite tráfego HTTP em texto claro (`usesCleartextTraffic: true`) para comunicação com a API local. A versão de produção compila exigindo conexões HTTPS.
-
----
+* **In Staging:** The app allows cleartext HTTP traffic (`usesCleartextTraffic: true`) for local API communication.
+* **In Production:** Builds require secure HTTPS connections.
