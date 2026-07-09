@@ -6,6 +6,11 @@ import '../shared/config/i18n';
 import { ErrorFallback } from '../shared/ui/ErrorFallback';
 import { useGlobalAuth } from '@/features/auth';
 import { AppProvider } from './_providers/_AppProvider'; 
+import { STORYBOOK_ENABLED } from '../shared/config/storybook.config';
+
+const StorybookUIRoot = STORYBOOK_ENABLED 
+  ? require('../../.rnstorybook').default 
+  : null;
 
 function AppNavigation() {
   const { session, isPending } = useGlobalAuth(); 
@@ -38,6 +43,10 @@ function AppNavigation() {
 }
 
 export default function RootLayout() {
+  if (STORYBOOK_ENABLED && StorybookUIRoot) {
+    return <StorybookUIRoot />;
+  }
+
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <AppProvider>

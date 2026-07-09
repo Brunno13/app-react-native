@@ -33,9 +33,9 @@ Multiplatform mobile application (Android and iOS) built with React Native and E
 - [x] **Code Governance:** Native ESLint configuration with boundary blocking to prevent FSD architecture coupling, integrated into CI/CD pipelines (Fail Fast).
 - [x] **Unit Testing:** Test coverage using `Jest` and `React Native Testing Library`.
 - [x] **E2E Testing:** Multiplatform implementation of `Detox` for automated user flow testing, with native support for multiple screen formats (mobile and tablets).
+- [x] **UI Documentation:** Storybook configuration to map and test components in the `shared/ui` layer.
 
 ### ⏳ Next Steps
-- [ ] **UI Documentation:** Storybook configuration to map and test components in the `shared/ui` layer.
 - [ ] **Observability:** Firebase Crashlytics integration for tracking production crashes.
 
 ---
@@ -50,13 +50,14 @@ Multiplatform mobile application (Android and iOS) built with React Native and E
 * **Database & ORM:** Expo SQLite + Drizzle ORM
 * **Security and Biometrics:** Expo Secure Store + Expo Local Authentication
 * **Automated Testing:** Jest + React Native Testing Library (Unit and Integration) + Detox (Multiplatform E2E)
+* **UI Documentation:** Storybook (Native Component Catalog)
 * **Network and Connectivity:** NetInfo (`@react-native-community/netinfo`)
 * **Global State and Injection:** Context API
 * **Forms and Validation:** React Hook Form + Zod
 * **Resilience and Internationalization:** React Error Boundary + i18next
 * **Updates (OTA):** Expo Updates (EAS)
 * **Architecture & Quality:** Feature-Sliced Design (FSD) + ESLint (FSD boundaries)
-* **CI/CD:** Woodpecker CI 
+* **CI/CD:** Woodpecker CI
 
 ---
 
@@ -68,6 +69,10 @@ The main folder structure within `src/` is as follows:
 
 ```text
 / (Project Root)
+├── .rnstorybook/         # Native Storybook configuration and environment setup
+│   ├── main.ts           # Addons and stories path configuration
+│   └── preview.tsx       # Global decorators (Theme, Providers) and FSD wrappers
+│
 ├── e2e/                  # End-to-End automated tests with Detox
 │   ├── helpers/          # Reusable auxiliary functions and flows (authHelpers.js)
 │   └── *.test.js         # Visual scenarios and user flow tests (authFlow.test.js)
@@ -78,11 +83,11 @@ The main folder structure within `src/` is as follows:
     │
     ├── shared/           # Corporate infrastructure, utilities, and global configurations
     │   ├── api/          # Centralized HTTP client (apiClient.ts, apiClient.test.ts)
-    │   ├── config/       # App ecosystem configs (e.g., i18n/locales)
+    │   ├── config/       # App ecosystem configs (e.g., i18n/locales, storybook.config.ts)
     │   ├── db/           # Offline-First engine (Drizzle Client, migrations, and repositories)
     │   ├── lib/          # Library initializations and bridges
     │   ├── providers/    # Global context providers (AppProvider.tsx, AppProvider.test.tsx)
-    │   └── ui/           # Atomized Design System (Toast.tsx, Toast.test.tsx)
+    │   └── ui/           # Atomized Design System with Stories (Toast.tsx, Toast.stories.tsx)
     │
     ├── features/         # Independent business slices, coupled to specific commercial domains
     │   ├── auth/         # Authentication, Security, and Hybrid Session Domain
@@ -104,7 +109,7 @@ The main folder structure within `src/` is as follows:
         │   ├── edit-profile.tsx 
         │   └── security.tsx
         ├── _providers/   # Clean composition of local and global providers
-        └── _layout.tsx   # App structural initialization (Provider Tree & Error Boundary injection)
+        └── _layout.tsx   # App structural initialization (Provider Tree, Storybook Intercept & Error Boundary)
 ```
 
 ### 📏 Architecture Guidelines
@@ -259,6 +264,30 @@ E2E tests interact with the compiled app on the emulator/simulator from the outs
     ```bash
     bunx detox test --configuration android.emu.release --cleanup
     ```
+
+#### **UI Component Testing (Storybook)**
+Storybook is integrated into the architecture to visually test and document the isolated components of the Design System (`src/shared/ui`).
+
+1. **Enable Storybook Mode:**
+    Open the static configuration file `src/shared/config/storybook.config.ts` and set the master flag to `true`:
+   
+    ```typescript
+    export const STORYBOOK_ENABLED = true;
+    ```
+
+2. **Run the Component Catalog:**
+    Start the application using the custom Storybook scripts. This command automatically parses your stories and opens the interactive UI catalog in the emulator:
+
+    ```bash
+    bun run storybook:android
+    # or
+    bun run storybook:ios
+    # or
+    bun run storybook
+    ```
+
+3. **Return to Normal Application Flow:**
+    To exit the component catalog and continue developing the main application routing and features, simply revert the flag back to `false` in `storybook.config.ts`. The Metro Bundler will hot-reload the app instantly.
 
 ---
 
