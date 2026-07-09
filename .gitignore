@@ -42,3 +42,6 @@ yarn-error.*
 
 # generated android builds
 *.apk
+
+*storybook.log
+storybook-static
