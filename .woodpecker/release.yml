@@ -23,7 +23,7 @@ steps:
           -X POST \
           "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
           -F "title=WoodpeckerCI" \
-          -F "message=WoodpeckerCI · App-react-native · Production pipeline started · Tag ${CI_COMMIT_TAG} · ${TIMESTAMP}" \
+          -F "message=WoodpeckerCI · App-react-native · Production pipeline started · Tag ${CI_COMMIT_TAG} · $${TIMESTAMP}" \
           -F "priority=5" \
           || true
 
@@ -365,7 +365,7 @@ steps:
           -X POST \
           "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
           -F "title=WoodpeckerCI" \
-          -F "message=WoodpeckerCI · App-react-native · Production pipeline finished successfully · Tag ${CI_COMMIT_TAG} · ${TIMESTAMP}" \
+          -F "message=WoodpeckerCI · App-react-native · Production pipeline finished successfully · Tag ${CI_COMMIT_TAG} · $${TIMESTAMP}" \
           -F "priority=5" \
           || true
 
@@ -387,7 +387,7 @@ steps:
           -X POST \
           "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
           -F "title=WoodpeckerCI" \
-          -F "message=WoodpeckerCI · App-react-native · Production pipeline failed · Tag ${CI_COMMIT_TAG} · ${TIMESTAMP}" \
+          -F "message=WoodpeckerCI · App-react-native · Production pipeline failed · Tag ${CI_COMMIT_TAG} · $${TIMESTAMP}" \
           -F "priority=8" \
           || true
 
