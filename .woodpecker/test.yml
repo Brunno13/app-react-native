@@ -6,54 +6,128 @@ labels:
   platform: darwin/arm64
 
 steps:
+  # =========================================================
+  # NOTIFICAÇÃO DE INÍCIO
+  # =========================================================
+
   - name: notify-start
     image: bash
+
     commands:
       - |
-        curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Staging pipeline started" -F "priority=5" || true
+        TIMESTAMP="$(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M')"
+
+        curl -fsS \
+          --connect-timeout 5 \
+          --max-time 10 \
+          --output /dev/null \
+          -X POST \
+          "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
+          -F "title=WoodpeckerCI" \
+          -F "message=WoodpeckerCI · App-react-native · Staging pipeline started · ${TIMESTAMP}" \
+          -F "priority=5" \
+          || true
+
+  # =========================================================
+  # FASE 1: VALIDAÇÃO E TESTES
+  # =========================================================
 
   - name: testar-codigo
     image: bash
+
     commands:
       - echo "📦 Instalando dependências..."
       - bun install
-      - echo "🧹 Verificando Arquitetura (FSD) e Linter..."
+
+      - echo "🧹 Verificando Arquitetura FSD e Linter..."
       - bun run lint
+
       - echo "🔍 Verificando tipagem do App..."
       - bunx tsc --noEmit
+
       - echo "🔍 Verificando tipagem dos Scripts..."
       - bunx tsc --project scripts/tsconfig.json --noEmit
+
       - echo "🧪 Executando a suíte de testes..."
       - bun run test
 
+  # =========================================================
+  # FASE 2: ATUALIZAÇÃO OTA DE STAGING
+  # =========================================================
+
   - name: deploy-ota-staging
     image: bash
+
     environment:
       EXPO_PUBLIC_API_URL:
         from_secret: api_url_staging
+
       EXPO_PUBLIC_APP_ENV: "staging"
-      APP_ENV: staging
+
+      APP_ENV: "staging"
+
       EXPO_TOKEN:
         from_secret: expo_token
+
       CI: "true"
+
       EAS_NO_VCS: "1"
+
     commands:
-      - |
-        echo "🚀 Empacotando e enviando atualização OTA para Staging..."
-        bunx eas-cli update --branch staging --message "Deploy via CI - Commit: ${CI_COMMIT_SHA}" --non-interactive
+      - echo "🚀 Empacotando e enviando atualização OTA para Staging..."
+
+      - >
+        bunx eas-cli update
+        --branch staging
+        --message "Deploy via CI - Commit: ${CI_COMMIT_SHA}"
+        --non-interactive
+
+  # =========================================================
+  # NOTIFICAÇÕES FINAIS
+  # =========================================================
 
   - name: notify-success
     image: bash
-    when:
-      status: [ success ]
+
     commands:
       - |
-        curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Staging pipeline finished successfully" -F "priority=5" || true
+        TIMESTAMP="$(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M')"
+
+        curl -fsS \
+          --connect-timeout 5 \
+          --max-time 10 \
+          --output /dev/null \
+          -X POST \
+          "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
+          -F "title=WoodpeckerCI" \
+          -F "message=WoodpeckerCI · App-react-native · Staging pipeline finished successfully · ${TIMESTAMP}" \
+          -F "priority=5" \
+          || true
+
+    when:
+      - event: push
+        branch: main
+        status: [success]
 
   - name: notify-error
     image: bash
-    when:
-      status: [ failure ]
+
     commands:
       - |
-        curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Staging pipeline failed!" -F "priority=8" || true
+        TIMESTAMP="$(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M')"
+
+        curl -fsS \
+          --connect-timeout 5 \
+          --max-time 10 \
+          --output /dev/null \
+          -X POST \
+          "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
+          -F "title=WoodpeckerCI" \
+          -F "message=WoodpeckerCI · App-react-native · Staging pipeline failed · ${TIMESTAMP}" \
+          -F "priority=8" \
+          || true
+
+    when:
+      - event: push
+        branch: main
+        status: [failure]
