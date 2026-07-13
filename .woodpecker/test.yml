@@ -9,7 +9,7 @@ steps:
   - name: notify-start
     image: bash
     commands:
-      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=WoodpeckerCI - Pipeline Staging iniciada" -F "priority=5"
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Staging pipeline started" -F "priority=5"
 
   - name: testar-codigo
     image: bash
@@ -46,11 +46,11 @@ steps:
     when:
       status: [ success ]
     commands:
-      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=WoodpeckerCI - Pipeline Staging finalizada com sucesso" -F "priority=5"
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Staging pipeline finished successfully" -F "priority=5"
 
   - name: notify-error
     image: bash
     when:
       status: [ failure ]
     commands:
-      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=WoodpeckerCI - Falha na Pipeline Staging!" -F "priority=8"
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Staging pipeline failed!" -F "priority=8"
