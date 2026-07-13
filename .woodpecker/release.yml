@@ -5,6 +5,11 @@ labels:
   platform: darwin/arm64
 
 steps:
+  - name: notify-start
+    image: bash
+    commands:
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Production pipeline started (Tag ${CI_COMMIT_TAG})" -F "priority=5"
+
   - name: build-artifacts
     image: bash
     environment:
@@ -137,3 +142,17 @@ steps:
         curl -f -s -X POST "$GH_UPLOAD_URL?name=app-react-native-ios-production.zip" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/zip" --data-binary @"./app-react-native-ios-production.zip"
         
         echo "✅ RELEASE NO GITHUB CRIADA COM SUCESSO!"
+
+  - name: notify-success
+    image: bash
+    when:
+      status: [ success ]
+    commands:
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Production pipeline finished successfully (Tag ${CI_COMMIT_TAG})" -F "priority=5"
+
+  - name: notify-error
+    image: bash
+    when:
+      status: [ failure ]
+    commands:
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=App react-native: Production pipeline failed! (Tag ${CI_COMMIT_TAG})" -F "priority=8"
