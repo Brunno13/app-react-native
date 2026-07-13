@@ -6,6 +6,11 @@ labels:
   platform: darwin/arm64
 
 steps:
+  - name: notify-start
+    image: bash
+    commands:
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=WoodpeckerCI - Pipeline Staging iniciada" -F "priority=5"
+
   - name: testar-codigo
     image: bash
     commands:
@@ -35,3 +40,17 @@ steps:
       - |
         echo "🚀 Empacotando e enviando atualização OTA para Staging..."
         bunx eas-cli update --branch staging --message "Deploy via CI - Commit: ${CI_COMMIT_SHA}" --non-interactive
+
+  - name: notify-success
+    image: bash
+    when:
+      status: [ success ]
+    commands:
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=WoodpeckerCI - Pipeline Staging finalizada com sucesso" -F "priority=5"
+
+  - name: notify-error
+    image: bash
+    when:
+      status: [ failure ]
+    commands:
+      - curl -s -X POST "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" -F "title=WoodpeckerCI" -F "message=WoodpeckerCI - Falha na Pipeline Staging!" -F "priority=8"
