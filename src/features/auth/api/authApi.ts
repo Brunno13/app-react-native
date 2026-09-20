@@ -8,7 +8,10 @@ export const AuthApi = {
     authClient.signUp.email({ email, password, name }),
     
   forgetPassword: (email: string) => 
-    (authClient as any).forgetPassword({ email, redirectTo: 'app-react-native://reset-password' }),
+    authClient.requestPasswordReset({
+      email,
+      redirectTo: 'app-react-native://reset-password',
+    }),
     
   signInWithSocial: (provider: 'google' | 'github') => 
     authClient.signIn.social({ provider }),
