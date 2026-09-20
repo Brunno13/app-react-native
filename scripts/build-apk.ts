@@ -15,7 +15,9 @@ try {
   const prebuild = Bun.spawnSync(
     [process.execPath, 'x', 'cross-env', 'CI=1', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'], 
     { 
-      stdio: ['inherit', 'inherit', 'inherit'] as any,
+      stdin: 'inherit',
+      stdout: 'inherit',
+      stderr: 'inherit',
       env: {
         ...process.env,
         APP_ENV: appEnv,
@@ -74,7 +76,9 @@ try {
   const build = Bun.spawnSync(
     [gradleCmd, 'assembleRelease'], 
     { 
-      stdio: ['inherit', 'inherit', 'inherit'] as any,
+      stdin: 'inherit',
+      stdout: 'inherit',
+      stderr: 'inherit',
       cwd: `${currentDir}/android`,
       env: {
         ...process.env,
