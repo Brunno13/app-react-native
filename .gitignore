@@ -45,3 +45,7 @@ yarn-error.*
 
 *storybook.log
 storybook-static
+
+# quality / security reports
+coverage/
+.security-results/
