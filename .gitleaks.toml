@@ -1,0 +1,22 @@
+title = "app-react-native Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+  [[rules.allowlists]]
+  description = "Known synthetic password fixtures used by unit tests"
+  condition = "AND"
+
+  regexes = [
+    '''^(SenhaForte123|senhaAntiga123|novaSenhaSegura123)$'''
+  ]
+
+  paths = [
+    '''(^|/)src/features/auth/domain/authSchema\.test\.ts$''',
+    '''(^|/)src/features/auth/ui/SignUpForm\.test\.tsx$''',
+    '''(^|/)src/features/profile/domain/profileSchema\.test\.ts$''',
+    '''(^|/)src/features/profile/ui/SecurityForm\.test\.tsx$'''
+  ]
