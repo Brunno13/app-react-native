@@ -10,6 +10,8 @@ jest.mock('../schema/auth', () => ({
 
 describe('AuthRepository', () => {
   let mockFrom: jest.Mock;
+  let mockSelect: jest.Mock;
+  let mockInsert: jest.Mock;
   let mockOnConflictDoUpdate: jest.Mock;
   let mockDelete: jest.Mock;
   let mockDb: ExpoSQLiteDatabase;
@@ -29,33 +31,46 @@ describe('AuthRepository', () => {
     mockOnConflictDoUpdate = jest.fn();
     mockDelete = jest.fn();
 
+    mockSelect = jest.fn(() => ({
+      from: mockFrom,
+    }));
+
+    mockInsert = jest.fn(() => ({
+      values: jest.fn(() => ({
+        onConflictDoUpdate: mockOnConflictDoUpdate,
+      })),
+    }));
+
     mockDb = {
-      select: jest.fn(() => ({
-        from: mockFrom,
-      })),
-      insert: jest.fn(() => ({
-        values: jest.fn(() => ({
-          onConflictDoUpdate: mockOnConflictDoUpdate,
-        })),
-      })),
+      select: mockSelect,
+      insert: mockInsert,
       delete: mockDelete,
     } as unknown as ExpoSQLiteDatabase;
   });
 
   describe('get', () => {
     it('deve retornar a primeira sessão se existir no banco', async () => {
-      const mockSessionData = { id: 1, token: 'abc-123' };
+      const mockSessionData = {
+        id: 'session-1',
+        userId: 'user-1',
+        email: 'brunno@teste.com',
+        name: 'Brunno',
+        image: null,
+        expiresAt: new Date(),
+        updatedAt: new Date(),
+      };
+
       mockFrom.mockResolvedValueOnce([mockSessionData]);
 
       const result = await AuthRepository.get(mockDb);
 
-      expect(mockDb.select).toHaveBeenCalled();
+      expect(mockSelect).toHaveBeenCalled();
       expect(mockFrom).toHaveBeenCalledWith(localSession);
       expect(result).toEqual(mockSessionData);
     });
 
     it('deve retornar null se não houver nenhuma sessão no banco', async () => {
-      mockFrom.mockResolvedValueOnce([]); 
+      mockFrom.mockResolvedValueOnce([]);
 
       const result = await AuthRepository.get(mockDb);
 
@@ -66,20 +81,33 @@ describe('AuthRepository', () => {
       const dbError = new Error('Falha catastrófica de leitura');
       mockFrom.mockRejectedValueOnce(dbError);
 
-      await expect(AuthRepository.get(mockDb)).rejects.toThrow('Falha catastrófica de leitura');
-      expect(console.error).toHaveBeenCalledWith('Erro no repositório Auth (get):', dbError);
+      await expect(AuthRepository.get(mockDb)).rejects.toThrow(
+        'Falha catastrófica de leitura',
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'Erro no repositório Auth (get):',
+        dbError,
+      );
     });
   });
 
   describe('upsert', () => {
-    const mockData = { id: 1, token: 'abc-123', userId: 'user-1' };
+    const mockData = {
+      id: 'session-1',
+      userId: 'user-1',
+      email: 'brunno@teste.com',
+      name: 'Brunno',
+      image: null,
+      expiresAt: new Date(),
+      updatedAt: new Date(),
+    };
 
     it('deve inserir ou atualizar os dados da sessão com sucesso e retornar true', async () => {
       mockOnConflictDoUpdate.mockResolvedValueOnce(undefined);
 
       const result = await AuthRepository.upsert(mockDb, mockData);
 
-      expect(mockDb.insert).toHaveBeenCalledWith(localSession);
+      expect(mockInsert).toHaveBeenCalledWith(localSession);
       expect(mockOnConflictDoUpdate).toHaveBeenCalledWith({
         target: localSession.id,
         set: mockData,
@@ -91,8 +119,13 @@ describe('AuthRepository', () => {
       const dbError = new Error('Disco cheio');
       mockOnConflictDoUpdate.mockRejectedValueOnce(dbError);
 
-      await expect(AuthRepository.upsert(mockDb, mockData)).rejects.toThrow('Disco cheio');
-      expect(console.error).toHaveBeenCalledWith('Erro no repositório Auth (upsert):', dbError);
+      await expect(
+        AuthRepository.upsert(mockDb, mockData),
+      ).rejects.toThrow('Disco cheio');
+      expect(console.error).toHaveBeenCalledWith(
+        'Erro no repositório Auth (upsert):',
+        dbError,
+      );
     });
   });
 
@@ -102,7 +135,7 @@ describe('AuthRepository', () => {
 
       const result = await AuthRepository.clear(mockDb);
 
-      expect(mockDb.delete).toHaveBeenCalledWith(localSession);
+      expect(mockDelete).toHaveBeenCalledWith(localSession);
       expect(result).toBe(true);
     });
 
@@ -110,8 +143,13 @@ describe('AuthRepository', () => {
       const dbError = new Error('Tabela bloqueada');
       mockDelete.mockRejectedValueOnce(dbError);
 
-      await expect(AuthRepository.clear(mockDb)).rejects.toThrow('Tabela bloqueada');
-      expect(console.error).toHaveBeenCalledWith('Erro no repositório Auth (clear):', dbError);
+      await expect(AuthRepository.clear(mockDb)).rejects.toThrow(
+        'Tabela bloqueada',
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'Erro no repositório Auth (clear):',
+        dbError,
+      );
     });
   });
 });

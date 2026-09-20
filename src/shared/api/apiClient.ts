@@ -1,7 +1,19 @@
 import { ENV } from '@/shared/config/env';
 
+type UnauthorizedInterceptor = () => void | Promise<void>;
+
+type ServerErrorInterceptor = (
+  endpoint: string,
+  status: number,
+  errorData: unknown,
+) => void | Promise<void>;
+
 export class ApiError extends Error {
-  constructor(public status: number, public message: string, public data?: any) {
+  constructor(
+    public status: number,
+    message: string,
+    public data?: unknown,
+  ) {
     super(message);
     this.name = 'ApiError';
   }
@@ -9,18 +21,41 @@ export class ApiError extends Error {
 
 const BASE_URL = ENV.API_URL;
 
-let onUnauthorizedCallback: (() => void) | null = null;
-let onServerErrorCallback: ((endpoint: string, status: number, errorData: any) => void) | null = null;
+let onUnauthorizedCallback: UnauthorizedInterceptor | null = null;
+let onServerErrorCallback: ServerErrorInterceptor | null = null;
 
-export const setUnauthorizedInterceptor = (callback: () => void) => {
+export const setUnauthorizedInterceptor = (
+  callback: UnauthorizedInterceptor,
+) => {
   onUnauthorizedCallback = callback;
 };
 
-export const setServerErrorInterceptor = (callback: (endpoint: string, status: number, errorData: any) => void) => {
+export const setServerErrorInterceptor = (
+  callback: ServerErrorInterceptor,
+) => {
   onServerErrorCallback = callback;
 };
 
-export const apiClient = async <T>(endpoint: string, options: RequestInit = {}): Promise<T> => {
+const getErrorMessage = (errorData: unknown): string | undefined => {
+  if (
+    typeof errorData !== 'object' ||
+    errorData === null ||
+    !('message' in errorData)
+  ) {
+    return undefined;
+  }
+
+  const { message } = errorData;
+
+  return typeof message === 'string'
+    ? message
+    : undefined;
+};
+
+export const apiClient = async <T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> => {
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
@@ -31,34 +66,63 @@ export const apiClient = async <T>(endpoint: string, options: RequestInit = {}):
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
+      const errorData: unknown = await response
+        .json()
+        .catch(() => null);
 
       if (response.status === 401) {
         if (onUnauthorizedCallback) {
-          onUnauthorizedCallback();
+          await onUnauthorizedCallback();
         }
-        throw new ApiError(401, 'Sessão expirada. Por favor, faça login novamente.', errorData);
+
+        throw new ApiError(
+          401,
+          'Sessão expirada. Por favor, faça login novamente.',
+          errorData,
+        );
       }
 
-      if (response.status >= 500) {
-        if (onServerErrorCallback) {
-          onServerErrorCallback(endpoint, response.status, errorData);
-        }
+      if (
+        response.status >= 500 &&
+        onServerErrorCallback
+      ) {
+        await onServerErrorCallback(
+          endpoint,
+          response.status,
+          errorData,
+        );
       }
 
-      throw new ApiError(response.status, errorData?.message || 'Erro na requisição', errorData);
+      throw new ApiError(
+        response.status,
+        getErrorMessage(errorData) ?? 'Erro na requisição',
+        errorData,
+      );
     }
 
     return (await response.json()) as T;
-
-  } catch (error) {
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+  } catch (error: unknown) {
+    if (
+      error instanceof TypeError &&
+      error.message === 'Failed to fetch'
+    ) {
       if (onServerErrorCallback) {
-        onServerErrorCallback(endpoint, 0, { message: 'Network connection failed / Server offline' });
+        await onServerErrorCallback(
+          endpoint,
+          0,
+          {
+            message:
+              'Network connection failed / Server offline',
+          },
+        );
       }
-      throw new ApiError(0, 'Não foi possível conectar ao servidor. Verifique sua conexão.');
-      // throw new ApiError(0, `Falha de rede. O app tentou conectar em: ${BASE_URL}${endpoint}`); //TODO for debug
+
+      throw new ApiError(
+        0,
+        'Não foi possível conectar ao servidor. Verifique sua conexão.',
+      );
     }
+
     throw error;
   }
 };

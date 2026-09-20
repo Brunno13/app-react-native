@@ -1,6 +1,11 @@
 import { apiClient, setUnauthorizedInterceptor } from './apiClient';
 
-(global as any).fetch = jest.fn();
+const fetchMock = jest.fn<Promise<Response>, Parameters<typeof fetch>>();
+
+Object.defineProperty(global, 'fetch', {
+  writable: true,
+  value: fetchMock,
+});
 
 describe('apiClient', () => {
   afterEach(() => {
@@ -9,32 +14,38 @@ describe('apiClient', () => {
 
   it('deve realizar a requisição com sucesso e retornar os dados', async () => {
     const mockData = { name: 'Brunno' };
-    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
+
+    fetchMock.mockResolvedValueOnce({
       ok: true,
-      json: async () => mockData,
-    });
+      json: () => Promise.resolve(mockData),
+    } as Response);
 
     const result = await apiClient('/users/me');
-    
-    expect(global.fetch).toHaveBeenCalledWith(
+
+    expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('/users/me'),
-      expect.any(Object)
+      expect.any(Object),
     );
+
     expect(result).toEqual(mockData);
   });
 
   it('deve acionar o interceptor de 401 quando a sessão expirar', async () => {
-    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
+    fetchMock.mockResolvedValueOnce({
       ok: false,
       status: 401,
-      json: async () => ({ message: 'Unauthorized' }),
-    });
+      json: () => Promise.resolve({ message: 'Unauthorized' }),
+    } as Response);
 
-    const mockInterceptor = jest.fn();
+    const mockInterceptor = jest.fn(() => Promise.resolve());
     setUnauthorizedInterceptor(mockInterceptor);
 
-    await expect(apiClient('/protected')).rejects.toThrow('Sessão expirada. Por favor, faça login novamente.');
-    
+    await expect(
+      apiClient('/protected'),
+    ).rejects.toThrow(
+      'Sessão expirada. Por favor, faça login novamente.',
+    );
+
     expect(mockInterceptor).toHaveBeenCalledTimes(1);
   });
 });
