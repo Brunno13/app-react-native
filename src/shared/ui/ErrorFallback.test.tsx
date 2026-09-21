@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { ErrorFallback } from './ErrorFallback';
 
 jest.mock('react-i18next', () => ({
@@ -11,16 +11,22 @@ jest.mock('react-native/Libraries/Utilities/useColorScheme', () => ({
 }));
 
 jest.mock('react-native-safe-area-context', () => {
-  const { View } = require('react-native');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    SafeAreaView: ({ children, style }: any) => <View style={style}>{children}</View>,
+    SafeAreaView: ({
+      children,
+      style,
+    }: {
+      children?: React.ReactNode;
+      style?: React.ComponentProps<typeof View>['style'];
+    }) => <View style={style}>{children}</View>,
   };
 });
 
 jest.mock('@expo/vector-icons', () => {
-  const { Text } = require('react-native');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    FontAwesome: ({ name, color }: any) => (
+    FontAwesome: ({ name, color }: { name: string; color?: string }) => (
       <Text testID="icon-mock" style={{ color }}>{name}</Text>
     )
   };
@@ -60,9 +66,7 @@ describe('ErrorFallback', () => {
 
     const tryAgainBtn = getByText('errors.buttonTryAgain');
 
-    await act(async () => {
-      fireEvent.press(tryAgainBtn);
-    });
+    await fireEvent.press(tryAgainBtn);
 
     expect(mockResetErrorBoundary).toHaveBeenCalledTimes(1);
   });
