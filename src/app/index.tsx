@@ -7,7 +7,7 @@ export default function IndexScreen() {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <ActivityIndicator testID="index-loading-indicator" size="large" color={colors.primary} />
     </View>
   );
 }
