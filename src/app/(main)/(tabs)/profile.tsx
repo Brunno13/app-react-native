@@ -9,6 +9,8 @@ import { usePreferences } from '@/features/profile';
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
+const THEME_OPTIONS = ['light', 'dark', 'system'] as const;
+
 export default function ProfileRoute() {
   const { session } = useGlobalAuth();
   const { signOut } = useAuth();
@@ -90,13 +92,13 @@ export default function ProfileRoute() {
               </View>
               
               <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', marginTop: spacing.sm }}>
-                {['light', 'dark', 'system'].map((themeOption) => {
+                {THEME_OPTIONS.map((themeOption) => {
                   const isActive = themePreference === themeOption;
                   return (
                     <TouchableOpacity
                       key={themeOption}
                       testID={`theme-option-${themeOption}`}
-                      onPress={() => updatePreferences({ theme: themeOption as any })}
+                      onPress={() => { void updatePreferences({ theme: themeOption }); }}
                       style={[
                         styles.themeOptionButton,
                         {
@@ -136,7 +138,7 @@ export default function ProfileRoute() {
               />
             </View>
           </View>
-          <TouchableOpacity testID="button-logout" style={globalStyles.buttonDanger} onPress={signOut}>
+          <TouchableOpacity testID="button-logout" style={globalStyles.buttonDanger} onPress={() => { void signOut(); }}>
             <Text style={globalStyles.buttonText}>{t('profileScreen.logout')}</Text>
           </TouchableOpacity>
         </ScrollView>

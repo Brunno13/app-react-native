@@ -29,7 +29,7 @@ export const usePreferences = (userId: string | undefined) => {
   }, [db, userId]);
 
   useEffect(() => {
-    loadPreferences();
+    void loadPreferences();
   }, [loadPreferences]);
 
   const updatePreferences = async (updates: Partial<UserPreferences>) => {
@@ -41,7 +41,7 @@ export const usePreferences = (userId: string | undefined) => {
     const success = await PreferenceService.updateUserPreferences(db, userId, updates);
 
     if (!success) {
-      setPreferences(previousPreferences as UserPreferences);
+      setPreferences(previousPreferences);
       return false;
     }
 
