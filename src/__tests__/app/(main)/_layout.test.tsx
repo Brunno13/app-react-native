@@ -4,6 +4,8 @@ import { useGlobalAuth } from '@/features/auth';
 import { usePreferences } from '@/features/profile';
 import MainLayout from '@/app/(main)/_layout';
 
+type BiometricGateMockProps = React.ComponentProps<(typeof import('@/features/auth'))['BiometricGate']>;
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
@@ -19,11 +21,13 @@ jest.mock('@/shared/providers/ThemeProvider', () => ({
 }));
 
 jest.mock('@/features/auth', () => {
-  const { View, Text } = require('react-native');
+  const { View, Text } =
+    jest.requireActual<typeof import('react-native')>('react-native');
+
   return {
     useGlobalAuth: jest.fn(),
-    
-    BiometricGate: ({ isBiometricsEnabled, loading, children }: any) => (
+
+    BiometricGate: ({ isBiometricsEnabled, loading, children }: BiometricGateMockProps) => (
       <View testID="mock-biometric-gate">
         <Text testID="prop-bio">{String(isBiometricsEnabled)}</Text>
         <Text testID="prop-loading">{String(loading)}</Text>
@@ -38,18 +42,37 @@ jest.mock('@/features/profile', () => ({
 }));
 
 jest.mock('expo-router', () => {
-  const { View } = require('react-native');
-  
-  const MockStack = ({ children, screenOptions }: any) => (
-    <View testID="mock-stack" screenOptions={screenOptions}>
-      {children}
-    </View>
+  const { View } =
+    jest.requireActual<typeof import('react-native')>('react-native');
+
+  type MockStackProps = React.PropsWithChildren<{
+    screenOptions?: unknown;
+  }>;
+
+  type MockScreenProps = {
+    name: string;
+    options?: unknown;
+  };
+
+  const MockStack = Object.assign(
+    ({ children, screenOptions }: MockStackProps) => (
+      <View
+        testID="mock-stack"
+        accessibilityLabel={JSON.stringify(screenOptions)}
+      >
+        {children}
+      </View>
+    ),
+    {
+      Screen: ({ name, options }: MockScreenProps) => (
+        <View
+          testID={`mock-screen-${name}`}
+          accessibilityLabel={JSON.stringify(options)}
+        />
+      ),
+    },
   );
-  
-  MockStack.Screen = ({ name, options }: any) => (
-    <View testID={`mock-screen-${name}`} options={options} />
-  );
-  
+
   return { Stack: MockStack };
 });
 
@@ -101,38 +124,43 @@ describe('MainLayout (Camada App - Área Protegida)', () => {
   it('deve configurar o Stack globalmente com as cores corretas do ThemeProvider', async () => {
     const { getByTestId } = await render(<MainLayout />);
 
-    const stack = getByTestId('mock-stack');
-    
-    expect(stack.props.screenOptions).toEqual(
-      expect.objectContaining({
+    expect(getByTestId('mock-stack')).toHaveProp(
+      'accessibilityLabel',
+      JSON.stringify({
         headerStyle: { backgroundColor: '#FFFFFF' },
         headerTintColor: '#000000',
         headerShadowVisible: false,
         contentStyle: { backgroundColor: '#F0F0F0' },
-      })
+      }),
     );
   });
 
   it('deve configurar a rota (tabs) para não exibir o cabeçalho (headerShown: false)', async () => {
     const { getByTestId } = await render(<MainLayout />);
 
-    const tabsScreen = getByTestId('mock-screen-(tabs)');
-    expect(tabsScreen.props.options).toEqual({ headerShown: false });
+    expect(getByTestId('mock-screen-(tabs)')).toHaveProp(
+      'accessibilityLabel',
+      JSON.stringify({ headerShown: false }),
+    );
   });
 
   it('deve configurar as rotas edit-profile e security com os títulos traduzidos e formato card', async () => {
     const { getByTestId } = await render(<MainLayout />);
 
-    const editProfileScreen = getByTestId('mock-screen-edit-profile');
-    expect(editProfileScreen.props.options).toEqual({ 
-      title: 'navigation.editProfile', 
-      presentation: 'card' 
-    });
+    expect(getByTestId('mock-screen-edit-profile')).toHaveProp(
+      'accessibilityLabel',
+      JSON.stringify({
+        title: 'navigation.editProfile',
+        presentation: 'card',
+      }),
+    );
 
-    const securityScreen = getByTestId('mock-screen-security');
-    expect(securityScreen.props.options).toEqual({ 
-      title: 'navigation.security', 
-      presentation: 'card' 
-    });
+    expect(getByTestId('mock-screen-security')).toHaveProp(
+      'accessibilityLabel',
+      JSON.stringify({
+        title: 'navigation.security',
+        presentation: 'card',
+      }),
+    );
   });
 });

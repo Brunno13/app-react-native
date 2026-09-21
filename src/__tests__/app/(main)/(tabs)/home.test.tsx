@@ -37,7 +37,7 @@ describe('HomeRoute (Camada App)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     (useNotification as jest.Mock).mockReturnValue({
       showToast: mockShowToast,
       showModal: mockShowModal,
@@ -66,7 +66,7 @@ describe('HomeRoute (Camada App)', () => {
     (useGlobalAuth as jest.Mock).mockReturnValue({ session: null });
     const { getByText } = await render(<HomeRoute />);
 
-    fireEvent.press(getByText('home.testToast'));
+    await fireEvent.press(getByText('home.testToast'));
 
     expect(mockShowToast).toHaveBeenCalledTimes(1);
     expect(mockShowToast).toHaveBeenCalledWith('home.toastTitle', 'home.toastMessage', 'success');
@@ -76,7 +76,7 @@ describe('HomeRoute (Camada App)', () => {
     (useGlobalAuth as jest.Mock).mockReturnValue({ session: null });
     const { getByText } = await render(<HomeRoute />);
 
-    fireEvent.press(getByText('home.testModal'));
+    await fireEvent.press(getByText('home.testModal'));
 
     expect(mockShowModal).toHaveBeenCalledTimes(1);
     expect(mockShowModal).toHaveBeenCalledWith('home.modalTitle', 'home.modalMessage', 'info');
@@ -84,10 +84,10 @@ describe('HomeRoute (Camada App)', () => {
 
   it('deve renderizar o botão de Simular Crash na tela corretamente', async () => {
     (useGlobalAuth as jest.Mock).mockReturnValue({ session: null });
-    
+
     const { getByText } = await render(<HomeRoute />);
     const crashButton = getByText('home.simulateCrash');
-    
+
     expect(crashButton).toBeTruthy();
   });
 });
