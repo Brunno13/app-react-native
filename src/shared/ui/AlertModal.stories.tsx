@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type ComponentProps } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react';
 import { AlertModal } from './AlertModal';
@@ -11,8 +11,9 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+type AlertModalStoryArgs = ComponentProps<typeof AlertModal>;
 
-const InteractiveModal = (args: any) => {
+const InteractiveModal = (args: AlertModalStoryArgs) => {
   const [isVisible, setIsVisible] = useState(args.visible);
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const InteractiveModal = (args: any) => {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => setIsVisible(true)}
         style={{ padding: 12, backgroundColor: '#333333', borderRadius: 8 }}
       >
