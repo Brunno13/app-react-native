@@ -4,12 +4,13 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getForgotPasswordSchema, type ForgotPasswordFormData } from '../domain/authSchema';
+import type { AuthError } from '../hooks/useAuth';
 
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 interface ForgotPasswordFormProps {
-  onResetPassword: (email: string) => Promise<{ error: any }>;
+  onResetPassword: (email: string) => Promise<{ error: AuthError | null }>;
   loading: boolean;
   onNavigateToLogin: () => void;
 }
@@ -34,7 +35,7 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setStatusMsg('');
     const response = await onResetPassword(data.email);
-    
+
     if (response?.error) {
       setStatusMsg(`${t('errors.genericError')}: ${response.error.message}`);
     } else {
@@ -52,7 +53,7 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
   return (
     <View style={styles.container}>
       <Text style={globalStyles.title}>{t('auth.recoverPassword')}</Text>
-      
+
       {statusMsg ? (
         <Text style={styles.statusText}>{statusMsg}</Text>
       ) : null}
@@ -72,15 +73,15 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
             value={value}
             editable={!loading}
             returnKeyType="send"
-            onSubmitEditing={handleSubmit(onSubmit)}
+            onSubmitEditing={() => { void handleSubmit(onSubmit)(); }}
           />
         )}
       />
       {errors.email && <Text style={globalStyles.formErrorText}>{errors.email.message}</Text>}
 
-      <TouchableOpacity 
-        style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]} 
-        onPress={handleSubmit(onSubmit)} 
+      <TouchableOpacity
+        style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]}
+        onPress={() => { void handleSubmit(onSubmit)(); }}
         disabled={!isValid || loading}
       >
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('auth.sendLink')}</Text>}

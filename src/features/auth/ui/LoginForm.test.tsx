@@ -11,9 +11,9 @@ jest.mock('@/shared/providers/ThemeProvider', () => ({
 }));
 
 jest.mock('@/shared/ui/globalStyles', () => ({
-  useGlobalStyles: () => ({ 
-    title: {}, input: {}, inputError: {}, formErrorText: {}, 
-    buttonPrimary: {}, buttonText: {}, linkText: {}, textSecondary: { color: '#000' } 
+  useGlobalStyles: () => ({
+    title: {}, input: {}, inputError: {}, formErrorText: {},
+    buttonPrimary: {}, buttonText: {}, linkText: {}, textSecondary: { color: '#000' }
   }),
 }));
 
@@ -33,11 +33,11 @@ describe('LoginForm', () => {
 
   it('deve renderizar os campos e botões corretamente', async () => {
     const { getByPlaceholderText, getByText } = await render(
-      <LoginForm 
-        onLogin={mockOnLogin} 
-        loading={false} 
-        onNavigateToSignUp={mockOnNavigateToSignUp} 
-        onNavigateToForgot={mockOnNavigateToForgot} 
+      <LoginForm
+        onLogin={mockOnLogin}
+        loading={false}
+        onNavigateToSignUp={mockOnNavigateToSignUp}
+        onNavigateToForgot={mockOnNavigateToForgot}
       />
     );
 
@@ -48,20 +48,20 @@ describe('LoginForm', () => {
 
   it('deve disparar erros de validação do Zod ao interagir e deixar os campos inválidos', async () => {
     const { getByPlaceholderText, findByText } = await render(
-      <LoginForm 
-        onLogin={mockOnLogin} 
-        loading={false} 
-        onNavigateToSignUp={jest.fn()} 
-        onNavigateToForgot={jest.fn()} 
+      <LoginForm
+        onLogin={mockOnLogin}
+        loading={false}
+        onNavigateToSignUp={jest.fn()}
+        onNavigateToForgot={jest.fn()}
       />
     );
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'formato-invalido');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'formato-invalido');
     });
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), ''); 
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), '');
     });
 
     expect(await findByText('validation.emailInvalid')).toBeTruthy();
@@ -73,65 +73,65 @@ describe('LoginForm', () => {
     mockOnLogin.mockResolvedValueOnce({ error: null });
 
     const { getByPlaceholderText, getByText } = await render(
-      <LoginForm 
-        onLogin={mockOnLogin} 
-        loading={false} 
-        onNavigateToSignUp={jest.fn()} 
-        onNavigateToForgot={jest.fn()} 
+      <LoginForm
+        onLogin={mockOnLogin}
+        loading={false}
+        onNavigateToSignUp={jest.fn()}
+        onNavigateToForgot={jest.fn()}
       />
     );
 
     const submitButton = getByText('auth.login');
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
     });
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), 'senha123');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), 'senha123');
     });
 
     await waitFor(() => {
-      expect(submitButton.props.accessibilityState?.disabled).toBeFalsy();
+      expect(submitButton).toBeEnabled();
     });
 
-    await act(async () => {
-      fireEvent.press(submitButton);
+    await act(() => {
+      void fireEvent.press(submitButton);
     });
 
     expect(mockOnLogin).toHaveBeenCalledWith('brunno@teste.com', 'senha123');
   });
 
   it('deve exibir modal de erro se a API retornar erro OFFLINE', async () => {
-    mockOnLogin.mockResolvedValueOnce({ 
-      error: { code: 'OFFLINE', message: 'Sem internet' } 
+    mockOnLogin.mockResolvedValueOnce({
+      error: { code: 'OFFLINE', message: 'Sem internet' }
     });
 
     const { getByPlaceholderText, getByText } = await render(
-      <LoginForm 
-        onLogin={mockOnLogin} 
-        loading={false} 
-        onNavigateToSignUp={jest.fn()} 
-        onNavigateToForgot={jest.fn()} 
+      <LoginForm
+        onLogin={mockOnLogin}
+        loading={false}
+        onNavigateToSignUp={jest.fn()}
+        onNavigateToForgot={jest.fn()}
       />
     );
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
     });
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), '123456');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), '123456');
     });
 
     const submitButton = getByText('auth.login');
-    
+
     await waitFor(() => {
-      expect(submitButton.props.accessibilityState?.disabled).toBeFalsy();
+      expect(submitButton).toBeEnabled();
     });
 
-    await act(async () => {
-      fireEvent.press(submitButton);
+    await act(() => {
+      void fireEvent.press(submitButton);
     });
 
     expect(mockShowModal).toHaveBeenCalledWith('alerts.networkError', 'Sem internet', 'error');
@@ -139,16 +139,16 @@ describe('LoginForm', () => {
 
   it('deve navegar e limpar os erros ao clicar em Esqueceu a Senha', async () => {
     const { getByText } = await render(
-      <LoginForm 
-        onLogin={mockOnLogin} 
-        loading={false} 
-        onNavigateToSignUp={mockOnNavigateToSignUp} 
-        onNavigateToForgot={mockOnNavigateToForgot} 
+      <LoginForm
+        onLogin={mockOnLogin}
+        loading={false}
+        onNavigateToSignUp={mockOnNavigateToSignUp}
+        onNavigateToForgot={mockOnNavigateToForgot}
       />
     );
 
-    await act(async () => {
-      fireEvent.press(getByText('auth.forgotPasswordLink'));
+    await act(() => {
+      void fireEvent.press(getByText('auth.forgotPasswordLink'));
     });
 
     expect(mockOnNavigateToForgot).toHaveBeenCalledTimes(1);

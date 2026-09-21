@@ -21,7 +21,7 @@ jest.mock('@/shared/ui/globalStyles', () => ({
     buttonPrimary: {},
     buttonText: {},
     linkText: {},
-    textSecondary: { color: '#666666' }, 
+    textSecondary: { color: '#666666' },
   }),
 }));
 
@@ -58,12 +58,12 @@ describe('SignUpForm', () => {
       />
     );
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), 'SenhaForte123');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), 'SenhaForte123');
     });
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.confirmPasswordPlaceholder'), 'SenhaDiferente');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.confirmPasswordPlaceholder'), 'SenhaDiferente');
     });
 
     expect(await findByText('validation.passwordsDontMatch')).toBeTruthy();
@@ -81,30 +81,30 @@ describe('SignUpForm', () => {
       />
     );
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.namePlaceholder'), 'Brunno');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.namePlaceholder'), 'Brunno');
     });
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
     });
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), 'SenhaForte123');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.passwordPlaceholder'), 'SenhaForte123');
     });
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.confirmPasswordPlaceholder'), 'SenhaForte123');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.confirmPasswordPlaceholder'), 'SenhaForte123');
     });
 
     const submitButton = getByText('auth.createAccountButton');
 
     await waitFor(() => {
-      expect(submitButton.props.accessibilityState?.disabled).toBeFalsy();
+      expect(submitButton).toBeEnabled();
     });
 
-    await act(async () => {
-      fireEvent.press(submitButton);
+    await act(() => {
+      void fireEvent.press(submitButton);
     });
 
     expect(mockOnSignUp).toHaveBeenCalledWith({
@@ -124,8 +124,8 @@ describe('SignUpForm', () => {
       />
     );
 
-    await act(async () => {
-      fireEvent.press(getByText('auth.login'));
+    await act(() => {
+      void fireEvent.press(getByText('auth.login'));
     });
 
     expect(mockOnNavigateToLogin).toHaveBeenCalledTimes(1);
