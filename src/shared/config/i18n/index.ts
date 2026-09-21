@@ -6,7 +6,7 @@ import { en } from './locales/en';
 
 const deviceLanguage = Localization.getLocales()[0]?.languageCode ?? 'pt';
 
-i18n
+void i18n
   .use(initReactI18next)
   .init({
     resources: {
