@@ -22,9 +22,9 @@ jest.mock('@/shared/ui/globalStyles', () => ({
 
 // Mock do FontAwesome simplificado
 jest.mock('@expo/vector-icons', () => {
-  const { Text } = require('react-native');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    FontAwesome: ({ name, color }: any) => (
+    FontAwesome: ({ name, color }: { name: string; color: string }) => (
       <Text testID="icon-mock" style={{ color }}>{name}</Text>
     )
   };
@@ -32,21 +32,23 @@ jest.mock('@expo/vector-icons', () => {
 
 describe('Toast', () => {
   const mockOnHide = jest.fn();
-  let springSpy: jest.SpyInstance;
-  let timingSpy: jest.SpyInstance;
-  let setTimeoutSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    const mockStart = jest.fn((callback) => {
-      if (callback) callback({ finished: true });
-    });
 
-    springSpy = jest.spyOn(Animated, 'spring').mockReturnValue({ start: mockStart } as any);
-    timingSpy = jest.spyOn(Animated, 'timing').mockReturnValue({ start: mockStart } as any);
-    
-    setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    const mockStart: ReturnType<typeof Animated.spring>['start'] = (callback) => {
+      callback?.({ finished: true });
+    };
+    const mockAnimation: ReturnType<typeof Animated.spring> = {
+      start: mockStart,
+      stop: jest.fn(),
+      reset: jest.fn(),
+    };
+
+    jest.spyOn(Animated, 'spring').mockReturnValue(mockAnimation);
+    jest.spyOn(Animated, 'timing').mockReturnValue(mockAnimation);
+
+    jest.spyOn(global, 'setTimeout');
   });
 
   afterEach(() => {
@@ -59,7 +61,7 @@ describe('Toast', () => {
     );
 
     expect(queryByText('T')).toBeNull();
-    expect(springSpy).not.toHaveBeenCalled();
+    expect(jest.mocked(Animated.spring)).not.toHaveBeenCalled();
   });
 
   it('deve renderizar título, mensagem e disparar a animação spring ao ficar visível', async () => {
@@ -70,10 +72,10 @@ describe('Toast', () => {
     expect(getByText('Concluído')).toBeTruthy();
     expect(getByText('Dados salvos.')).toBeTruthy();
 
-    expect(getByTestId('icon-mock').props.children).toBe('check-circle');
+    expect(getByTestId('icon-mock')).toHaveTextContent('check-circle');
 
-    expect(springSpy).toHaveBeenCalledTimes(1);
-    expect(springSpy).toHaveBeenCalledWith(
+    expect(jest.mocked(Animated.spring)).toHaveBeenCalledTimes(1);
+    expect(jest.mocked(Animated.spring)).toHaveBeenCalledWith(
       expect.any(Animated.Value),
       expect.objectContaining({ toValue: 50, bounciness: 12 })
     );
@@ -84,18 +86,27 @@ describe('Toast', () => {
       <Toast visible={true} title="T" message="M" type="info" onHide={mockOnHide} />
     );
 
-    expect(springSpy).toHaveBeenCalledTimes(1);
-    expect(timingSpy).not.toHaveBeenCalled();
+    expect(jest.mocked(Animated.spring)).toHaveBeenCalledTimes(1);
+    expect(jest.mocked(Animated.timing)).not.toHaveBeenCalled();
 
-    const timeoutCall = setTimeoutSpy.mock.calls.find(call => call[1] === 3000);
+    const timeoutCall = jest.mocked(global.setTimeout).mock.calls.find((call) => call[1] === 3000);
     expect(timeoutCall).toBeDefined();
 
-    const timerCallback = timeoutCall![0];
-    await act(async () => {
+    if (!timeoutCall) {
+      throw new Error('Timer de 3000ms nao encontrado');
+    }
+
+    const timerCallback = timeoutCall[0];
+
+    if (typeof timerCallback !== 'function') {
+      throw new Error('Callback do timer nao e uma funcao');
+    }
+
+    await act(() => {
       timerCallback();
     });
 
-    expect(timingSpy).toHaveBeenCalledTimes(1);
+    expect(jest.mocked(Animated.timing)).toHaveBeenCalledTimes(1);
     expect(mockOnHide).toHaveBeenCalledTimes(1);
   });
 
@@ -105,13 +116,11 @@ describe('Toast', () => {
     );
 
     expect(getByText('Erro')).toBeTruthy();
-    expect(springSpy).toHaveBeenCalledTimes(1);
-    
-    await act(async () => {
-      fireEvent.press(getByText('Erro'));
-    });
+    expect(jest.mocked(Animated.spring)).toHaveBeenCalledTimes(1);
 
-    expect(timingSpy).toHaveBeenCalledTimes(1);
+    await fireEvent.press(getByText('Erro'));
+
+    expect(jest.mocked(Animated.timing)).toHaveBeenCalledTimes(1);
     expect(mockOnHide).toHaveBeenCalledTimes(1);
   });
 
@@ -119,15 +128,15 @@ describe('Toast', () => {
     const { getByTestId, rerender } = await render(
       <Toast visible={true} title="E" message="M" type="error" onHide={mockOnHide} />
     );
-    let icon = getByTestId('icon-mock');
-    expect(icon.props.children).toBe('exclamation-circle');
-    expect(icon.props.style.color).toBe('#EF4444');
+    const errorIcon = getByTestId('icon-mock');
+    expect(errorIcon).toHaveTextContent('exclamation-circle');
+    expect(errorIcon).toHaveStyle({ color: '#EF4444' });
 
     await rerender(
       <Toast visible={true} title="I" message="M" type="info" onHide={mockOnHide} />
     );
-    icon = getByTestId('icon-mock');
-    expect(icon.props.children).toBe('info-circle');
-    expect(icon.props.style.color).toBe('#3B82F6');
+    const infoIcon = getByTestId('icon-mock');
+    expect(infoIcon).toHaveTextContent('info-circle');
+    expect(infoIcon).toHaveStyle({ color: '#3B82F6' });
   });
 });
