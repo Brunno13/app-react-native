@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { render } from '@testing-library/react-native';
 import AuthLayout from '@/app/(auth)/_layout';
 
@@ -7,18 +7,42 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('expo-router', () => {
-  const { View } = require('react-native');
-  
-  const MockStack = ({ children, screenOptions }: any) => (
-    <View testID="mock-stack" screenOptions={screenOptions}>
-      {children}
-    </View>
+  const { View } =
+    jest.requireActual<typeof import('react-native')>('react-native');
+
+  type MockStackProps = PropsWithChildren<{
+    screenOptions?: {
+      animation?: string;
+    };
+  }>;
+
+  type MockScreenProps = {
+    name: string;
+    options?: {
+      title?: string;
+      headerShown?: boolean;
+    };
+  };
+
+  const MockStack = Object.assign(
+    ({ children, screenOptions }: MockStackProps) => (
+      <View
+        testID="mock-stack"
+        accessibilityLabel={JSON.stringify(screenOptions)}
+      >
+        {children}
+      </View>
+    ),
+    {
+      Screen: ({ name, options }: MockScreenProps) => (
+        <View
+          testID={`mock-screen-${name}`}
+          accessibilityLabel={JSON.stringify(options)}
+        />
+      ),
+    },
   );
-  
-  MockStack.Screen = ({ name, options }: any) => (
-    <View testID={`mock-screen-${name}`} options={options} />
-  );
-  
+
   return { Stack: MockStack };
 });
 
@@ -29,37 +53,43 @@ describe('AuthLayout', () => {
 
   it('deve renderizar o Stack contêiner com a animação correta', async () => {
     const { getByTestId } = await render(<AuthLayout />);
-    
-    const stack = getByTestId('mock-stack');
-    expect(stack.props.screenOptions).toEqual({ animation: 'slide_from_right' });
+
+    expect(getByTestId('mock-stack')).toHaveProp(
+      'accessibilityLabel',
+      JSON.stringify({ animation: 'slide_from_right' }),
+    );
   });
 
   it('deve configurar a tela de login sem cabeçalho (headerShown: false)', async () => {
     const { getByTestId } = await render(<AuthLayout />);
-    
-    const loginScreen = getByTestId('mock-screen-login');
-    expect(loginScreen.props.options).toEqual({ 
-      headerShown: false 
-    });
+
+    expect(getByTestId('mock-screen-login')).toHaveProp(
+      'accessibilityLabel',
+      JSON.stringify({ headerShown: false }),
+    );
   });
 
   it('deve configurar a tela de signup com o título traduzido e sem cabeçalho', async () => {
     const { getByTestId } = await render(<AuthLayout />);
-    
-    const signupScreen = getByTestId('mock-screen-signup');
-    expect(signupScreen.props.options).toEqual({ 
-      title: 'navigation.signUp', 
-      headerShown: false 
-    });
+
+    expect(getByTestId('mock-screen-signup')).toHaveProp(
+      'accessibilityLabel',
+      JSON.stringify({
+        title: 'navigation.signUp',
+        headerShown: false,
+      }),
+    );
   });
 
   it('deve configurar a tela de forgot-password com o título traduzido e sem cabeçalho', async () => {
     const { getByTestId } = await render(<AuthLayout />);
-    
-    const forgotPwdScreen = getByTestId('mock-screen-forgot-password');
-    expect(forgotPwdScreen.props.options).toEqual({ 
-      title: 'navigation.forgotPassword', 
-      headerShown: false 
-    });
+
+    expect(getByTestId('mock-screen-forgot-password')).toHaveProp(
+      'accessibilityLabel',
+      JSON.stringify({
+        title: 'navigation.forgotPassword',
+        headerShown: false,
+      }),
+    );
   });
 });
