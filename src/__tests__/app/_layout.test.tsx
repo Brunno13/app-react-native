@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { render } from '@testing-library/react-native';
 import { useRouter, useSegments } from 'expo-router';
 import { useGlobalAuth } from '@/features/auth';
@@ -11,24 +11,24 @@ jest.mock('@/features/auth', () => ({
 }));
 
 jest.mock('@/app/_providers/_AppProvider', () => {
-  const { View } = require('react-native');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    AppProvider: ({ children }: any) => <View testID="mock-app-provider">{children}</View>,
+    AppProvider: ({ children }: { children?: ReactNode }) => <View testID="mock-app-provider">{children}</View>,
   };
 });
 
 jest.mock('react-error-boundary', () => {
-  const { View } = require('react-native');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    ErrorBoundary: ({ children }: any) => <View testID="mock-error-boundary">{children}</View>,
+    ErrorBoundary: ({ children }: { children?: ReactNode }) => <View testID="mock-error-boundary">{children}</View>,
   };
 });
 
 jest.mock('expo-router', () => {
-  const { View } = require('react-native');
-  const MockStack = ({ children }: any) => <View testID="mock-stack">{children}</View>;
-  MockStack.Screen = ({ name }: any) => <View testID={`mock-screen-${name}`} />;
-  
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const MockStack = ({ children }: { children?: ReactNode }) => <View testID="mock-stack">{children}</View>;
+  MockStack.Screen = ({ name }: { name: string }) => <View testID={`mock-screen-${name}`} />;
+
   return {
     Stack: MockStack,
     useRouter: jest.fn(),
@@ -41,7 +41,7 @@ describe('RootLayout & AppNavigation', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     (useRouter as jest.Mock).mockReturnValue({ replace: mockReplace });
   });
 
