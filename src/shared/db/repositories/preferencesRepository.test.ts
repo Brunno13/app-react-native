@@ -14,14 +14,34 @@ jest.mock('drizzle-orm', () => ({
   eq: jest.fn((col, val) => `eq(${col},${val})`),
 }));
 
+
+type PreferenceInsertPayload = {
+  id: string;
+  userId: string;
+  theme?: 'light' | 'dark' | 'system';
+  isOfflineModeEnabled?: boolean;
+  isBiometricsEnabled?: boolean;
+  updatedAt: Date;
+};
+
+type ConflictUpdatePayload = {
+  target: unknown;
+  set: {
+    theme?: 'light' | 'dark' | 'system';
+    isOfflineModeEnabled?: boolean;
+    isBiometricsEnabled?: boolean;
+    updatedAt: Date;
+  };
+};
+
 describe('PreferencesRepository', () => {
   const mockUserId = 'user-123';
 
   let mockWhereSelect: jest.Mock;
   let mockFrom: jest.Mock;
   let mockSelect: jest.Mock;
-  let mockOnConflictDoUpdate: jest.Mock;
-  let mockValues: jest.Mock;
+  let mockOnConflictDoUpdate: jest.Mock<Promise<void>, [ConflictUpdatePayload]>;
+  let mockValues: jest.Mock<{ onConflictDoUpdate: typeof mockOnConflictDoUpdate }, [PreferenceInsertPayload]>;
   let mockInsert: jest.Mock;
   let mockWhereDelete: jest.Mock;
   let mockDelete: jest.Mock;
@@ -43,8 +63,8 @@ describe('PreferencesRepository', () => {
     mockFrom = jest.fn(() => ({ where: mockWhereSelect }));
     mockSelect = jest.fn(() => ({ from: mockFrom }));
 
-    mockOnConflictDoUpdate = jest.fn();
-    mockValues = jest.fn(() => ({ onConflictDoUpdate: mockOnConflictDoUpdate }));
+    mockOnConflictDoUpdate = jest.fn<Promise<void>, [ConflictUpdatePayload]>();
+    mockValues = jest.fn<{ onConflictDoUpdate: typeof mockOnConflictDoUpdate }, [PreferenceInsertPayload]>(() => ({ onConflictDoUpdate: mockOnConflictDoUpdate }));
     mockInsert = jest.fn(() => ({ values: mockValues }));
 
     mockWhereDelete = jest.fn();
@@ -60,12 +80,12 @@ describe('PreferencesRepository', () => {
   describe('get', () => {
     it('deve retornar as preferências se o usuário for encontrado no banco', async () => {
       const mockPrefs = { theme: 'dark', isOfflineModeEnabled: true };
-      
+
       mockWhereSelect.mockResolvedValueOnce([mockPrefs]);
 
       const result = await PreferencesRepository.get(mockDb, mockUserId);
 
-      expect(mockDb.select).toHaveBeenCalled();
+      expect(mockSelect).toHaveBeenCalled();
       expect(mockFrom).toHaveBeenCalledWith(userPreferences);
       expect(eq).toHaveBeenCalledWith(userPreferences.userId, mockUserId);
       expect(mockWhereSelect).toHaveBeenCalledWith(`eq(mock-pref-userid-col,${mockUserId})`);
@@ -97,24 +117,27 @@ describe('PreferencesRepository', () => {
 
       const result = await PreferencesRepository.upsert(mockDb, mockUserId, mockData);
 
-      expect(mockDb.insert).toHaveBeenCalledWith(userPreferences);
-      
-      expect(mockValues).toHaveBeenCalledWith({
+      expect(mockInsert).toHaveBeenCalledWith(userPreferences);
+
+      expect(mockValues).toHaveBeenCalledTimes(1);
+      const insertPayload = mockValues.mock.calls[0]?.[0];
+      expect(insertPayload).toBeDefined();
+      expect(insertPayload).toMatchObject({
         id: mockUserId,
         userId: mockUserId,
         theme: mockData.theme,
         isOfflineModeEnabled: undefined,
         isBiometricsEnabled: mockData.isBiometricsEnabled,
-        updatedAt: expect.any(Date),
       });
+      expect(insertPayload?.updatedAt).toBeInstanceOf(Date);
 
-      expect(mockOnConflictDoUpdate).toHaveBeenCalledWith({
-        target: userPreferences.id,
-        set: {
-          ...mockData,
-          updatedAt: expect.any(Date),
-        },
-      });
+      expect(mockOnConflictDoUpdate).toHaveBeenCalledTimes(1);
+      const conflictPayload = mockOnConflictDoUpdate.mock.calls[0]?.[0];
+      expect(conflictPayload).toBeDefined();
+      expect(conflictPayload?.target).toBe(userPreferences.id);
+      expect(conflictPayload?.set).toMatchObject(mockData);
+      expect(conflictPayload?.set.updatedAt).toBeInstanceOf(Date);
+      expect(conflictPayload?.set.updatedAt).toBe(insertPayload?.updatedAt);
 
       expect(result).toBe(true);
     });
@@ -134,7 +157,7 @@ describe('PreferencesRepository', () => {
 
       const result = await PreferencesRepository.deleteByUser(mockDb, mockUserId);
 
-      expect(mockDb.delete).toHaveBeenCalledWith(userPreferences);
+      expect(mockDelete).toHaveBeenCalledWith(userPreferences);
       expect(eq).toHaveBeenCalledWith(userPreferences.userId, mockUserId);
       expect(mockWhereDelete).toHaveBeenCalledWith(`eq(mock-pref-userid-col,${mockUserId})`);
       expect(result).toBe(true);
