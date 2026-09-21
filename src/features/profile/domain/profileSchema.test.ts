@@ -1,11 +1,11 @@
 import { getEditProfileSchema, getChangePasswordSchema } from './profileSchema';
 
-const mockT = (key: string) => key;
+const mockT = ((key: string) => key) as Parameters<typeof getEditProfileSchema>[0];
 
 describe('Profile Schemas', () => {
 
   describe('getEditProfileSchema', () => {
-    const schema = getEditProfileSchema(mockT as any);
+    const schema = getEditProfileSchema(mockT);
 
     it('deve aceitar um nome válido', () => {
       const result = schema.safeParse({ name: 'Usuário Silva' });
@@ -14,7 +14,7 @@ describe('Profile Schemas', () => {
 
     it('deve rejeitar um nome com menos de 3 caracteres', () => {
       const result = schema.safeParse({ name: 'Zé' });
-      
+
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('validation.nameMin');
@@ -23,7 +23,7 @@ describe('Profile Schemas', () => {
 
     it('deve falhar se o nome tiver espaços em branco que o deixem com menos de 3 caracteres (trim)', () => {
       const result = schema.safeParse({ name: '  A  ' });
-      
+
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('validation.nameMin');
@@ -34,7 +34,7 @@ describe('Profile Schemas', () => {
       // Gera uma string com 51 letras 'A'
       const nomeGigante = 'A'.repeat(51);
       const result = schema.safeParse({ name: nomeGigante });
-      
+
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('validation.nameMax');
@@ -43,7 +43,7 @@ describe('Profile Schemas', () => {
   });
 
   describe('getChangePasswordSchema', () => {
-    const schema = getChangePasswordSchema(mockT as any);
+    const schema = getChangePasswordSchema(mockT);
 
     it('deve aceitar senhas válidas', () => {
       const result = schema.safeParse({
@@ -58,7 +58,7 @@ describe('Profile Schemas', () => {
         currentPassword: '',
         newPassword: 'novaSenhaSegura',
       });
-      
+
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('validation.passwordRequired');
@@ -70,7 +70,7 @@ describe('Profile Schemas', () => {
         currentPassword: 'senhaAntiga123',
         newPassword: 'fraca',
       });
-      
+
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('validation.passwordMin');
