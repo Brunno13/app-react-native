@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { NetworkBanner } from './NetworkBanner';
@@ -11,8 +11,9 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+type NetworkBannerStoryArgs = ComponentProps<typeof NetworkBanner>;
 
-const InteractiveBanner = (args: any) => {
+const InteractiveBanner = (args: NetworkBannerStoryArgs) => {
   const [isOffline, setIsOffline] = useState(args.isOffline);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ const InteractiveBanner = (args: any) => {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => setIsOffline(!isOffline)}
           style={{ padding: 12, backgroundColor: isOffline ? '#4CAF50' : '#DC3545', borderRadius: 8 }}
         >

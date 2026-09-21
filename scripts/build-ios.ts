@@ -17,7 +17,9 @@ try {
   const prebuild = Bun.spawnSync(
     [process.execPath, 'x', 'cross-env', 'CI=1', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'ios', '--clean'], 
     { 
-      stdio: ['inherit', 'inherit', 'inherit'] as any,
+      stdin: 'inherit',
+      stdout: 'inherit',
+      stderr: 'inherit',
       env: {
         ...process.env,
         APP_ENV: appEnv,
@@ -86,7 +88,11 @@ export CI="true"
       '-sdk', 'iphonesimulator',
       '-derivedDataPath', `${currentDir}/ios_build`
     ],
-    { stdio: ['inherit', 'inherit', 'inherit'] as any }
+    {
+      stdin: 'inherit',
+      stdout: 'inherit',
+      stderr: 'inherit',
+    }
   );
 
   if (xcodebuild.exitCode !== 0) {
@@ -101,8 +107,11 @@ export CI="true"
   try {
     const releaseFiles = await readdir(releaseDir);
     appDirName = releaseFiles.find(file => file.endsWith('.app'));
-  } catch (err) {
-    throw new Error(`❌ Diretório de compilação não encontrado: ${releaseDir}`);
+  } catch (error) {
+    throw new Error(
+      `❌ Diretório de compilação não encontrado: ${releaseDir}`,
+      { cause: error },
+    );
   }
 
   if (!appDirName) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import { Text, AppState } from 'react-native';
+import { Text, AppState, type AppStateStatus } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { BiometricGate } from './BiometricGate';
 
@@ -23,7 +23,7 @@ jest.mock('@/shared/ui/globalStyles', () => ({
 const ProtectedContent = () => <Text testID="protected-content">Conteúdo Secreto</Text>;
 
 describe('BiometricGate', () => {
-  let appStateListener: ((state: string) => void) | null = null;
+  let appStateListener: ((state: AppStateStatus) => void) | null = null;
 
   beforeAll(() => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -39,9 +39,12 @@ describe('BiometricGate', () => {
 
     jest.spyOn(AppState, 'addEventListener').mockImplementation((event, handler) => {
       if (event === 'change') {
-        appStateListener = handler as (state: string) => void;
+        appStateListener = handler;
       }
-      return { remove: jest.fn() } as any; 
+      const subscription: ReturnType<typeof AppState.addEventListener> = {
+        remove: jest.fn(),
+      };
+      return subscription;
     });
   });
 
@@ -67,7 +70,7 @@ describe('BiometricGate', () => {
 
     expect(queryByTestId('protected-content')).toBeNull();
     expect(getByText('security.lockScreenPrompt')).toBeTruthy();
-    
+
     await waitFor(() => {
       expect(LocalAuthentication.authenticateAsync).toHaveBeenCalledTimes(1);
     });
@@ -85,10 +88,8 @@ describe('BiometricGate', () => {
     (LocalAuthentication.authenticateAsync as jest.Mock).mockResolvedValueOnce({ success: true });
 
     const unlockButton = getByText('security.unlockButton');
-    
-    await act(async () => {
-      fireEvent.press(unlockButton);
-    });
+
+    await fireEvent.press(unlockButton);
 
     const protectedContent = await findByTestId('protected-content');
     expect(protectedContent).toBeTruthy();
@@ -105,7 +106,7 @@ describe('BiometricGate', () => {
 
     expect(await findByTestId('protected-content')).toBeTruthy();
 
-    await act(async () => {
+    await act(() => {
       if (appStateListener) {
         appStateListener('background');
       }

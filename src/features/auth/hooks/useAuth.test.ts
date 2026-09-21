@@ -7,6 +7,11 @@ import { AuthApi } from '../api/authApi';
 import { AuthStorageService } from '../services/authStorageService';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 
+type UseAuthResult = ReturnType<typeof useAuth>;
+type SignInResult = Awaited<ReturnType<UseAuthResult['signIn']>>;
+type SignInPromise = ReturnType<UseAuthResult['signIn']>;
+type SignInApiResponse = Awaited<ReturnType<typeof AuthApi.signInWithEmail>>;
+
 jest.mock('expo-network', () => ({
   getNetworkStateAsync: jest.fn(),
 }));
@@ -14,7 +19,7 @@ jest.mock('expo-network', () => ({
 jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(),
 }));
-jest.spyOn(DeviceEventEmitter, 'emit');
+const deviceEmitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -56,7 +61,7 @@ describe('useAuth Hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useNotification as jest.Mock).mockReturnValue({ showToast: mockShowToast });
-    
+
     (Network.getNetworkStateAsync as jest.Mock).mockResolvedValue({
       isConnected: true,
       isInternetReachable: true,
@@ -75,7 +80,7 @@ describe('useAuth Hook', () => {
 
     const { result } = await renderHook(() => useAuth());
 
-    let response: any;
+    let response: SignInResult | undefined;
     await act(async () => {
       response = await result.current.signIn('teste@teste.com', '123');
     });
@@ -93,45 +98,45 @@ describe('useAuth Hook', () => {
 
     const { result } = await renderHook(() => useAuth());
 
-    let response: any;
+    let response: SignInResult | undefined;
     await act(async () => {
       response = await result.current.signIn('teste@teste.com', 'senha123');
     });
 
     expect(AuthApi.signInWithEmail).toHaveBeenCalledWith('teste@teste.com', 'senha123');
-    expect(response?.data?.user).toBe('Brunno');
+    expect(response?.data).toEqual({ user: 'Brunno' });
     expect(result.current.loading).toBe(false);
   });
 
  it('deve disparar erro de TIMEOUT se a API demorar mais de 10 segundos', async () => {
     jest.useFakeTimers();
 
-    let resolveFakeApi: (value: any) => void;
-    const fakeApiPromise = new Promise((resolve) => {
-      resolveFakeApi = resolve;
-    });
+    const fakeApiPromise = new Promise<SignInApiResponse>(() => undefined);
 
     (AuthApi.signInWithEmail as jest.Mock).mockImplementationOnce(() => fakeApiPromise);
 
     const { result } = await renderHook(() => useAuth());
 
-    let promiseToResolve: Promise<any>;
-    await act(async () => {
+    let promiseToResolve: SignInPromise | undefined;
+    await act(() => {
       promiseToResolve = result.current.signIn('lento@teste.com', '123');
     });
 
-    await act(async () => {
+    await act(() => {
       jest.advanceTimersByTime(11000);
     });
 
-    const response = await promiseToResolve!;
+    if (!promiseToResolve) {
+      throw new Error('Promise de login nao foi criada');
+    }
 
-    expect(response.error.code).toBe('TIMEOUT');
-    expect(response.error.message).toBe('alerts.timeoutMessage');
+    const response = await promiseToResolve;
+
+    expect(response.error?.code).toBe('TIMEOUT');
+    expect(response.error?.message).toBe('alerts.timeoutMessage');
     expect(result.current.loading).toBe(false);
 
-    resolveFakeApi!({ data: null, error: null });
-    
+
     jest.runOnlyPendingTimers();
   });
 
@@ -144,7 +149,7 @@ describe('useAuth Hook', () => {
 
     expect(AuthStorageService.clearHybridSession).toHaveBeenCalledTimes(1);
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('app_theme');
-    expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('onThemeChange', 'system');
+    expect(deviceEmitSpy).toHaveBeenCalledWith('onThemeChange', 'system');
     expect(AuthApi.signOut).toHaveBeenCalledTimes(1);
     expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
   });
@@ -161,8 +166,8 @@ describe('useAuth Hook', () => {
     });
 
     expect(mockShowToast).toHaveBeenCalledWith(
-      'alerts.error', 
-      'alerts.logoutFailed', 
+      'alerts.error',
+      'alerts.logoutFailed',
       'error'
     );
     expect(result.current.loading).toBe(false);

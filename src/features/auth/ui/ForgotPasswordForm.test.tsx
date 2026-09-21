@@ -22,7 +22,7 @@ jest.mock('@/shared/ui/globalStyles', () => ({
     buttonPrimary: {},
     buttonText: {},
     linkText: {},
-    textSecondary: { color: '#666666' }, 
+    textSecondary: { color: '#666666' },
   }),
 }));
 
@@ -57,8 +57,8 @@ describe('ForgotPasswordForm', () => {
       />
     );
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'email-invalido');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'email-invalido');
     });
 
     expect(await findByText('validation.emailInvalid')).toBeTruthy();
@@ -78,16 +78,16 @@ describe('ForgotPasswordForm', () => {
 
     const submitButton = getByText('auth.sendLink');
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
     });
 
     await waitFor(() => {
-      expect(submitButton.props.accessibilityState?.disabled).toBeFalsy();
+      expect(submitButton).toBeEnabled();
     });
 
-    await act(async () => {
-      fireEvent.press(submitButton);
+    await act(() => {
+      void fireEvent.press(submitButton);
     });
 
     expect(mockOnResetPassword).toHaveBeenCalledWith('brunno@teste.com');
@@ -107,16 +107,16 @@ describe('ForgotPasswordForm', () => {
 
     const submitButton = getByText('auth.sendLink');
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
+    await act(() => {
+      void fireEvent.changeText(getByPlaceholderText('auth.emailPlaceholder'), 'brunno@teste.com');
     });
 
     await waitFor(() => {
-      expect(submitButton.props.accessibilityState?.disabled).toBeFalsy();
+      expect(submitButton).toBeEnabled();
     });
 
-    await act(async () => {
-      fireEvent.press(submitButton);
+    await act(() => {
+      void fireEvent.press(submitButton);
     });
 
     expect(await findByText('errors.genericError: Erro crítico na API')).toBeTruthy();
@@ -131,8 +131,8 @@ describe('ForgotPasswordForm', () => {
       />
     );
 
-    await act(async () => {
-      fireEvent.press(getByText('auth.backToLogin'));
+    await act(() => {
+      void fireEvent.press(getByText('auth.backToLogin'));
     });
 
     expect(mockOnNavigateToLogin).toHaveBeenCalledTimes(1);

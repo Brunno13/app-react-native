@@ -4,12 +4,13 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getRegisterSchema, type RegisterFormData } from '../domain/authSchema';
+import type { AuthError } from '../hooks/useAuth';
 
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 interface SignUpFormProps {
-  onSignUp: (data: RegisterFormData) => Promise<{ error: any }>; 
+  onSignUp: (data: RegisterFormData) => Promise<{ error: AuthError | null }>;
   loading: boolean;
   onNavigateToLogin: () => void;
 }
@@ -144,16 +145,16 @@ export const SignUpForm = ({ onSignUp, loading, onNavigateToLogin }: SignUpFormP
             value={value}
             editable={!loading}
             returnKeyType="send"
-            onSubmitEditing={handleSubmit(onSubmit)}
+            onSubmitEditing={() => { void handleSubmit(onSubmit)(); }}
           />
         )}
       />
       {errors.confirmPassword && <Text style={globalStyles.formErrorText}>{errors.confirmPassword.message}</Text>}
 
-      <TouchableOpacity 
+      <TouchableOpacity
         testID="button-signup"
-        style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]} 
-        onPress={handleSubmit(onSubmit)} 
+        style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]}
+        onPress={() => { void handleSubmit(onSubmit)(); }}
         disabled={!isValid || loading}
       >
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('auth.createAccountButton')}</Text>}

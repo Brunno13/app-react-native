@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, act, waitFor } from '@testing-library/react-native';
-import { DeviceEventEmitter, Text } from 'react-native';
+import { DeviceEventEmitter, Text, useColorScheme } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { AppThemeProvider } from '@/app/_providers/_AppThemeProvider';
 
@@ -15,9 +15,9 @@ jest.mock('react-native/Libraries/Utilities/useColorScheme', () => ({
 }));
 
 jest.mock('@/shared/providers/ThemeProvider', () => {
-  const { View, Text } = require('react-native');
+  const { View, Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    SharedThemeProvider: ({ isDark, themePreference, children }: any) => (
+    SharedThemeProvider: ({ isDark, themePreference, children }: { isDark: boolean; themePreference: 'light' | 'dark' | 'system'; children?: import('react').ReactNode }) => (
       <View testID="mock-shared-theme-provider">
         <Text testID="prop-isDark">{String(isDark)}</Text>
         <Text testID="prop-themePreference">{themePreference}</Text>
@@ -28,12 +28,11 @@ jest.mock('@/shared/providers/ThemeProvider', () => {
 });
 
 describe('AppThemeProvider', () => {
-  let mockUseColorScheme: jest.Mock;
+  const mockUseColorScheme = jest.mocked(useColorScheme);
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    mockUseColorScheme = require('react-native/Libraries/Utilities/useColorScheme').default;
+
   });
 
   it('deve inicializar com o tema "system" (fallback) enquanto aguarda o SecureStore', async () => {
@@ -79,7 +78,7 @@ describe('AppThemeProvider', () => {
       </AppThemeProvider>
     );
 
-    await act(async () => {
+    await act(() => {
       DeviceEventEmitter.emit('onThemeChange', 'light');
     });
 
@@ -98,7 +97,7 @@ describe('AppThemeProvider', () => {
       </AppThemeProvider>
     );
 
-    await act(async () => {
+    await act(() => {
       DeviceEventEmitter.emit('onThemeChange', 'system');
     });
 
@@ -110,7 +109,7 @@ describe('AppThemeProvider', () => {
   it('deve logar um erro no console se o SecureStore falhar na leitura (graceful fail)', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const dbError = new Error('Falha de permissão no Keychain');
-    
+
     (SecureStore.getItemAsync as jest.Mock).mockRejectedValueOnce(dbError);
 
     await render(
@@ -127,8 +126,9 @@ describe('AppThemeProvider', () => {
   });
 
   it('deve remover o listener do DeviceEventEmitter quando o componente for desmontado', async () => {
-    const mockRemove = jest.fn();
-    jest.spyOn(DeviceEventEmitter, 'addListener').mockReturnValueOnce({ remove: mockRemove } as any);
+    const subscription = DeviceEventEmitter.addListener('test-theme-cleanup', () => {});
+    const removeSpy = jest.spyOn(subscription, 'remove');
+    jest.spyOn(DeviceEventEmitter, 'addListener').mockReturnValueOnce(subscription);
 
     const { unmount } = await render(
       <AppThemeProvider>
@@ -136,10 +136,8 @@ describe('AppThemeProvider', () => {
       </AppThemeProvider>
     );
 
-    await act(async () => {
-      unmount();
-    });
+    await unmount();
 
-    expect(mockRemove).toHaveBeenCalledTimes(1);
+    expect(removeSpy).toHaveBeenCalledTimes(1);
   });
 });

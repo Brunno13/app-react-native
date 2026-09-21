@@ -19,7 +19,7 @@ export const PreferenceService = {
         isOfflineModeEnabled: rawPrefs.isOfflineModeEnabled ?? DEFAULT_PREFERENCES.isOfflineModeEnabled,
         isBiometricsEnabled: rawPrefs.isBiometricsEnabled ?? DEFAULT_PREFERENCES.isBiometricsEnabled,
       };
-    } catch (error) {
+    } catch {
       return DEFAULT_PREFERENCES;
     }
   },

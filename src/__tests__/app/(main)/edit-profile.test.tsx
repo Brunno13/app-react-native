@@ -1,10 +1,12 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import { useAuth, useGlobalAuth } from '@/features/auth';
 import { uploadAvatarImage } from '@/features/profile';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 import EditProfileRoute from '@/app/(main)/edit-profile';
+
+type EditProfileFormMockProps = React.ComponentProps<(typeof import('@/features/profile'))['EditProfileForm']>;
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -30,24 +32,24 @@ jest.mock('@/features/auth', () => ({
 }));
 
 jest.mock('@/features/profile', () => {
-  const { View, TouchableOpacity, Text } = require('react-native');
+  const { View, TouchableOpacity, Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
     uploadAvatarImage: jest.fn(),
-    
-    EditProfileForm: ({ initialName, serverAvatarUri, isSubmitting, onSubmitProfile }: any) => (
+
+    EditProfileForm: ({ initialName, serverAvatarUri, isSubmitting, onSubmitProfile }: EditProfileFormMockProps) => (
       <View testID="mock-edit-profile-form">
         <Text testID="prop-name">{initialName}</Text>
         <Text testID="prop-avatar">{serverAvatarUri || 'null'}</Text>
         <Text testID="prop-submitting">{String(isSubmitting)}</Text>
-        
-        <TouchableOpacity 
-          testID="trigger-submit-no-image" 
-          onPress={() => onSubmitProfile({ name: 'Brunno B' }, null, null)} 
+
+        <TouchableOpacity
+          testID="trigger-submit-no-image"
+          onPress={() => { void onSubmitProfile({ name: 'Brunno B' }, null, null); }}
         />
-        
-        <TouchableOpacity 
-          testID="trigger-submit-with-image" 
-          onPress={() => onSubmitProfile({ name: 'Brunno B' }, 'file://local.jpg', 'base64string')} 
+
+        <TouchableOpacity
+          testID="trigger-submit-with-image"
+          onPress={() => { void onSubmitProfile({ name: 'Brunno B' }, 'file://local.jpg', 'base64string'); }}
         />
       </View>
     ),
@@ -85,7 +87,7 @@ describe('EditProfileRoute (Camada App)', () => {
     const { getByTestId } = await render(<EditProfileRoute />);
 
     expect(getByTestId('prop-name').props.children).toBe('Brunno');
-    
+
     const expectedTimestamp = new Date('2026-01-01T12:00:00.000Z').getTime();
     expect(getByTestId('prop-avatar').props.children).toBe(`https://servidor.com/avatar.png?t=${expectedTimestamp}`);
   });
@@ -94,10 +96,8 @@ describe('EditProfileRoute (Camada App)', () => {
     mockUpdateUser.mockResolvedValueOnce({ error: null });
 
     const { getByTestId } = await render(<EditProfileRoute />);
-    
-    await act(async () => {
-      fireEvent.press(getByTestId('trigger-submit-no-image'));
-    });
+
+    await fireEvent.press(getByTestId('trigger-submit-no-image'));
 
     expect(uploadAvatarImage).not.toHaveBeenCalled();
     expect(mockUpdateUser).toHaveBeenCalledWith({ name: 'Brunno B' });
@@ -106,23 +106,21 @@ describe('EditProfileRoute (Camada App)', () => {
   });
 
   it('deve fazer upload da imagem e enviar a nova URL junto com o nome na atualização', async () => {
-    (uploadAvatarImage as jest.Mock).mockResolvedValueOnce({ 
-      success: true, 
-      url: 'https://cdn.com/novo-avatar.png' 
+    (uploadAvatarImage as jest.Mock).mockResolvedValueOnce({
+      success: true,
+      url: 'https://cdn.com/novo-avatar.png'
     });
-    
+
     mockUpdateUser.mockResolvedValueOnce({ error: null });
 
     const { getByTestId } = await render(<EditProfileRoute />);
-    
-    await act(async () => {
-      fireEvent.press(getByTestId('trigger-submit-with-image'));
-    });
+
+    await fireEvent.press(getByTestId('trigger-submit-with-image'));
 
     expect(uploadAvatarImage).toHaveBeenCalledWith('base64string', 'file://local.jpg');
-    expect(mockUpdateUser).toHaveBeenCalledWith({ 
-      name: 'Brunno B', 
-      image: 'https://cdn.com/novo-avatar.png' 
+    expect(mockUpdateUser).toHaveBeenCalledWith({
+      name: 'Brunno B',
+      image: 'https://cdn.com/novo-avatar.png'
     });
 
     expect(mockShowToast).toHaveBeenCalled();
@@ -130,16 +128,14 @@ describe('EditProfileRoute (Camada App)', () => {
   });
 
   it('deve interromper o fluxo e mostrar Modal de erro se o upload da imagem falhar', async () => {
-    (uploadAvatarImage as jest.Mock).mockResolvedValueOnce({ 
-      success: false, 
-      error: 'Falha no S3' 
+    (uploadAvatarImage as jest.Mock).mockResolvedValueOnce({
+      success: false,
+      error: 'Falha no S3'
     });
 
     const { getByTestId } = await render(<EditProfileRoute />);
-    
-    await act(async () => {
-      fireEvent.press(getByTestId('trigger-submit-with-image'));
-    });
+
+    await fireEvent.press(getByTestId('trigger-submit-with-image'));
 
     expect(mockUpdateUser).not.toHaveBeenCalled();
     expect(mockShowModal).toHaveBeenCalledWith('alerts.error', 'alerts.uploadError', 'error');
@@ -151,10 +147,8 @@ describe('EditProfileRoute (Camada App)', () => {
     mockUpdateUser.mockResolvedValueOnce({ error: mockError });
 
     const { getByTestId } = await render(<EditProfileRoute />);
-    
-    await act(async () => {
-      fireEvent.press(getByTestId('trigger-submit-no-image'));
-    });
+
+    await fireEvent.press(getByTestId('trigger-submit-no-image'));
 
     expect(mockShowModal).toHaveBeenCalledWith('alerts.error', 'Falha no banco de dados', 'error');
     expect(mockShowToast).not.toHaveBeenCalled();

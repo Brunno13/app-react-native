@@ -16,7 +16,7 @@ interface SecurityFormProps {
 export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormProps) => {
   const { t } = useTranslation();
   const newPasswordRef = useRef<TextInput>(null);
-  
+
   const { spacing } = useAppTheme();
   const globalStyles = useGlobalStyles();
 
@@ -33,7 +33,7 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
 
   const onSubmit = async (data: ChangePasswordFormData) => {
     const isSuccess = await onSubmitPasswordChange(data);
-    if (isSuccess) reset(); 
+    if (isSuccess) reset();
   };
 
   const styles = useMemo(() => StyleSheet.create({
@@ -81,16 +81,16 @@ export const SecurityForm = ({ onSubmitPasswordChange, loading }: SecurityFormPr
             value={value}
             editable={!loading}
             returnKeyType="send"
-            onSubmitEditing={handleSubmit(onSubmit)}
+            onSubmitEditing={() => { void handleSubmit(onSubmit)(); }}
           />
         )}
       />
       {errors.newPassword && <Text style={globalStyles.formErrorText}>{errors.newPassword.message}</Text>}
 
-      <TouchableOpacity 
+      <TouchableOpacity
         testID="button-update-password"
-        style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]} 
-        onPress={handleSubmit(onSubmit)} 
+        style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]}
+        onPress={() => { void handleSubmit(onSubmit)(); }}
         disabled={!isValid || loading}
       >
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('profile.updatePassword')}</Text>}

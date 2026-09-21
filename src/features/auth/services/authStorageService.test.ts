@@ -1,6 +1,7 @@
 import { AuthStorageService } from './authStorageService';
 import * as SecureStore from 'expo-secure-store';
 import { AuthRepository } from '@/shared/db/repositories/authRepository';
+import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 
 jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(),
@@ -16,7 +17,7 @@ jest.mock('@/shared/db/repositories/authRepository', () => ({
   },
 }));
 
-const mockDb = {} as any;
+const mockDb = {} as unknown as ExpoSQLiteDatabase;
 
 describe('AuthStorageService', () => {
   beforeEach(() => {
@@ -36,7 +37,7 @@ describe('AuthStorageService', () => {
       const mockUser = { name: 'Brunno' };
       const futureDate = new Date();
       futureDate.setFullYear(futureDate.getFullYear() + 1);
-      const mockSession = { expiresAt: futureDate.toISOString() };
+      const mockSession = { id: 's1', expiresAt: futureDate.toISOString() };
 
       (AuthRepository.get as jest.Mock).mockResolvedValue(mockUser);
       (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(JSON.stringify(mockSession));
@@ -63,7 +64,7 @@ describe('AuthStorageService', () => {
   describe('saveHybridSession', () => {
     it('deve salvar dados no DB e no SecureStore com sucesso', async () => {
       const session = { id: 's1', expiresAt: new Date() };
-      const user = { id: 'u1', email: 'b@b.com' };
+      const user = { id: "u1", email: "b@b.com", name: "Brunno" };
 
       const result = await AuthStorageService.saveHybridSession(mockDb, session, user);
 

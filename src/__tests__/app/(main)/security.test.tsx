@@ -11,9 +11,11 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@expo/vector-icons', () => {
-  const { Text } = require('react-native');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    FontAwesome: ({ name }: any) => <Text testID={`icon-${name}`}>{name}</Text>
+    FontAwesome: ({ name }: { name: string }) => (
+      <Text testID={`icon-${name}`}>{name}</Text>
+    ),
   };
 });
 
@@ -49,22 +51,35 @@ jest.mock('@/features/auth', () => ({
   useGlobalAuth: jest.fn(),
 }));
 
-jest.mock('@/features/profile', () => {
-  const { View, TouchableOpacity } = require('react-native');
+jest.mock("@/features/profile", () => {
+  const { View, TouchableOpacity } =
+    jest.requireActual<typeof import("react-native")>("react-native");
+
   return {
     usePreferences: jest.fn(),
-    
-    SecurityForm: ({ onSubmitPasswordChange }: any) => (
+
+    SecurityForm: ({
+      onSubmitPasswordChange,
+    }: {
+      onSubmitPasswordChange: (data: {
+        currentPassword: string;
+        newPassword: string;
+      }) => boolean | Promise<boolean>;
+    }) => (
       <View testID="mock-security-form">
-        <TouchableOpacity 
-          testID="trigger-pwd-success" 
-          onPress={() => onSubmitPasswordChange({ currentPassword: '123', newPassword: 'abc' })} 
+        <TouchableOpacity
+          testID="trigger-pwd-success"
+          onPress={() => {
+            void onSubmitPasswordChange({
+              currentPassword: "123",
+              newPassword: "abc",
+            });
+          }}
         />
       </View>
     ),
   };
 });
-
 describe('SecurityRoute (Camada App)', () => {
   const mockChangePassword = jest.fn();
   const mockGetActiveSessions = jest.fn();
@@ -139,8 +154,8 @@ describe('SecurityRoute (Camada App)', () => {
 
       await waitFor(() => expect(mockGetActiveSessions).toHaveBeenCalledTimes(1));
 
-      await act(async () => {
-        fireEvent.press(getByTestId('trigger-pwd-success'));
+      await act(() => {
+        void fireEvent.press(getByTestId('trigger-pwd-success'));
       });
 
       expect(mockChangePassword).toHaveBeenCalledWith('abc', '123');
@@ -158,9 +173,9 @@ describe('SecurityRoute (Camada App)', () => {
       await waitFor(() => expect(mockGetActiveSessions).toHaveBeenCalledTimes(1));
 
       const trashIcon = getByTestId('icon-trash');
-      
-      await act(async () => {
-        fireEvent.press(trashIcon.parent!); 
+
+      await act(() => {
+        void fireEvent.press(trashIcon.parent!);
       });
 
       expect(mockRevokeDeviceSession).toHaveBeenCalledWith('sess-1');
@@ -176,8 +191,8 @@ describe('SecurityRoute (Camada App)', () => {
 
       const biometricsSwitch = getByTestId('biometrics-switch');
 
-      await act(async () => {
-        fireEvent(biometricsSwitch, 'valueChange', true);
+      await act(() => {
+        void fireEvent(biometricsSwitch, 'valueChange', true);
       });
 
       expect(LocalAuthentication.authenticateAsync).toHaveBeenCalledTimes(1);
@@ -194,8 +209,8 @@ describe('SecurityRoute (Camada App)', () => {
 
       const biometricsSwitch = getByTestId('biometrics-switch');
 
-      await act(async () => {
-        fireEvent(biometricsSwitch, 'valueChange', true);
+      await act(() => {
+        void fireEvent(biometricsSwitch, 'valueChange', true);
       });
 
       expect(LocalAuthentication.authenticateAsync).toHaveBeenCalledTimes(1);
@@ -215,8 +230,8 @@ describe('SecurityRoute (Camada App)', () => {
 
       const biometricsSwitch = getByTestId('biometrics-switch');
 
-      await act(async () => {
-        fireEvent(biometricsSwitch, 'valueChange', false);
+      await act(() => {
+        void fireEvent(biometricsSwitch, 'valueChange', false);
       });
 
       expect(LocalAuthentication.authenticateAsync).not.toHaveBeenCalled();

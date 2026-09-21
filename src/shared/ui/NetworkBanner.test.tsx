@@ -23,8 +23,18 @@ describe('NetworkBanner', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    springSpy = jest.spyOn(Animated, 'spring').mockReturnValue({ start: jest.fn() } as any);
-    timingSpy = jest.spyOn(Animated, 'timing').mockReturnValue({ start: jest.fn() } as any);
+    const springAnimation: ReturnType<typeof Animated.spring> = {
+      start: jest.fn(),
+      stop: jest.fn(),
+      reset: jest.fn(),
+    };
+    springSpy = jest.spyOn(Animated, 'spring').mockReturnValue(springAnimation);
+    const timingAnimation: ReturnType<typeof Animated.timing> = {
+      start: jest.fn(),
+      stop: jest.fn(),
+      reset: jest.fn(),
+    };
+    timingSpy = jest.spyOn(Animated, 'timing').mockReturnValue(timingAnimation);
   });
 
   afterEach(() => {
@@ -33,7 +43,7 @@ describe('NetworkBanner', () => {
 
   it('deve renderizar o texto de alerta de rede corretamente', async () => {
     const { getByText } = await render(<NetworkBanner isOffline={true} />);
-    
+
     expect(getByText('alerts.networkError')).toBeTruthy();
   });
 
@@ -49,7 +59,7 @@ describe('NetworkBanner', () => {
         useNativeDriver: true,
       })
     );
-    
+
     expect(timingSpy).not.toHaveBeenCalled();
   });
 
@@ -65,7 +75,7 @@ describe('NetworkBanner', () => {
         useNativeDriver: true,
       })
     );
-    
+
     expect(springSpy).not.toHaveBeenCalled();
   });
 

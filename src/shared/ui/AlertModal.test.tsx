@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { AlertModal } from './AlertModal';
 
 jest.mock('@/shared/providers/ThemeProvider', () => ({
@@ -23,9 +23,9 @@ jest.mock('@/shared/ui/globalStyles', () => ({
 }));
 
 jest.mock('@expo/vector-icons', () => {
-  const { Text } = require('react-native');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    FontAwesome: ({ name, color }: any) => (
+    FontAwesome: ({ name, color }: { name: string; color?: string }) => (
       <Text testID="icon-mock" style={{ color }}>{name}</Text>
     )
   };
@@ -82,9 +82,7 @@ describe('AlertModal', () => {
 
     const btn = getByText('OK');
 
-    await act(async () => {
-      fireEvent.press(btn);
-    });
+    await fireEvent.press(btn);
 
     expect(mockOnConfirm).toHaveBeenCalledTimes(1);
   });
@@ -94,30 +92,30 @@ describe('AlertModal', () => {
       const { getByTestId } = await render(
         <AlertModal visible={true} title="S" message="M" type="success" onConfirm={mockOnConfirm} />
       );
-      
+
       const icon = getByTestId('icon-mock');
-      expect(icon.props.children).toBe('check-circle');
-      expect(icon.props.style.color).toBe('#10B981');
+      expect(icon).toHaveTextContent('check-circle');
+      expect(icon).toHaveStyle({ color: '#10B981' });
     });
 
     it('deve renderizar ícone e cor corretos para o tipo ERROR', async () => {
       const { getByTestId } = await render(
         <AlertModal visible={true} title="E" message="M" type="error" onConfirm={mockOnConfirm} />
       );
-      
+
       const icon = getByTestId('icon-mock');
-      expect(icon.props.children).toBe('times-circle');
-      expect(icon.props.style.color).toBe('#EF4444');
+      expect(icon).toHaveTextContent('times-circle');
+      expect(icon).toHaveStyle({ color: '#EF4444' });
     });
 
     it('deve renderizar ícone e cor corretos para o tipo INFO', async () => {
       const { getByTestId } = await render(
         <AlertModal visible={true} title="I" message="M" type="info" onConfirm={mockOnConfirm} />
       );
-      
+
       const icon = getByTestId('icon-mock');
-      expect(icon.props.children).toBe('info-circle');
-      expect(icon.props.style.color).toBe('#3B82F6');
+      expect(icon).toHaveTextContent('info-circle');
+      expect(icon).toHaveStyle({ color: '#3B82F6' });
     });
   });
 });

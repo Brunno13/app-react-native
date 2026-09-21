@@ -5,6 +5,12 @@ import { FontAwesome } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { SecurityForm, usePreferences, type ChangePasswordFormData } from '@/features/profile';
 import { useAuth, useGlobalAuth } from '@/features/auth';
+
+type ActiveSession = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof useAuth>["getActiveSessions"]>
+  >["data"]
+>[number];
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
 import { useNotification } from '@/shared/providers/NotificationProvider';
@@ -17,14 +23,14 @@ export default function SecurityRoute() {
   const { showToast, showModal } = useNotification();
   const { colors, spacing } = useAppTheme();
   const globalStyles = useGlobalStyles();
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<ActiveSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [hasHardware, setHasHardware] = useState(false);
   const [checkingHardware, setCheckingHardware] = useState(true);
 
   useEffect(() => {
-    fetchSessions();
-    checkBiometricHardware();
+    void fetchSessions();
+    void checkBiometricHardware();
   }, []);
 
   const fetchSessions = async () => {
@@ -55,7 +61,7 @@ export default function SecurityRoute() {
     } 
     
     showModal(t('alerts.success'), t('alerts.passwordChanged'), 'success');
-    fetchSessions();
+    void fetchSessions();
     return true; 
   };
 
@@ -64,7 +70,7 @@ export default function SecurityRoute() {
     if (error) {
       showToast(t('alerts.error'), t('alerts.revokeError'), 'error');
     } else {
-      fetchSessions();
+      void fetchSessions();
     }
   };
 
@@ -181,7 +187,7 @@ export default function SecurityRoute() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity onPress={() => handleRevoke(sess.token)} style={styles.revokeButton}>
+            <TouchableOpacity onPress={() => { void handleRevoke(sess.token); }} style={styles.revokeButton}>
               <FontAwesome name="trash" size={20} color={colors.danger} />
             </TouchableOpacity>
           </View>

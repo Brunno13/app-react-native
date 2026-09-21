@@ -62,15 +62,15 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
 
   const styles = useMemo(() => StyleSheet.create({
     avatarContainer: { alignSelf: 'center', marginBottom: spacing.xl, position: 'relative' },
-    editBadge: { 
-      position: 'absolute', 
-      bottom: -10, 
-      alignSelf: 'center', 
-      backgroundColor: colors.primary, 
-      paddingHorizontal: 12, 
-      paddingVertical: 4, 
-      borderRadius: 12, 
-      borderWidth: 2, 
+    editBadge: {
+      position: 'absolute',
+      bottom: -10,
+      alignSelf: 'center',
+      backgroundColor: colors.primary,
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 12,
+      borderWidth: 2,
       borderColor: colors.background
     },
     editBadgeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
@@ -79,7 +79,7 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
 
   return (
     <View style={{ width: '100%' }}>
-      <TouchableOpacity style={styles.avatarContainer} onPress={pickImage} disabled={isSubmitting}>
+      <TouchableOpacity style={styles.avatarContainer} onPress={() => { void pickImage(); }} disabled={isSubmitting}>
         {displayImage ? (
           <Image source={{ uri: displayImage }} style={globalStyles.avatarLarge} />
         ) : (
@@ -109,15 +109,15 @@ export const EditProfileForm = ({ initialName, serverAvatarUri, isSubmitting, on
             value={value}
             editable={!isSubmitting}
             returnKeyType="send"
-            onSubmitEditing={handleSubmit(onSubmit)}
+            onSubmitEditing={() => { void handleSubmit(onSubmit)(); }}
           />
         )}
       />
       {errors.name && <Text style={globalStyles.formErrorText}>{errors.name.message}</Text>}
 
-      <TouchableOpacity 
-        style={[globalStyles.buttonPrimary, styles.submitButton, (!canSubmit || isSubmitting) && { opacity: 0.6 }]} 
-        onPress={handleSubmit(onSubmit)} 
+      <TouchableOpacity
+        style={[globalStyles.buttonPrimary, styles.submitButton, (!canSubmit || isSubmitting) && { opacity: 0.6 }]}
+        onPress={() => { void handleSubmit(onSubmit)(); }}
         disabled={!canSubmit || isSubmitting}
       >
         {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('profile.saveChanges')}</Text>}

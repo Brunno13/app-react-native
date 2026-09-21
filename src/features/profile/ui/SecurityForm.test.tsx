@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { SecurityForm } from './SecurityForm';
 
 jest.mock('react-i18next', () => ({
@@ -36,10 +36,8 @@ describe('SecurityForm - Teste Comportamental', () => {
     );
 
     const submitBtn = getByText('profile.updatePassword');
-    
-    await act(async () => {
-      fireEvent.press(submitBtn);
-    });
+
+    await fireEvent.press(submitBtn);
 
     expect(mockOnSubmitPasswordChange).not.toHaveBeenCalled();
   });
@@ -49,19 +47,13 @@ describe('SecurityForm - Teste Comportamental', () => {
       <SecurityForm onSubmitPasswordChange={mockOnSubmitPasswordChange} loading={false} />
     );
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('profile.currentPasswordPlaceholder'), 'senha123');
-    });
+    await fireEvent.changeText(getByPlaceholderText('profile.currentPasswordPlaceholder'), 'senha123');
 
-    await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('profile.newPasswordPlaceholder'), '123');
-    });
+    await fireEvent.changeText(getByPlaceholderText('profile.newPasswordPlaceholder'), '123');
 
     expect(await findByText('validation.passwordMin')).toBeTruthy();
-    
-    await act(async () => {
-      fireEvent.press(getByText('profile.updatePassword'));
-    });
+
+    await fireEvent.press(getByText('profile.updatePassword'));
 
     expect(mockOnSubmitPasswordChange).not.toHaveBeenCalled();
   });
@@ -76,21 +68,15 @@ describe('SecurityForm - Teste Comportamental', () => {
     const currentInput = getByPlaceholderText('profile.currentPasswordPlaceholder');
     const newInput = getByPlaceholderText('profile.newPasswordPlaceholder');
 
-    await act(async () => {
-      fireEvent.changeText(currentInput, 'senhaAtualSegura');
-    });
+    await fireEvent.changeText(currentInput, 'senhaAtualSegura');
 
-    await act(async () => {
-      fireEvent.changeText(newInput, 'novaSenhaSegura123');
-    });
+    await fireEvent.changeText(newInput, 'novaSenhaSegura123');
 
     await waitFor(() => {
       expect(newInput.props.value).toBe('novaSenhaSegura123');
     });
 
-    await act(async () => {
-      fireEvent.press(getByText('profile.updatePassword'));
-    });
+    await fireEvent.press(getByText('profile.updatePassword'));
 
     expect(mockOnSubmitPasswordChange).toHaveBeenCalledWith({
       currentPassword: 'senhaAtualSegura',
@@ -111,21 +97,15 @@ describe('SecurityForm - Teste Comportamental', () => {
     const currentInput = getByPlaceholderText('profile.currentPasswordPlaceholder');
     const newInput = getByPlaceholderText('profile.newPasswordPlaceholder');
 
-    await act(async () => {
-      fireEvent.changeText(currentInput, 'senhaAtual');
-    });
+    await fireEvent.changeText(currentInput, 'senhaAtual');
 
-    await act(async () => {
-      fireEvent.changeText(newInput, 'novaSenha123');
-    });
+    await fireEvent.changeText(newInput, 'novaSenha123');
 
     await waitFor(() => {
       expect(newInput.props.value).toBe('novaSenha123');
     });
 
-    await act(async () => {
-      fireEvent.press(getByText('profile.updatePassword'));
-    });
+    await fireEvent.press(getByText('profile.updatePassword'));
 
     expect(currentInput.props.value).toBe('senhaAtual');
   });

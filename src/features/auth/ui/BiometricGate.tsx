@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, AppState } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, Animated, AppState } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
@@ -7,8 +7,8 @@ import { useGlobalStyles } from '@/shared/ui/globalStyles';
 
 interface BiometricGateProps {
   children: React.ReactNode;
-  isBiometricsEnabled: boolean; 
-  loading: boolean;             
+  isBiometricsEnabled: boolean;
+  loading: boolean;
 }
 
 export const BiometricGate = ({ children, isBiometricsEnabled, loading }: BiometricGateProps) => {
@@ -42,7 +42,7 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
 
   const handleBiometricAuth = async () => {
     if (isAuthenticating) return;
-    
+
     setIsAuthenticating(true);
     try {
       const result = await LocalAuthentication.authenticateAsync({
@@ -69,17 +69,17 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
       duration: 400,
       useNativeDriver: true,
     }).start();
-    
-    handleBiometricAuth();
+
+    void handleBiometricAuth();
   }, [loading, isUnlocked, isBiometricsEnabled]);
 
   const styles = useMemo(() => StyleSheet.create({
-    lockContainer: { 
-      flex: 1, 
-      justifyContent: 'center', 
-      alignItems: 'center', 
+    lockContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
       backgroundColor: colors.background,
-      padding: 20 
+      padding: 20
     },
     lockTitle: { fontSize: 60 },
     unlockButton: { marginTop: 40, width: '100%', maxWidth: 300 }
@@ -88,14 +88,14 @@ export const BiometricGate = ({ children, isBiometricsEnabled, loading }: Biomet
   if (!isUnlocked && isBiometricsEnabled && !loading) {
     return (
       <Animated.View style={[styles.lockContainer, { opacity: fadeAnim }]}>
-        <Text style={styles.lockTitle}>🔒</Text> 
+        <Text style={styles.lockTitle}>🔒</Text>
         <Text style={[globalStyles.title, { color: colors.text, marginTop: 20 }]}>
           {t('security.lockScreenPrompt')}
         </Text>
-        
-        <TouchableOpacity 
-          style={[globalStyles.buttonPrimary, styles.unlockButton]} 
-          onPress={handleBiometricAuth}
+
+        <TouchableOpacity
+          style={[globalStyles.buttonPrimary, styles.unlockButton]}
+          onPress={() => { void handleBiometricAuth(); }}
         >
           <Text style={globalStyles.buttonText}>{t('security.unlockButton')}</Text>
         </TouchableOpacity>

@@ -4,12 +4,13 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getLoginSchema, type LoginFormData } from '../domain/authSchema';
+import type { AuthError } from '../hooks/useAuth';
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
-import { useNotification } from '@/shared/providers/NotificationProvider'; 
+import { useNotification } from '@/shared/providers/NotificationProvider';
 
 interface LoginFormProps {
-  onLogin: (email: string, pass: string) => Promise<{ error: any }>;
+  onLogin: (email: string, pass: string) => Promise<{ error: AuthError | null }>;
   loading: boolean;
   onNavigateToSignUp: () => void;
   onNavigateToForgot: () => void;
@@ -38,22 +39,22 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
 
   const onSubmit = async (data: LoginFormData) => {
     const response = await onLogin(data.email, data.password);
-    
+
     if (response?.error) {
       if (response.error.code === 'OFFLINE') {
         showModal(t('alerts.networkError'), response.error.message, 'error');
         return;
       }
-      
+
       if (response.error.code === 'TIMEOUT') {
         showModal(t('alerts.timeoutError'), response.error.message, 'info');
-        return; 
+        return;
       }
-      
+
       //TODO for debug
       // showModal(
-      //   t('alerts.error') || 'Erro de Conexão', 
-      //   response.error.message || t('auth.invalidCredentials'), 
+      //   t('alerts.error') || 'Erro de Conexão',
+      //   response.error.message || t('auth.invalidCredentials'),
       //   'error'
       // );
 
@@ -99,9 +100,9 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
             onChangeText={onChange}
             value={value}
             editable={!loading}
-            returnKeyType="next" 
+            returnKeyType="next"
             blurOnSubmit={false}
-            onSubmitEditing={() => passwordRef.current?.focus()} 
+            onSubmitEditing={() => passwordRef.current?.focus()}
           />
         )}
       />
@@ -123,7 +124,7 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
             value={value}
             editable={!loading}
             returnKeyType="send"
-            onSubmitEditing={handleSubmit(onSubmit)} 
+            onSubmitEditing={() => { void handleSubmit(onSubmit)(); }}
           />
         )}
       />
@@ -133,10 +134,10 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
         <Text style={globalStyles.linkText}>{t('auth.forgotPasswordLink')}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         testID="button-login"
-        style={[globalStyles.buttonPrimary, (!isValid || loading) && { opacity: 0.6 }]} 
-        onPress={handleSubmit(onSubmit)} 
+        style={[globalStyles.buttonPrimary, (!isValid || loading) && { opacity: 0.6 }]}
+        onPress={() => { void handleSubmit(onSubmit)(); }}
         disabled={!isValid || loading}
       >
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={globalStyles.buttonText}>{t('auth.login')}</Text>}

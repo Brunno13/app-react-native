@@ -33,7 +33,7 @@ export default function EditProfileRoute() {
         } else {
           throw new Error(uploadResult.error || 'Erro no upload');
         }
-      } catch (error) {
+      } catch {
         showModal(t('alerts.error'), t('alerts.uploadError'), 'error');
         setUploading(false);
         return; 

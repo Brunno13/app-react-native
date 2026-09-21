@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import { useAuth, useGlobalAuth } from '@/features/auth';
 import { usePreferences } from '@/features/profile';
@@ -10,9 +10,9 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@expo/vector-icons', () => {
-  const { Text } = require('react-native');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    FontAwesome: ({ name }: any) => <Text testID={`icon-${name}`}>{name}</Text>
+    FontAwesome: ({ name }: { name: string }) => <Text testID={`icon-${name}`}>{name}</Text>
   };
 });
 
@@ -91,7 +91,7 @@ describe('ProfileRoute (Camada App - Painel de Configurações)', () => {
 
       const imageComponent = getByTestId('profile-avatar');
       const expectedTimestamp = new Date('2026-02-02T12:00:00.000Z').getTime();
-      expect(imageComponent.props.source.uri).toBe(`https://servidor.com/foto.jpg?t=${expectedTimestamp}`);
+      expect(imageComponent).toHaveProp('source', { uri: `https://servidor.com/foto.jpg?t=${expectedTimestamp}` });
     });
 
     it('deve exibir a letra inicial do nome como fallback visual quando o usuário não possuir foto de avatar', async () => {
@@ -110,7 +110,7 @@ describe('ProfileRoute (Camada App - Painel de Configurações)', () => {
     it('deve encaminhar o usuário para a rota correta ao clicar em Editar Perfil', async () => {
       const { getByText } = await render(<ProfileRoute />);
 
-      fireEvent.press(getByText('profileScreen.editProfile'));
+      await fireEvent.press(getByText('profileScreen.editProfile'));
 
       expect(mockPush).toHaveBeenCalledTimes(1);
       expect(mockPush).toHaveBeenCalledWith('/(main)/edit-profile');
@@ -119,7 +119,7 @@ describe('ProfileRoute (Camada App - Painel de Configurações)', () => {
     it('deve encaminhar o usuário para a rota correta ao clicar em Segurança e Sessões', async () => {
       const { getByText } = await render(<ProfileRoute />);
 
-      fireEvent.press(getByText('profileScreen.securityAndSessions'));
+      await fireEvent.press(getByText('profileScreen.securityAndSessions'));
 
       expect(mockPush).toHaveBeenCalledTimes(1);
       expect(mockPush).toHaveBeenCalledWith('/(main)/security');
@@ -130,7 +130,7 @@ describe('ProfileRoute (Camada App - Painel de Configurações)', () => {
     it('deve disparar updatePreferences ao pressionar uma opção de alteração de tema', async () => {
       const { getByText } = await render(<ProfileRoute />);
 
-      fireEvent.press(getByText('darkMode.darkModeDark'));
+      await fireEvent.press(getByText('darkMode.darkModeDark'));
 
       expect(mockUpdatePreferences).toHaveBeenCalledTimes(1);
       expect(mockUpdatePreferences).toHaveBeenCalledWith({ theme: 'dark' });
@@ -141,9 +141,7 @@ describe('ProfileRoute (Camada App - Painel de Configurações)', () => {
 
       const offlineSwitch = getByTestId('offline-switch');
 
-      await act(async () => {
-        fireEvent(offlineSwitch, 'valueChange', true);
-      });
+      await fireEvent(offlineSwitch, 'valueChange', true);
 
       expect(mockToggleOfflineMode).toHaveBeenCalledTimes(1);
     });
@@ -153,7 +151,7 @@ describe('ProfileRoute (Camada App - Painel de Configurações)', () => {
     it('deve disparar a rotina de desautenticação global ao clicar no botão de Sair', async () => {
       const { getByText } = await render(<ProfileRoute />);
 
-      fireEvent.press(getByText('profileScreen.logout'));
+      await fireEvent.press(getByText('profileScreen.logout'));
 
       expect(mockSignOut).toHaveBeenCalledTimes(1);
     });

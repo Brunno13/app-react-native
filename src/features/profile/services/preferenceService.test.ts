@@ -9,7 +9,7 @@ jest.mock('@/shared/db/repositories/preferencesRepository', () => ({
 }));
 
 describe('PreferenceService', () => {
-  const mockDb = {} as any;
+  const mockDb = {} as Parameters<typeof PreferenceService.getUserPreferences>[0];
   const mockUserId = 'user-123';
 
   const DEFAULT_PREFERENCES = {
@@ -83,7 +83,7 @@ describe('PreferenceService', () => {
   describe('updateUserPreferences', () => {
     it('deve repassar a atualização para o repositório e retornar o sucesso da operação', async () => {
       const updates = { theme: 'light' as const };
-      
+
       (PreferencesRepository.upsert as jest.Mock).mockResolvedValueOnce(true);
 
       const result = await PreferenceService.updateUserPreferences(mockDb, mockUserId, updates);
@@ -94,7 +94,7 @@ describe('PreferenceService', () => {
 
     it('deve capturar erros, registrar no console e retornar false em caso de falha', async () => {
       const updates = { isBiometricsEnabled: true };
-      
+
       const dbError = new Error('Disk Full');
       (PreferencesRepository.upsert as jest.Mock).mockRejectedValueOnce(dbError);
 

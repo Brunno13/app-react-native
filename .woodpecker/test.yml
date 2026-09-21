@@ -13,16 +13,20 @@ steps:
   - name: notify-start
     image: bash
 
+    environment:
+      GOTIFY_TOKEN:
+        from_secret: gotify_token
+
     commands:
       - |
-        TIMESTAMP="$(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M')"
+        TIMESTAMP="$(TZ=BRT3 date '+%d/%m/%Y %H:%M')"
 
         curl -fsS \
           --connect-timeout 5 \
           --max-time 10 \
           --output /dev/null \
           -X POST \
-          "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
+          "https://gotify.brunnoserver.duckdns.org/message?token=$$GOTIFY_TOKEN" \
           -F "title=WoodpeckerCI" \
           -F "message=WoodpeckerCI · App-react-native · Staging pipeline started · $${TIMESTAMP}" \
           -F "priority=5" \
@@ -89,16 +93,20 @@ steps:
   - name: notify-success
     image: bash
 
+    environment:
+      GOTIFY_TOKEN:
+        from_secret: gotify_token
+
     commands:
       - |
-        TIMESTAMP="$(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M')"
+        TIMESTAMP="$(TZ=BRT3 date '+%d/%m/%Y %H:%M')"
 
         curl -fsS \
           --connect-timeout 5 \
           --max-time 10 \
           --output /dev/null \
           -X POST \
-          "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
+          "https://gotify.brunnoserver.duckdns.org/message?token=$$GOTIFY_TOKEN" \
           -F "title=WoodpeckerCI" \
           -F "message=WoodpeckerCI · App-react-native · Staging pipeline finished successfully · $${TIMESTAMP}" \
           -F "priority=5" \
@@ -112,16 +120,20 @@ steps:
   - name: notify-error
     image: bash
 
+    environment:
+      GOTIFY_TOKEN:
+        from_secret: gotify_token
+
     commands:
       - |
-        TIMESTAMP="$(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M')"
+        TIMESTAMP="$(TZ=BRT3 date '+%d/%m/%Y %H:%M')"
 
         curl -fsS \
           --connect-timeout 5 \
           --max-time 10 \
           --output /dev/null \
           -X POST \
-          "http://192.168.31.215:8095/message?token=A6vmGBx46fXa5Iv" \
+          "https://gotify.brunnoserver.duckdns.org/message?token=$$GOTIFY_TOKEN" \
           -F "title=WoodpeckerCI" \
           -F "message=WoodpeckerCI · App-react-native · Staging pipeline failed · $${TIMESTAMP}" \
           -F "priority=8" \

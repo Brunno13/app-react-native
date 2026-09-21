@@ -1,19 +1,19 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import '../shared/config/i18n'; 
+import '../shared/config/i18n';
 import { ErrorFallback } from '../shared/ui/ErrorFallback';
 import { useGlobalAuth } from '@/features/auth';
-import { AppProvider } from './_providers/_AppProvider'; 
+import { AppProvider } from './_providers/_AppProvider';
 import { STORYBOOK_ENABLED } from '../shared/config/storybook.config';
 
-const StorybookUIRoot = STORYBOOK_ENABLED 
-  ? require('../../.rnstorybook').default 
+const StorybookUIRoot = STORYBOOK_ENABLED
+  ? lazy(() => import('../../.rnstorybook'))
   : null;
 
 function AppNavigation() {
-  const { session, isPending } = useGlobalAuth(); 
+  const { session, isPending } = useGlobalAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -21,7 +21,7 @@ function AppNavigation() {
     if (isPending) return;
 
     const inAuthGroup = segments[0] === '(auth)';
-    const isAtRoot = !segments[0]; 
+    const isAtRoot = !segments[0];
 
     if (!session) {
       if (!inAuthGroup) {
@@ -44,7 +44,11 @@ function AppNavigation() {
 
 export default function RootLayout() {
   if (STORYBOOK_ENABLED && StorybookUIRoot) {
-    return <StorybookUIRoot />;
+    return (
+      <Suspense fallback={null}>
+        <StorybookUIRoot />
+      </Suspense>
+    );
   }
 
   return (

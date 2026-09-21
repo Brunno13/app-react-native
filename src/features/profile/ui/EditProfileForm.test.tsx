@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { EditProfileForm } from './EditProfileForm';
 
@@ -50,11 +50,9 @@ describe('EditProfileForm - Teste Comportamental', () => {
     );
 
     expect(getByText('B')).toBeTruthy();
-    
+
     const submitBtn = getByText('profile.saveChanges');
-    await act(async () => {
-      fireEvent.press(submitBtn);
-    });
+    await fireEvent.press(submitBtn);
 
     expect(mockOnSubmitProfile).not.toHaveBeenCalled();
   });
@@ -71,16 +69,12 @@ describe('EditProfileForm - Teste Comportamental', () => {
 
     const input = getByPlaceholderText('profile.fullNamePlaceholder');
 
-    await act(async () => {
-      fireEvent.changeText(input, 'Br');
-    });
+    await fireEvent.changeText(input, 'Br');
 
     expect(await findByText('validation.nameMin')).toBeTruthy();
-    
+
     const submitBtn = getByText('profile.saveChanges');
-    await act(async () => {
-      fireEvent.press(submitBtn);
-    });
+    await fireEvent.press(submitBtn);
 
     expect(mockOnSubmitProfile).not.toHaveBeenCalled();
   });
@@ -96,10 +90,8 @@ describe('EditProfileForm - Teste Comportamental', () => {
     );
 
     const input = getByPlaceholderText('profile.fullNamePlaceholder');
-    
-    await act(async () => {
-      fireEvent.changeText(input, 'Brunno Atualizado');
-    });
+
+    await fireEvent.changeText(input, 'Brunno Atualizado');
 
     const submitBtn = getByText('profile.saveChanges');
 
@@ -107,9 +99,7 @@ describe('EditProfileForm - Teste Comportamental', () => {
       expect(mockOnSubmitProfile).not.toHaveBeenCalled();
     });
 
-    await act(async () => {
-      fireEvent.press(submitBtn);
-    });
+    await fireEvent.press(submitBtn);
 
     expect(mockOnSubmitProfile).toHaveBeenCalledWith(
       { name: 'Brunno Atualizado' },
@@ -134,10 +124,8 @@ describe('EditProfileForm - Teste Comportamental', () => {
     );
 
     const changePhotoBtn = getByText('profile.changePhoto');
-    
-    await act(async () => {
-      fireEvent.press(changePhotoBtn);
-    });
+
+    await fireEvent.press(changePhotoBtn);
 
     expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled();
 
@@ -147,9 +135,7 @@ describe('EditProfileForm - Teste Comportamental', () => {
       expect(mockOnSubmitProfile).not.toHaveBeenCalled();
     });
 
-    await act(async () => {
-      fireEvent.press(submitBtn);
-    });
+    await fireEvent.press(submitBtn);
 
     expect(mockOnSubmitProfile).toHaveBeenCalledWith(
       { name: 'Brunno' },
