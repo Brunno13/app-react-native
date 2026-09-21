@@ -41,6 +41,14 @@ jest.mock('expo-router', () => ({
 jest.mock('../api/authApi', () => ({
   AuthApi: {
     signInWithEmail: jest.fn(),
+    signUpWithEmail: jest.fn(),
+    forgetPassword: jest.fn(),
+    signInWithSocial: jest.fn(),
+    changePassword: jest.fn(),
+    listSessions: jest.fn(),
+    revokeSession: jest.fn(),
+    updateUser: jest.fn(),
+    getSession: jest.fn(),
     signOut: jest.fn(),
   },
 }));
@@ -48,6 +56,7 @@ jest.mock('../api/authApi', () => ({
 jest.mock('../services/authStorageService', () => ({
   AuthStorageService: {
     clearHybridSession: jest.fn(),
+    saveHybridSession: jest.fn(),
   },
 }));
 
@@ -173,5 +182,168 @@ describe('useAuth Hook', () => {
     expect(result.current.loading).toBe(false);
 
     consoleSpy.mockRestore();
+  });
+
+  it('deve delegar as demais ações de autenticação para AuthApi', async () => {
+    const successResponse = { data: null, error: null };
+
+    (AuthApi.signUpWithEmail as jest.Mock).mockResolvedValueOnce(successResponse);
+    (AuthApi.forgetPassword as jest.Mock).mockResolvedValueOnce(successResponse);
+    (AuthApi.signInWithSocial as jest.Mock).mockResolvedValueOnce(successResponse);
+    (AuthApi.changePassword as jest.Mock).mockResolvedValueOnce(successResponse);
+    (AuthApi.listSessions as jest.Mock).mockResolvedValueOnce(successResponse);
+    (AuthApi.revokeSession as jest.Mock).mockResolvedValueOnce(successResponse);
+
+    const { result } = await renderHook(() => useAuth());
+
+    await act(async () => {
+      await result.current.signUp('novo@teste.com', 'senha123', 'Novo Usuario');
+      await result.current.forgetPassword('novo@teste.com');
+      await result.current.signInWithSocial('google');
+      await result.current.changePassword('novaSenha123', 'senhaAtual123');
+      await result.current.getActiveSessions();
+      await result.current.revokeDeviceSession('session-token');
+    });
+
+    expect(AuthApi.signUpWithEmail).toHaveBeenCalledWith(
+      'novo@teste.com',
+      'senha123',
+      'Novo Usuario',
+    );
+    expect(AuthApi.forgetPassword).toHaveBeenCalledWith('novo@teste.com');
+    expect(AuthApi.signInWithSocial).toHaveBeenCalledWith('google');
+    expect(AuthApi.changePassword).toHaveBeenCalledWith(
+      'novaSenha123',
+      'senhaAtual123',
+    );
+    expect(AuthApi.listSessions).toHaveBeenCalledTimes(1);
+    expect(AuthApi.revokeSession).toHaveBeenCalledWith('session-token');
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('deve normalizar exceção lançada por uma ação de autenticação', async () => {
+    (AuthApi.signInWithSocial as jest.Mock).mockRejectedValueOnce(
+      new Error('Falha social'),
+    );
+
+    const { result } = await renderHook(() => useAuth());
+
+    let response:
+      | Awaited<ReturnType<UseAuthResult['signInWithSocial']>>
+      | undefined;
+
+    await act(async () => {
+      response = await result.current.signInWithSocial('github');
+    });
+
+    expect(response?.data).toBeNull();
+    expect(response?.error).toEqual({
+      code: 'UNKNOWN',
+      message: 'Falha social',
+    });
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('deve usar a mensagem de fallback para erro sem estrutura', async () => {
+    (AuthApi.forgetPassword as jest.Mock).mockResolvedValueOnce({
+      data: null,
+      error: 'erro-sem-estrutura',
+    });
+
+    const { result } = await renderHook(() => useAuth());
+
+    let response:
+      | Awaited<ReturnType<UseAuthResult['forgetPassword']>>
+      | undefined;
+
+    await act(async () => {
+      response = await result.current.forgetPassword('teste@teste.com');
+    });
+
+    expect(response?.error).toEqual({
+      code: 'UNKNOWN',
+      message: 'alerts.unknownError',
+    });
+  });
+
+  it('deve atualizar o usuario e persistir a sessão renovada', async () => {
+    const updateResponse = {
+      data: { updated: true },
+      error: null,
+    };
+    const freshSession = {
+      session: { id: 'session-1' },
+      user: { id: 'user-1' },
+    };
+
+    (AuthApi.updateUser as jest.Mock).mockResolvedValueOnce(updateResponse);
+    (AuthApi.getSession as jest.Mock).mockResolvedValueOnce({
+      data: freshSession,
+      error: null,
+    });
+    (AuthStorageService.saveHybridSession as jest.Mock).mockResolvedValueOnce(undefined);
+
+    const { result } = await renderHook(() => useAuth());
+
+    await act(async () => {
+      await result.current.updateUser({ name: 'Brunno Atualizado' });
+    });
+
+    expect(AuthApi.updateUser).toHaveBeenCalledWith({
+      name: 'Brunno Atualizado',
+    });
+    expect(AuthApi.getSession).toHaveBeenCalledTimes(1);
+    expect(AuthStorageService.saveHybridSession).toHaveBeenCalledWith(
+      {},
+      freshSession.session,
+      freshSession.user,
+    );
+  });
+
+  it('deve ignorar persistência quando a sessão renovada não tiver dados', async () => {
+    (AuthApi.updateUser as jest.Mock).mockResolvedValueOnce({
+      data: { updated: true },
+      error: null,
+    });
+    (AuthApi.getSession as jest.Mock).mockResolvedValueOnce({
+      data: null,
+      error: null,
+    });
+
+    const { result } = await renderHook(() => useAuth());
+
+    await act(async () => {
+      await result.current.updateUser({ image: 'avatar.png' });
+    });
+
+    expect(AuthApi.getSession).toHaveBeenCalledTimes(1);
+    expect(AuthStorageService.saveHybridSession).not.toHaveBeenCalled();
+  });
+
+  it('não deve renovar a sessão quando updateUser retornar erro', async () => {
+    (AuthApi.updateUser as jest.Mock).mockResolvedValueOnce({
+      data: null,
+      error: {
+        code: 'UPDATE_FAILED',
+        message: 'Falha ao atualizar',
+      },
+    });
+
+    const { result } = await renderHook(() => useAuth());
+
+    let response:
+      | Awaited<ReturnType<UseAuthResult['updateUser']>>
+      | undefined;
+
+    await act(async () => {
+      response = await result.current.updateUser({ name: 'Falha' });
+    });
+
+    expect(response?.error).toEqual({
+      code: 'UPDATE_FAILED',
+      message: 'Falha ao atualizar',
+    });
+    expect(AuthApi.getSession).not.toHaveBeenCalled();
+    expect(AuthStorageService.saveHybridSession).not.toHaveBeenCalled();
   });
 });
