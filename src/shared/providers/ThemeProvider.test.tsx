@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Text, View } from 'react-native';
 import { SharedThemeProvider, useAppTheme } from './ThemeProvider';
+import { spacing as themeSpacing, borderRadius as themeBorderRadius } from '../ui/theme';
 
 jest.mock('../ui/theme', () => ({
   lightColors: { background: '#FFFFFF', text: '#000000' },
@@ -12,12 +13,12 @@ jest.mock('../ui/theme', () => ({
 
 const ThemeConsumer = () => {
   const { colors, spacing, borderRadius, isDark, themePreference } = useAppTheme();
-  
+
   return (
     <View>
-      <Text testID="color-bg">{(colors as any).background}</Text>
-      <Text testID="spacing-mock">{(spacing as any).mockSpacing}</Text>
-      <Text testID="border-mock">{(borderRadius as any).mockBorder}</Text>
+      <Text testID="color-bg">{colors.background}</Text>
+      <Text testID="spacing-ref">{String(spacing === themeSpacing)}</Text>
+      <Text testID="border-ref">{String(borderRadius === themeBorderRadius)}</Text>
       <Text testID="is-dark">{isDark.toString()}</Text>
       <Text testID="pref">{themePreference}</Text>
     </View>
@@ -67,7 +68,7 @@ describe('SharedThemeProvider', () => {
       </SharedThemeProvider>
     );
 
-    expect(getByTestId('spacing-mock').props.children).toBe(100);
-    expect(getByTestId('border-mock').props.children).toBe(50);
+    expect(getByTestId('spacing-ref').props.children).toBe('true');
+    expect(getByTestId('border-ref').props.children).toBe('true');
   });
 });

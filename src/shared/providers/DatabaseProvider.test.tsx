@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Text, useColorScheme } from 'react-native';
 import { DatabaseProvider, useDatabase } from './DatabaseProvider';
+import { db as appDb } from '@/shared/db/client';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 
 jest.mock('react-i18next', () => ({
@@ -32,7 +33,7 @@ jest.mock('@/shared/ui/theme', () => ({
 describe('DatabaseProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    const mockUseColorScheme = require('react-native/Libraries/Utilities/useColorScheme').default;
+    const mockUseColorScheme = jest.requireMock<{ default: jest.MockedFunction<typeof useColorScheme> }>('react-native/Libraries/Utilities/useColorScheme').default;
     mockUseColorScheme.mockReturnValue('light');
   });
 
@@ -83,7 +84,7 @@ describe('DatabaseProvider', () => {
 
     const DbConsumer = () => {
       const { db } = useDatabase();
-      return <Text>{(db as any).mockId}</Text>;
+      return <Text>{db === appDb ? 'same-db-instance' : 'different-db-instance'}</Text>;
     };
 
     const { getByText } = await render(
@@ -92,6 +93,6 @@ describe('DatabaseProvider', () => {
       </DatabaseProvider>
     );
 
-    expect(getByText('instancia-sqlite-singleton')).toBeTruthy();
+    expect(getByText('same-db-instance')).toBeTruthy();
   });
 });

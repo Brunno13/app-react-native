@@ -4,30 +4,46 @@ import { Text } from 'react-native';
 import { AppProvider } from '@/app/_providers/_AppProvider';
 
 jest.mock('@/shared/providers/DatabaseProvider', () => {
-  const { View } = require('react-native');
+  const { View } =
+    jest.requireActual<typeof import('react-native')>('react-native');
+
   return {
-    DatabaseProvider: ({ children }: any) => <View testID="mock-db-provider">{children}</View>,
+    DatabaseProvider: ({ children }: { children?: import('react').ReactNode }) => (
+      <View testID="mock-db-provider">{children}</View>
+    ),
   };
 });
 
 jest.mock('@/app/_providers/_AppThemeProvider', () => {
-  const { View } = require('react-native');
+  const { View } =
+    jest.requireActual<typeof import('react-native')>('react-native');
+
   return {
-    AppThemeProvider: ({ children }: any) => <View testID="mock-theme-provider">{children}</View>,
+    AppThemeProvider: ({ children }: { children?: import('react').ReactNode }) => (
+      <View testID="mock-theme-provider">{children}</View>
+    ),
   };
 });
 
 jest.mock('@/shared/providers/NotificationProvider', () => {
-  const { View } = require('react-native');
+  const { View } =
+    jest.requireActual<typeof import('react-native')>('react-native');
+
   return {
-    NotificationProvider: ({ children }: any) => <View testID="mock-notification-provider">{children}</View>,
+    NotificationProvider: ({ children }: { children?: import('react').ReactNode }) => (
+      <View testID="mock-notification-provider">{children}</View>
+    ),
   };
 });
 
 jest.mock('@/features/auth', () => {
-  const { View } = require('react-native');
+  const { View } =
+    jest.requireActual<typeof import('react-native')>('react-native');
+
   return {
-    AuthProvider: ({ children }: any) => <View testID="mock-auth-provider">{children}</View>,
+    AuthProvider: ({ children }: { children?: import('react').ReactNode }) => (
+      <View testID="mock-auth-provider">{children}</View>
+    ),
   };
 });
 
