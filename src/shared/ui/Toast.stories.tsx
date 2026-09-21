@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { Toast } from './Toast';
@@ -11,8 +11,9 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+type ToastStoryArgs = ComponentProps<typeof Toast>;
 
-const InteractiveToast = (args: any) => {
+const InteractiveToast = (args: ToastStoryArgs) => {
   const [isVisible, setIsVisible] = useState(args.visible);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ const InteractiveToast = (args: any) => {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => setIsVisible(true)}
           style={{ padding: 12, backgroundColor: '#333333', borderRadius: 8 }}
         >
@@ -36,7 +37,7 @@ const InteractiveToast = (args: any) => {
         {...args}
         visible={isVisible}
         onHide={() => {
-          setIsVisible(false); 
+          setIsVisible(false);
           if (args.onHide) args.onHide();
         }}
       />
