@@ -5,7 +5,7 @@ import { PreferenceService } from '../services/preferenceService';
 
 jest.mock('@/shared/providers', () => {
   const mockDb = { mock: 'sqlite-db-instance' };
-  
+
   return {
     useDatabase: () => ({
       db: mockDb,
@@ -21,12 +21,13 @@ jest.mock('../services/preferenceService', () => ({
 }));
 
 describe('usePreferences Hook', () => {
+  let emitSpy: jest.SpiedFunction<typeof DeviceEventEmitter.emit>;
   const mockUserId = 'user-123';
   const initialPrefs = { theme: 'system', isOfflineModeEnabled: false };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(DeviceEventEmitter, 'emit');
+    emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
   });
 
   afterAll(() => {
@@ -51,7 +52,7 @@ describe('usePreferences Hook', () => {
     });
 
     expect(PreferenceService.getUserPreferences).toHaveBeenCalledWith(
-      { mock: 'sqlite-db-instance' }, 
+      { mock: 'sqlite-db-instance' },
       mockUserId
     );
     expect(result.current.preferences).toEqual(initialPrefs);
@@ -59,7 +60,7 @@ describe('usePreferences Hook', () => {
 
   it('deve atualizar as preferências de forma otimista e emitir evento se alterar o tema', async () => {
     (PreferenceService.getUserPreferences as jest.Mock).mockResolvedValueOnce(initialPrefs);
-    (PreferenceService.updateUserPreferences as jest.Mock).mockResolvedValueOnce(true); 
+    (PreferenceService.updateUserPreferences as jest.Mock).mockResolvedValueOnce(true);
 
     const { result } = await renderHook(() => usePreferences(mockUserId));
 
@@ -78,18 +79,18 @@ describe('usePreferences Hook', () => {
       mockUserId,
       { theme: 'dark' }
     );
-    
+
     expect(result.current.preferences).toEqual({
       ...initialPrefs,
       theme: 'dark',
     });
 
-    expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('onThemeChange', 'dark');
+    expect(emitSpy).toHaveBeenCalledWith('onThemeChange', 'dark');
   });
 
   it('deve reverter o estado (UI Otimista) se a atualização no banco de dados falhar', async () => {
     (PreferenceService.getUserPreferences as jest.Mock).mockResolvedValueOnce(initialPrefs);
-    (PreferenceService.updateUserPreferences as jest.Mock).mockResolvedValueOnce(false); 
+    (PreferenceService.updateUserPreferences as jest.Mock).mockResolvedValueOnce(false);
 
     const { result } = await renderHook(() => usePreferences(mockUserId));
 
@@ -106,7 +107,7 @@ describe('usePreferences Hook', () => {
 
     expect(success).toBe(false);
     expect(result.current.preferences).toEqual(initialPrefs);
-    expect(DeviceEventEmitter.emit).not.toHaveBeenCalled();
+    expect(emitSpy).not.toHaveBeenCalled();
   });
 
   it('deve acionar updatePreferences indiretamente ao chamar toggleOfflineMode', async () => {
