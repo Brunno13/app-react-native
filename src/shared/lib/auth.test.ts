@@ -19,26 +19,32 @@ jest.mock('better-auth/react', () => ({
 }));
 
 describe('Auth Library Configuration', () => {
-  
+
   beforeEach(() => {
     jest.resetModules();
   });
 
   it('deve configurar e exportar o authClient com as opções, plugins e headers corretos', () => {
-    
-    const { expoClient } = require('@better-auth/expo/client');
-    const { createAuthClient } = require('better-auth/react');
-    const { authClient } = require('./auth');
+
+    const expoModule = jest.requireMock<typeof import('@better-auth/expo/client')>('@better-auth/expo/client');
+    const authReactModule = jest.requireMock<typeof import('better-auth/react')>('better-auth/react');
+    const secureStoreModule = jest.requireMock<typeof import('expo-secure-store')>('expo-secure-store');
+    const { authClient } = jest.requireActual<typeof import('./auth')>('./auth');
+
+    const expoClient = jest.mocked(expoModule.expoClient);
+    const createAuthClient = jest.mocked(authReactModule.createAuthClient);
 
     expect(expoClient).toHaveBeenCalledTimes(1);
-    expect(expoClient).toHaveBeenCalledWith(expect.objectContaining({
-      scheme: 'app-react-native',
-      storage: expect.objectContaining({
-        getItemAsync: expect.any(Function),
-        setItemAsync: expect.any(Function),
-        deleteItemAsync: expect.any(Function),
-      }),
-    }));
+
+    const expoOptions = expoClient.mock.calls[0]?.[0];
+
+    expect(expoOptions).toBeDefined();
+    expect(expoOptions?.scheme).toBe('app-react-native');
+    expect(expoOptions?.storage).toMatchObject({
+      getItemAsync: secureStoreModule.getItemAsync,
+      setItemAsync: secureStoreModule.setItemAsync,
+      deleteItemAsync: secureStoreModule.deleteItemAsync,
+    });
 
     expect(createAuthClient).toHaveBeenCalledTimes(1);
     expect(createAuthClient).toHaveBeenCalledWith({
