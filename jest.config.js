@@ -38,5 +38,14 @@ module.exports = {
     '!src/shared/db/schema/**',
   ],
 
+  coverageThreshold: {
+    global: {
+      statements: 94,
+      branches: 82,
+      functions: 91,
+      lines: 94,
+    },
+  },
+
   clearMocks: true,
 };
