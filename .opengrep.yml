@@ -1,0 +1,36 @@
+rules:
+  - id: typescript-eval
+    languages: [typescript]
+    message: Avoid eval with dynamic input
+    severity: ERROR
+    pattern: eval(...)
+
+  - id: typescript-function-constructor
+    languages: [typescript]
+    message: Avoid dynamic Function construction
+    severity: ERROR
+    pattern: new Function(...)
+
+  - id: typescript-child-process-exec
+    languages: [typescript]
+    message: Review shell command execution with dynamic input
+    severity: ERROR
+    pattern-either:
+      - pattern: exec(...)
+      - pattern: execSync(...)
+
+  - id: typescript-weak-hash
+    languages: [typescript]
+    message: Avoid weak cryptographic hash algorithms
+    severity: ERROR
+    pattern-either:
+      - pattern: createHash('md5')
+      - pattern: createHash("md5")
+      - pattern: createHash('sha1')
+      - pattern: createHash("sha1")
+
+  - id: typescript-insecure-tls
+    languages: [typescript]
+    message: TLS certificate validation must not be disabled
+    severity: ERROR
+    pattern-regex: 'rejectUnauthorized\s*:\s*false'
