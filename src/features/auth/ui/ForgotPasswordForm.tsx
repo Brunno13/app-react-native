@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import type { AuthError } from '../hooks/useAuth';
 
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
+import { FormTextInput } from '@/shared/ui';
 
 interface ForgotPasswordFormProps {
   onResetPassword: (email: string) => Promise<{ error: AuthError | null }>;
@@ -62,22 +63,20 @@ export const ForgotPasswordForm = ({ onResetPassword, loading, onNavigateToLogin
         control={control}
         name="email"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            style={[globalStyles.input, errors.email && globalStyles.inputError]}
+          <FormTextInput
+            error={errors.email?.message}
+            loading={loading}
             placeholder={t('auth.emailPlaceholder')}
-            placeholderTextColor={globalStyles.textSecondary.color}
             keyboardType="email-address"
             autoCapitalize="none"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
-            editable={!loading}
             returnKeyType="send"
             onSubmitEditing={() => { void handleSubmit(onSubmit)(); }}
           />
         )}
       />
-      {errors.email && <Text style={globalStyles.formErrorText}>{errors.email.message}</Text>}
 
       <TouchableOpacity
         style={[globalStyles.buttonPrimary, styles.submitButton, (!isValid || loading) && { opacity: 0.6 }]}

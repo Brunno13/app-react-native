@@ -22,6 +22,10 @@ jest.mock('@/features/auth', () => {
   return {
     useAuth: jest.fn(),
 
+    AuthScreenLayout: ({ children }: { children: React.ReactNode }) => (
+      <View>{children}</View>
+    ),
+
     LoginForm: ({ onNavigateToSignUp, onNavigateToForgot, loading, onLogin }: LoginFormMockProps) => (
       <View testID="mock-login-form">
         <Text testID="prop-loading">{String(loading)}</Text>

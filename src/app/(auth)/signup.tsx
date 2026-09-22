@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { useAuth, SignUpForm, type RegisterFormData } from '@/features/auth';
+import { AuthScreenLayout, useAuth, SignUpForm, type RegisterFormData } from '@/features/auth';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 
 export default function SignUpScreen() {
@@ -28,19 +26,12 @@ export default function SignUpScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} testID="signup-screen">
-      <View style={styles.container} testID="signup-form-container">
-        <SignUpForm 
-          onSignUp={handleSignUp} 
-          loading={loading}
-          onNavigateToLogin={() => router.back()} 
-        />
-      </View>
-    </SafeAreaView>
+    <AuthScreenLayout testID="signup-screen" containerTestID="signup-form-container">
+      <SignUpForm
+        onSignUp={handleSignUp}
+        loading={loading}
+        onNavigateToLogin={() => router.back()}
+      />
+    </AuthScreenLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }
-});

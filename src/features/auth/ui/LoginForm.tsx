@@ -7,6 +7,7 @@ import { getLoginSchema, type LoginFormData } from '../domain/authSchema';
 import type { AuthError } from '../hooks/useAuth';
 import { useAppTheme } from '@/shared/providers/ThemeProvider';
 import { useGlobalStyles } from '@/shared/ui/globalStyles';
+import { FormTextInput } from '@/shared/ui';
 import { useNotification } from '@/shared/providers/NotificationProvider';
 
 interface LoginFormProps {
@@ -89,46 +90,42 @@ export const LoginForm = ({ onLogin, loading, onNavigateToSignUp, onNavigateToFo
         control={control}
         name="email"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
+          <FormTextInput
             testID="input-email"
-            style={[globalStyles.input, errors.email && globalStyles.inputError]}
+            error={errors.email?.message}
+            loading={loading}
             placeholder={t('auth.emailPlaceholder')}
-            placeholderTextColor={globalStyles.textSecondary.color}
             keyboardType="email-address"
             autoCapitalize="none"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
-            editable={!loading}
             returnKeyType="next"
             blurOnSubmit={false}
             onSubmitEditing={() => passwordRef.current?.focus()}
           />
         )}
       />
-      {errors.email && <Text style={globalStyles.formErrorText}>{errors.email.message}</Text>}
 
       <Controller
         control={control}
         name="password"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
+          <FormTextInput
             testID="input-password"
-            ref={passwordRef}
-            style={[globalStyles.input, errors.password && globalStyles.inputError]}
+            inputRef={passwordRef}
+            error={errors.password?.message}
+            loading={loading}
             placeholder={t('auth.passwordPlaceholder')}
-            placeholderTextColor={globalStyles.textSecondary.color}
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
-            editable={!loading}
             returnKeyType="send"
             onSubmitEditing={() => { void handleSubmit(onSubmit)(); }}
           />
         )}
       />
-      {errors.password && <Text style={globalStyles.formErrorText}>{errors.password.message}</Text>}
 
       <TouchableOpacity testID="link-to-forgot" onPress={handleNavigateToForgot} style={styles.forgotButton}>
         <Text style={globalStyles.linkText}>{t('auth.forgotPasswordLink')}</Text>
