@@ -88,6 +88,8 @@
     "test": "jest",
     "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage",
+    "security:trivy:prod": "bun run ./scripts/security-trivy-vuln.ts --scope=production",
+    "security:trivy:all": "bun run ./scripts/security-trivy-vuln.ts --scope=all",
     "storybook": "sb-rn-get-stories && expo start -c",
     "storybook:ios": "sb-rn-get-stories && expo start --ios",
     "storybook:android": "sb-rn-get-stories && expo start --android"
