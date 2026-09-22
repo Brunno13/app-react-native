@@ -90,6 +90,7 @@
     "test:coverage": "jest --coverage",
     "security:trivy:prod": "bun run ./scripts/security-trivy-vuln.ts --scope=production",
     "security:trivy:all": "bun run ./scripts/security-trivy-vuln.ts --scope=all",
+    "security:trivy:misconfig": "bun run ./scripts/security-trivy-misconfig.ts",
     "storybook": "sb-rn-get-stories && expo start -c",
     "storybook:ios": "sb-rn-get-stories && expo start --ios",
     "storybook:android": "sb-rn-get-stories && expo start --android"
