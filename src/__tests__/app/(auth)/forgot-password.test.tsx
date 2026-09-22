@@ -22,6 +22,10 @@ jest.mock('@/features/auth', () => {
   return {
     useAuth: jest.fn(),
 
+    AuthScreenLayout: ({ children }: { children: React.ReactNode }) => (
+      <View>{children}</View>
+    ),
+
     ForgotPasswordForm: ({ onResetPassword, onNavigateToLogin, loading }: ForgotPasswordFormMockProps) => (
       <View testID="mock-forgot-form">
         <Text testID="prop-loading">{String(loading)}</Text>

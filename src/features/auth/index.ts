@@ -4,4 +4,5 @@ export { LoginForm } from './ui/LoginForm';
 export { ForgotPasswordForm } from './ui/ForgotPasswordForm';
 export { SignUpForm } from './ui/SignUpForm';
 export { BiometricGate } from './ui/BiometricGate';
+export { AuthScreenLayout } from './ui/AuthScreenLayout';
 export type { RegisterFormData, LoginFormData, ForgotPasswordFormData } from './domain/authSchema';

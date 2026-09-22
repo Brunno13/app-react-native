@@ -32,6 +32,10 @@ jest.mock('@/features/auth', () => {
   return {
     useAuth: jest.fn(),
 
+    AuthScreenLayout: ({ children }: { children: React.ReactNode }) => (
+      <View>{children}</View>
+    ),
+
     SignUpForm: ({ onSignUp, onNavigateToLogin, loading }: SignUpFormMockProps) => {
       const [lastError, setLastError] = ReactActual.useState('');
 
