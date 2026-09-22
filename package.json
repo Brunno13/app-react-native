@@ -22,6 +22,7 @@
     "expo": "~56.0.22",
     "expo-build-properties": "~56.0.27",
     "expo-constants": "~56.0.26",
+    "expo-font": "~56.0.7",
     "expo-image-picker": "~56.0.25",
     "expo-linking": "~56.0.18",
     "expo-local-authentication": "~56.0.5",
