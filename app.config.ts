@@ -1,10 +1,13 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
-import { withStringsXml, withAndroidManifest, withDangerousMod } from 'expo/config-plugins';
+import { withStringsXml, withAndroidManifest, withDangerousMod, withGradleProperties } from 'expo/config-plugins';
 import fs from 'node:fs';
 import path from 'node:path';
 
 const APP_ENV = process.env.EXPO_PUBLIC_APP_ENV || process.env.APP_ENV || 'staging';
 const IS_PROD = APP_ENV === 'production';
+const DETOX_ENABLED =
+  process.env.DETOX_ENABLED === 'true' ||
+  process.env.DETOX_ENABLED === '1';
 const withDefaultFaceIDString = (config: ExpoConfig) => {
   return withStringsXml(config, (configProps) => {
     if (!configProps.modResults.resources.string) {
@@ -17,8 +20,63 @@ const withDefaultFaceIDString = (config: ExpoConfig) => {
 
     if (!hasFaceID) {
       configProps.modResults.resources.string.push({
-        $: { name: 'NSFaceIDUsageDescription', translatable: 'false' },
+        $: { name: 'NSFaceIDUsageDescription' },
         _: 'We use Face ID to ensure secure access to your account.'
+      });
+    }
+
+    return configProps;
+  });
+};
+
+const withAndroidLintStrings = (config: ExpoConfig) => {
+  return withStringsXml(config, (configProps) => {
+    const targets = new Set([
+      'app_name',
+      'expo_runtime_version',
+    ]);
+
+    for (const item of configProps.modResults.resources.string ?? []) {
+      if (item.$?.name && targets.has(item.$.name)) {
+        item.$.translatable = 'false';
+        targets.delete(item.$.name);
+      }
+    }
+
+    if (targets.size > 0) {
+      throw new Error(
+        'Expected Android string resources not found: ' +
+        Array.from(targets).join(', ')
+      );
+    }
+
+    return configProps;
+  });
+};
+
+const withGradleMetaspace = (config: ExpoConfig) => {
+  return withGradleProperties(config, (configProps) => {
+    const key = 'org.gradle.jvmargs';
+    const metaspace = '-XX:MaxMetaspaceSize=1024m';
+
+    const property = configProps.modResults.find(
+      (item) => item.type === 'property' && item.key === key
+    );
+
+    if (property?.type === 'property') {
+      const currentValue = property.value ?? '';
+
+      property.value = /-XX:MaxMetaspaceSize=\S+/.test(currentValue)
+        ? currentValue.replace(
+            /-XX:MaxMetaspaceSize=\S+/,
+            metaspace
+          )
+        : (currentValue + ' ' + metaspace).trim();
+    } else {
+      configProps.modResults.push({
+        type: 'property',
+        key,
+        value: '-Xmx2048m ' + metaspace,
       });
     }
 
@@ -73,8 +131,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     'expo-sqlite',
     'expo-secure-store',
     'expo-local-authentication',
-    "@config-plugins/detox"
   ];
+
+  if (DETOX_ENABLED) {
+    plugins.push('@config-plugins/detox');
+  }
 
   if (!IS_PROD) {
     plugins.push([
@@ -136,6 +197,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   };
 
   let finalConfig = withDefaultFaceIDString(baseConfig);
+  finalConfig = withAndroidLintStrings(finalConfig);
+  finalConfig = withGradleMetaspace(finalConfig);
 
   if (!IS_PROD) {
     finalConfig = withNetworkSecurityConfig(finalConfig);
