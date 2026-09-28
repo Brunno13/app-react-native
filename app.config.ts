@@ -83,6 +83,46 @@ const withGradleMetaspace = (config: ExpoConfig) => {
     return configProps;
   });
 };
+const withLegacyStoragePermissionBounds = (config: ExpoConfig) => {
+  return withAndroidManifest(config, (configProps) => {
+    const manifest = configProps.modResults.manifest;
+    const permissions = manifest['uses-permission'] ?? [];
+
+    const writeExternalStorage = permissions.find(
+      (permission) =>
+        permission.$?.['android:name'] ===
+        'android.permission.WRITE_EXTERNAL_STORAGE'
+    );
+
+    if (!writeExternalStorage) {
+      throw new Error(
+        'WRITE_EXTERNAL_STORAGE was not found in AndroidManifest'
+      );
+    }
+
+    manifest.$ = manifest.$ ?? {};
+    manifest.$['xmlns:tools'] =
+      'http://schemas.android.com/tools';
+
+    const permissionAttributes = writeExternalStorage.$;
+
+    if (!permissionAttributes) {
+      throw new Error(
+        'WRITE_EXTERNAL_STORAGE attributes were not found'
+      );
+    }
+
+    const storageAttributes: typeof permissionAttributes & {
+      'android:maxSdkVersion'?: string;
+      'tools:replace'?: string;
+    } = permissionAttributes;
+
+    storageAttributes['android:maxSdkVersion'] = '28';
+    storageAttributes['tools:replace'] = 'android:maxSdkVersion';
+
+    return configProps;
+  });
+};
 
 // Plugin de Bypass de Rede (Roda APENAS em Staging/Dev)
 const withNetworkSecurityConfig = (config: ExpoConfig) => {
@@ -199,6 +239,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   let finalConfig = withDefaultFaceIDString(baseConfig);
   finalConfig = withAndroidLintStrings(finalConfig);
   finalConfig = withGradleMetaspace(finalConfig);
+  finalConfig = withLegacyStoragePermissionBounds(finalConfig);
 
   if (!IS_PROD) {
     finalConfig = withNetworkSecurityConfig(finalConfig);
