@@ -94,6 +94,7 @@
     "security:trivy:all": "bun run ./scripts/security-trivy-vuln.ts --scope=all",
     "security:trivy:misconfig": "bun run ./scripts/security-trivy-misconfig.ts",
     "security:trivy:secret": "bun run ./scripts/security-trivy-secret.ts",
+    "quality:android": "bun run ./scripts/quality-android.ts",
     "quality:cpd": "jscpd src --min-lines 5 --min-tokens 50 --format typescript,tsx --ignore \"**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/*.stories.ts,**/*.stories.tsx,**/storybook.config.ts\" --baseline .jscpd-baseline.json --fail-on-new-clones 0 --fail-on-empty --reporters console",
     "quality:cpd:update-baseline": "jscpd src --min-lines 5 --min-tokens 50 --format typescript,tsx --ignore \"**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/*.stories.ts,**/*.stories.tsx,**/storybook.config.ts\" --baseline .jscpd-baseline.json --update-baseline --fail-on-empty --reporters console",
     "storybook": "sb-rn-get-stories && expo start -c",
