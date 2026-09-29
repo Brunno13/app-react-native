@@ -1,0 +1,42 @@
+when:
+  - event: manual
+
+labels:
+  platform: linux/amd64
+  role: build-linux
+
+depends_on:
+  - security-wake-x86
+
+steps:
+  - name: android-quality
+    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    pull: false
+
+    environment:
+      CI: "true"
+
+    commands:
+      - |
+        set -e
+
+        echo "===== ANDROID CI ENVIRONMENT ====="
+        uname -m
+        java -version
+        node --version
+        bun --version
+
+        echo
+        echo "===== SOURCE ====="
+        git rev-parse HEAD
+
+        echo
+        echo "===== INSTALL ====="
+        bun install --frozen-lockfile
+
+        echo
+        echo "===== ANDROID QUALITY ====="
+        bun run quality:android
+
+        echo
+        echo "ANDROID_PIPELINE_GATE=PASS"
