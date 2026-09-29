@@ -29,12 +29,12 @@ module.exports = {
       type: 'android.apk',
       binaryPath: './app-react-native-production.apk',
       testBinaryPath: 'android/app/build/outputs/apk/androidTest/release/app-release-androidTest.apk',
-      build: `bun run build:apk:prod && cd android && ${gradleCmd} :app:assembleAndroidTest -DtestBuildType=release && cd ..`,
+      build: `bunx cross-env DETOX_ENABLED=true bun run build:apk:prod && cd android && ${gradleCmd} :app:assembleAndroidTest -DtestBuildType=release && cd ..`,
     },
     'ios.release': {
       type: 'ios.app',
       binaryPath: iosAppPath, 
-      build: 'bun run build:ios:prod',
+      build: 'bunx cross-env DETOX_ENABLED=true bun run build:ios:prod',
     },
   },
   devices: {

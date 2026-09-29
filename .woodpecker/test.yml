@@ -5,6 +5,9 @@ when:
 labels:
   platform: darwin/arm64
 
+depends_on:
+  - quality-android
+
 steps:
   # =========================================================
   # NOTIFICAÇÃO DE INÍCIO

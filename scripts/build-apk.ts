@@ -32,7 +32,7 @@ try {
 
   const currentDir = process.cwd();
 
-  console.log('\n📝 Passo 2: Configurando SDK e Otimizando RAM para o Mac M1 (8GB)...');
+  console.log('\n📝 Passo 2: Configurando SDK e limitando workers do Gradle...');
   
   let sdkDir = Bun.env.ANDROID_HOME || Bun.env.ANDROID_SDK_ROOT;
 
@@ -58,11 +58,10 @@ try {
     gradleProps = await gradlePropsFile.text();
   }
   
-  gradleProps += '\n# Limites de Memoria aplicados automaticamente\n';
-  gradleProps += 'org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\n';
+  gradleProps += '\n# Limite de workers aplicado automaticamente\n';
   gradleProps += 'org.gradle.workers.max=2\n';
   await Bun.write(gradlePropsPath, gradleProps);
-  console.log(`✅ SDK configurado e limites de memória ativados (Workers: 2, RAM: 2GB).`);
+  console.log(`✅ SDK configurado e workers do Gradle limitados a 2.`);
 
   console.log('\n🔨 Passo 3: Compilando o APK...');
   const gradleCmd = process.platform === 'win32' 

@@ -1,0 +1,56 @@
+when:
+  - event: push
+    branch: main
+  - event: manual
+
+labels:
+  platform: linux/amd64
+  role: build-linux
+
+depends_on:
+  - security-wake-x86
+
+steps:
+  - name: android-quality
+    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    pull: false
+
+    environment:
+      CI: "true"
+      GRADLE_USER_HOME: /cache/gradle
+      BUN_INSTALL_CACHE_DIR: /cache/bun
+
+    volumes:
+      - /opt/ci-cache/app-react-native/gradle:/cache/gradle
+      - /opt/ci-cache/app-react-native/bun:/cache/bun
+
+    commands:
+      - |
+        set -e
+
+        echo "===== ANDROID CI ENVIRONMENT ====="
+        uname -m
+        java -version
+        node --version
+        bun --version
+
+        echo
+        echo "===== CACHE ====="
+        echo "GRADLE_USER_HOME=$GRADLE_USER_HOME"
+        echo "BUN_INSTALL_CACHE_DIR=$BUN_INSTALL_CACHE_DIR"
+        echo "CI_REPO_TRUSTED_VOLUMES=$CI_REPO_TRUSTED_VOLUMES"
+
+        echo
+        echo "===== SOURCE ====="
+        git rev-parse HEAD
+
+        echo
+        echo "===== INSTALL ====="
+        bun install --frozen-lockfile
+
+        echo
+        echo "===== ANDROID QUALITY ====="
+        bun run quality:android
+
+        echo
+        echo "ANDROID_PIPELINE_GATE=PASS"
