@@ -15,6 +15,12 @@ steps:
 
     environment:
       CI: "true"
+      GRADLE_USER_HOME: /cache/gradle
+      BUN_INSTALL_CACHE_DIR: /cache/bun
+
+    volumes:
+      - /opt/ci-cache/app-react-native/gradle:/cache/gradle
+      - /opt/ci-cache/app-react-native/bun:/cache/bun
 
     commands:
       - |
@@ -25,6 +31,12 @@ steps:
         java -version
         node --version
         bun --version
+
+        echo
+        echo "===== CACHE ====="
+        echo "GRADLE_USER_HOME=$GRADLE_USER_HOME"
+        echo "BUN_INSTALL_CACHE_DIR=$BUN_INSTALL_CACHE_DIR"
+        echo "CI_REPO_TRUSTED_VOLUMES=$CI_REPO_TRUSTED_VOLUMES"
 
         echo
         echo "===== SOURCE ====="
