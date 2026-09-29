@@ -221,8 +221,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/icon.png',
-        backgroundColor: '#ffffff'
+        foregroundImage: './assets/android-icon-foreground.png',
+        monochromeImage: './assets/android-icon-monochrome.png',
+        backgroundColor: '#ffffff',
       },
       package: IS_PROD ? 'com.brunno.app' : 'com.brunno.app.staging',
     },
