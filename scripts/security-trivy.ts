@@ -323,3 +323,5 @@ if (failed) {
 
 console.log("");
 console.log("TRIVY_BASELINE_GATE=PASS");
+
+export {};

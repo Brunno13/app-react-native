@@ -3,7 +3,8 @@ when:
     branch: main
 
 labels:
-  platform: darwin/arm64
+  platform: linux/amd64
+  role: build-linux
 
 depends_on:
   - quality-android
@@ -14,7 +15,7 @@ steps:
   # =========================================================
 
   - name: notify-start
-    image: bash
+    image: curlimages/curl:8.22.0
 
     environment:
       GOTIFY_TOKEN:
@@ -40,20 +41,21 @@ steps:
   # =========================================================
 
   - name: testar-codigo
-    image: bash
+    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    pull: false
 
     commands:
       - echo "📦 Instalando dependências..."
-      - bun install
+      - bun install --frozen-lockfile
 
       - echo "🧹 Verificando Arquitetura FSD e Linter..."
       - bun run lint
 
       - echo "🔍 Verificando tipagem do App..."
-      - bunx tsc --noEmit
+      - bun x tsc --noEmit
 
       - echo "🔍 Verificando tipagem dos Scripts..."
-      - bunx tsc --project scripts/tsconfig.json --noEmit
+      - bun x tsc --project scripts/tsconfig.json --noEmit
 
       - echo "🧪 Executando a suíte de testes..."
       - bun run test
@@ -63,7 +65,8 @@ steps:
   # =========================================================
 
   - name: deploy-ota-staging
-    image: bash
+    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    pull: false
 
     environment:
       EXPO_PUBLIC_API_URL:
@@ -84,7 +87,7 @@ steps:
       - echo "🚀 Empacotando e enviando atualização OTA para Staging..."
 
       - >
-        bunx eas-cli update
+        bun x eas-cli update
         --branch staging
         --message "Deploy via CI - Commit: ${CI_COMMIT_SHA}"
         --non-interactive
@@ -94,7 +97,7 @@ steps:
   # =========================================================
 
   - name: notify-success
-    image: bash
+    image: curlimages/curl:8.22.0
 
     environment:
       GOTIFY_TOKEN:
@@ -121,7 +124,7 @@ steps:
         status: [success]
 
   - name: notify-error
-    image: bash
+    image: curlimages/curl:8.22.0
 
     environment:
       GOTIFY_TOKEN:
