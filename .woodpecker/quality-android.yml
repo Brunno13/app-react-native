@@ -1,7 +1,8 @@
 when:
   - event: push
     branch: main
-  - evaluate: 'CI_PIPELINE_EVENT == "manual" && (BUILD_IOS ?? "") == ""'
+  - event: manual
+    evaluate: '(BUILD_IOS ?? "") == ""'
 
 labels:
   platform: linux/amd64
@@ -83,8 +84,10 @@ steps:
         echo "ANDROID_GARAGE_PREFLIGHT=PASS"
 
     when:
-      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "staging"'
-      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "production"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "staging"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "production"'
 
   - name: android-quality
     image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
@@ -182,8 +185,10 @@ steps:
         echo "ANDROID_MANUAL_BUILD=PASS"
 
     when:
-      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "staging"'
-      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "production"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "staging"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "production"'
 
   - name: android-garage-upload
     image: public.ecr.aws/aws-cli/aws-cli@sha256:f42bf088cb1456ba9e179ce71fdeb22cc46ff64ea1e3aeae8251ff81391f5bb1
@@ -236,5 +241,7 @@ steps:
         echo "ANDROID_GARAGE_UPLOAD=PASS"
 
     when:
-      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "staging"'
-      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "production"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "staging"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "production"'
