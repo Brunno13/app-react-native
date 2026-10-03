@@ -9,6 +9,12 @@ if (process.env.CI && process.env.CI !== 'true' && process.env.CI !== '1') {
 const isProd = Bun.argv.includes('--prod');
 const appEnv = Bun.env.APP_ENV || (isProd ? 'production' : 'staging');
 
+if (appEnv !== 'staging' && appEnv !== 'production') {
+  console.error(`❌ APP_ENV inválido: ${appEnv}`);
+  console.error('Valores aceitos: staging | production');
+  process.exit(1);
+}
+
 console.log(`\n🚀 Iniciando build automatizado 100% Bun-Native para iOS: [${appEnv.toUpperCase()}]\n`);
 
 try {
@@ -124,6 +130,14 @@ export CI="true"
   const artifactBasename = Bun.env.ARTIFACT_BASENAME || "app-react-native";
   const zipDestName = `${artifactBasename}-ios-${appEnv}.zip`;
   const zipDestPath = `${currentDir}/${zipDestName}`;
+
+  if (await Bun.file(zipDestPath).exists()) {
+    const removeOldZip = Bun.spawnSync(['rm', '-f', zipDestPath]);
+
+    if (removeOldZip.exitCode !== 0) {
+      throw new Error(`Falha ao remover ZIP anterior: ${zipDestPath}`);
+    }
+  }
 
   const zipProcess = Bun.spawnSync(
     ['zip', '-r', zipDestPath, appDirName],

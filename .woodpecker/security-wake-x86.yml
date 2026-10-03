@@ -1,7 +1,7 @@
 when:
   - event: push
     branch: main
-  - event: manual
+  - evaluate: 'CI_PIPELINE_EVENT == "manual" && (BUILD_IOS ?? "") == ""'
 
 labels:
   platform: linux/arm64
