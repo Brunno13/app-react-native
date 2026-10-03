@@ -2,6 +2,7 @@ when:
   - event: push
     branch: main
   - event: manual
+    evaluate: '(BUILD_IOS ?? "") == ""'
 
 labels:
   platform: linux/arm64

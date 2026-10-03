@@ -9,6 +9,12 @@ if (process.env.CI && process.env.CI !== 'true' && process.env.CI !== '1') {
 const isProd = Bun.argv.includes('--prod');
 const appEnv = Bun.env.APP_ENV || (isProd ? 'production' : 'staging');
 
+if (appEnv !== 'staging' && appEnv !== 'production') {
+  console.error(`❌ APP_ENV inválido: ${appEnv}`);
+  console.error('Valores aceitos: staging | production');
+  process.exit(1);
+}
+
 console.log(`\n🚀 Iniciando build automatizado 100% Bun-Native para iOS: [${appEnv.toUpperCase()}]\n`);
 
 try {
@@ -35,18 +41,31 @@ try {
   const currentDir = process.cwd();
   const iosDir = `${currentDir}/ios`;
 
-  console.log('\n🔗 Passo 1.5: Bypass Supremo para NVM e Variáveis no Xcode...');
-  
-  const nvmCheck = Bun.spawnSync([
-    'bash', '-c', 
-    'export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"; nvm use 21 > /dev/null 2>&1; which node'
-  ]);
-  
-  const nodeFullPath = nvmCheck.stdout.toString().trim() || Bun.which('node');
+  console.log('\n🔗 Passo 1.5: Configurando Node para o Xcode...');
+
+  const nodeFullPath =
+    Bun.env.NODE_BINARY ||
+    Bun.which('node');
 
   if (!nodeFullPath) {
-    throw new Error('❌ Node.js não foi encontrado nem no PATH e nem no NVM.');
+    throw new Error('❌ Node.js não foi encontrado no ambiente.');
   }
+
+  const nodeVersionCheck = Bun.spawnSync(
+    [nodeFullPath, '--version']
+  );
+
+  if (nodeVersionCheck.exitCode !== 0) {
+    throw new Error(
+      `❌ Não foi possível executar o Node configurado: ${nodeFullPath}`
+    );
+  }
+
+  const nodeVersion = nodeVersionCheck.stdout
+    .toString()
+    .trim();
+
+  console.log(`✅ Node selecionado: ${nodeFullPath} (${nodeVersion})`);
 
   const bunFullPath = Bun.which('bun') || '';
   
@@ -65,7 +84,7 @@ export CI="true"
   `;
   
   await Bun.write(xcodeEnvLocalPath, envContent.trim() + '\n');
-  console.log(`✅ Xcode mapeado! Node 21 localizado em: ${nodeFullPath}`);
+  console.log(`✅ Xcode mapeado! Node ${nodeVersion} localizado em: ${nodeFullPath}`);
 
   const files = await readdir(iosDir);
   const workspaceName = files.find(file => file.endsWith('.xcworkspace'));
@@ -78,25 +97,86 @@ export CI="true"
   console.log(`✅ Projeto Xcode localizado: ${workspaceName} (Scheme: ${schemeName})`);
 
   console.log('\n🔨 Passo 2: Compilando o aplicativo via xcodebuild (Modo Release)...');
-  
+
+  console.log(
+    `\n🧩 Xcode Node: ${nodeFullPath} (${nodeVersion})`
+  );
+
+  const xcodeLogPath = `${currentDir}/xcodebuild-ios.log`;
+
+  const xcodeCommand = [
+    `mkdir -p "${currentDir}/ios_build"`,
+    '&&',
+    'xcodebuild',
+    `-workspace "${iosDir}/${workspaceName}"`,
+    `-scheme "${schemeName}"`,
+    '-configuration Release',
+    '-sdk iphonesimulator',
+    `-derivedDataPath "${currentDir}/ios_build"`,
+    `> "${xcodeLogPath}"`,
+    '2>&1',
+  ].join(' ');
+
   const xcodebuild = Bun.spawnSync(
-    [
-      'xcodebuild',
-      '-workspace', `${iosDir}/${workspaceName}`,
-      '-scheme', schemeName,
-      '-configuration', 'Release',
-      '-sdk', 'iphonesimulator',
-      '-derivedDataPath', `${currentDir}/ios_build`
-    ],
+    ['bash', '-c', xcodeCommand],
     {
       stdin: 'inherit',
       stdout: 'inherit',
       stderr: 'inherit',
+      env: {
+        ...process.env,
+        NODE_BINARY: nodeFullPath,
+        PATH: `${nodeDir}:${bunDir}:${process.env.PATH ?? ''}`,
+        APP_ENV: appEnv,
+        EXPO_PUBLIC_APP_ENV: appEnv,
+        CI: 'true',
+      },
     }
   );
 
   if (xcodebuild.exitCode !== 0) {
-    throw new Error('Falha crítica durante a compilação nativa no xcodebuild.');
+    console.error('\n===== XCODE FAILURE DIAGNOSTICS =====');
+
+    Bun.spawnSync(
+      [
+        'bash',
+        '-c',
+        `
+          if [ -f "${xcodeLogPath}" ]; then
+            echo
+            echo "===== RELEVANT ERRORS ====="
+
+            grep -n -i -E 'error:|commanderror|exception|failed|cannot|not found|enoent|ERR_|PhaseScriptExecution' \
+              "${xcodeLogPath}" | tail -n 120 || true
+
+            echo
+            echo "===== LAST 160 LINES ====="
+
+            tail -n 160 "${xcodeLogPath}"
+          else
+            echo "XCODE_LOG_NOT_FOUND=${xcodeLogPath}"
+          fi
+        `,
+      ],
+      {
+        stdout: 'inherit',
+        stderr: 'inherit',
+      }
+    );
+
+    throw new Error(
+      `Falha crítica durante a compilação nativa no xcodebuild. Log: ${xcodeLogPath}`
+    );
+  }
+
+  console.log('\n** BUILD SUCCEEDED **');
+
+  const removeXcodeLog = Bun.spawnSync(
+    ['rm', '-f', xcodeLogPath]
+  );
+
+  if (removeXcodeLog.exitCode !== 0) {
+    console.warn(`⚠️ Não foi possível remover o log temporário: ${xcodeLogPath}`);
   }
 
   console.log('\n📦 Passo 3: Localizando o binário e compactando para distribuição...');
@@ -121,11 +201,20 @@ export CI="true"
   console.log(`🎯 Pacote .app localizado com sucesso: ${appDirName}`);
   console.log('🤐 Compactando o pacote em um arquivo .zip seguro para a Apple...');
   
-  const zipDestName = `app-react-native-ios-${appEnv}.zip`;
+  const artifactBasename = Bun.env.ARTIFACT_BASENAME || "app-react-native";
+  const zipDestName = `${artifactBasename}-ios-${appEnv}.zip`;
   const zipDestPath = `${currentDir}/${zipDestName}`;
 
+  if (await Bun.file(zipDestPath).exists()) {
+    const removeOldZip = Bun.spawnSync(['rm', '-f', zipDestPath]);
+
+    if (removeOldZip.exitCode !== 0) {
+      throw new Error(`Falha ao remover ZIP anterior: ${zipDestPath}`);
+    }
+  }
+
   const zipProcess = Bun.spawnSync(
-    ['zip', '-r', zipDestPath, appDirName],
+    ['zip', '-qr', zipDestPath, appDirName],
     { cwd: releaseDir }
   );
 

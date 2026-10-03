@@ -6,34 +6,43 @@ if (process.env.CI && process.env.CI !== 'true' && process.env.CI !== '1') {
 
 const isProd = Bun.argv.includes('--prod');
 const appEnv = Bun.env.APP_ENV || (isProd ? 'production' : 'staging');
+const skipPrebuild =
+  Bun.env.ANDROID_SKIP_PREBUILD === "1";
 
 console.log(`\n🚀 Iniciando build automatizado 100% Bun-Native para: [${appEnv.toUpperCase()}]\n`);
 
 try {
-  console.log('⚙️ Passo 1: Gerando código nativo (Expo Prebuild)...');
-  
-  const prebuild = Bun.spawnSync(
-    [process.execPath, 'x', 'cross-env', 'CI=1', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'], 
-    { 
-      stdin: 'inherit',
-      stdout: 'inherit',
-      stderr: 'inherit',
-      env: {
-        ...process.env,
-        APP_ENV: appEnv,
-        EXPO_PUBLIC_APP_ENV: appEnv
-      }
-    }
-  );
+  if (!skipPrebuild) {
+    console.log('⚙️ Passo 1: Gerando código nativo (Expo Prebuild)...');
 
-  if (prebuild.exitCode !== 0) {
-    throw new Error('Falha crítica ao gerar o código nativo (Expo Prebuild).');
+    const prebuild = Bun.spawnSync(
+      [process.execPath, 'x', 'cross-env', 'CI=1', `APP_ENV=${appEnv}`, 'expo', 'prebuild', '--platform', 'android', '--clean'],
+      {
+        stdin: 'inherit',
+        stdout: 'inherit',
+        stderr: 'inherit',
+        env: {
+          ...process.env,
+          APP_ENV: appEnv,
+          EXPO_PUBLIC_APP_ENV: appEnv
+        }
+      }
+    );
+
+    if (prebuild.exitCode !== 0) {
+      throw new Error('Falha crítica ao gerar o código nativo (Expo Prebuild).');
+    }
+
+  } else {
+    console.log(
+      "\n♻️ Passo 1: Reutilizando projeto Android gerado pelo quality gate...\n"
+    );
   }
 
   const currentDir = process.cwd();
 
   console.log('\n📝 Passo 2: Configurando SDK e limitando workers do Gradle...');
-  
+
   let sdkDir = Bun.env.ANDROID_HOME || Bun.env.ANDROID_SDK_ROOT;
 
   if (!sdkDir) {
@@ -41,9 +50,9 @@ try {
     if (process.platform === 'win32') {
       sdkDir = `${homeDir}/AppData/Local/Android/Sdk`;
     } else if (process.platform === 'darwin') {
-      sdkDir = `${homeDir}/Library/Android/sdk`; 
+      sdkDir = `${homeDir}/Library/Android/sdk`;
     } else {
-      sdkDir = `${homeDir}/Android/Sdk`; 
+      sdkDir = `${homeDir}/Android/Sdk`;
     }
   }
 
@@ -57,24 +66,24 @@ try {
   if (await gradlePropsFile.exists()) {
     gradleProps = await gradlePropsFile.text();
   }
-  
+
   gradleProps += '\n# Limite de workers aplicado automaticamente\n';
   gradleProps += 'org.gradle.workers.max=2\n';
   await Bun.write(gradlePropsPath, gradleProps);
   console.log(`✅ SDK configurado e workers do Gradle limitados a 2.`);
 
   console.log('\n🔨 Passo 3: Compilando o APK...');
-  const gradleCmd = process.platform === 'win32' 
-    ? `${currentDir}/android/gradlew.bat` 
+  const gradleCmd = process.platform === 'win32'
+    ? `${currentDir}/android/gradlew.bat`
     : `${currentDir}/android/gradlew`;
-  
+
   if (process.platform !== 'win32') {
     Bun.spawnSync(['chmod', '+x', gradleCmd]);
   }
 
   const build = Bun.spawnSync(
-    [gradleCmd, 'assembleRelease'], 
-    { 
+    [gradleCmd, 'assembleRelease'],
+    {
       stdin: 'inherit',
       stdout: 'inherit',
       stderr: 'inherit',
@@ -83,7 +92,7 @@ try {
         ...process.env,
         APP_ENV: appEnv,
         EXPO_PUBLIC_APP_ENV: appEnv,
-        CMAKE_BUILD_PARALLEL_LEVEL: '2' 
+        CMAKE_BUILD_PARALLEL_LEVEL: '2'
       }
     }
   );
@@ -94,7 +103,8 @@ try {
 
   console.log('\n📦 Passo 4: Movendo o APK para a raiz...');
   const apkSource = `${currentDir}/android/app/build/outputs/apk/release/app-release.apk`;
-  const apkDestName = `app-react-native-${appEnv}.apk`;
+  const artifactBasename = Bun.env.ARTIFACT_BASENAME || "app-react-native";
+  const apkDestName = `${artifactBasename}-${appEnv}.apk`;
   const apkDest = `${currentDir}/${apkDestName}`;
 
   const apkFile = Bun.file(apkSource);

@@ -2,6 +2,7 @@ when:
   - event: push
     branch: main
   - event: manual
+    evaluate: '(BUILD_IOS ?? "") == ""'
 
 labels:
   platform: linux/amd64
@@ -11,6 +12,83 @@ depends_on:
   - security-wake-x86
 
 steps:
+  - name: android-manual-request
+    image: alpine:3.22.1
+
+    commands:
+      - |
+        set -e
+
+        case "$BUILD_ANDROID" in
+          ""|staging|production)
+            ;;
+          *)
+            echo "BUILD_ANDROID_INVALID=$BUILD_ANDROID"
+            exit 1
+            ;;
+        esac
+
+        if [ -n "$BUILD_ANDROID" ] && [ -n "$BUILD_IOS" ]; then
+          echo "ANDROID_IOS_SIMULTANEOUS_REQUEST=FAIL"
+          exit 1
+        fi
+
+        if [ -z "$BUILD_ANDROID" ]; then
+          echo "BUILD_ANDROID=quality-only"
+        else
+          echo "BUILD_ANDROID=$BUILD_ANDROID"
+        fi
+
+        echo "ANDROID_MANUAL_REQUEST=PASS"
+
+    when:
+      - event: manual
+
+  - name: android-garage-preflight
+    image: public.ecr.aws/aws-cli/aws-cli@sha256:f42bf088cb1456ba9e179ce71fdeb22cc46ff64ea1e3aeae8251ff81391f5bb1
+
+    environment:
+      GARAGE_ENDPOINT:
+        from_secret: garage_app_react_native_endpoint
+      AWS_ACCESS_KEY_ID:
+        from_secret: garage_app_react_native_access_key
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: garage_app_react_native_secret_key
+      AWS_EC2_METADATA_DISABLED: "true"
+
+    commands:
+      - |
+        set -eu
+
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        export AWS_REGION="$GARAGE_REGION"
+        export AWS_DEFAULT_REGION="$GARAGE_REGION"
+
+        test -n "$GARAGE_ENDPOINT"
+        test -n "$AWS_ACCESS_KEY_ID"
+        test -n "$AWS_SECRET_ACCESS_KEY"
+
+        echo "===== GARAGE PREFLIGHT ====="
+        echo "GARAGE_BUCKET=$GARAGE_BUCKET"
+        echo "GARAGE_REGION=$GARAGE_REGION"
+
+        aws --version
+
+        aws s3api head-bucket \
+          --bucket "$GARAGE_BUCKET" \
+          --endpoint-url "$GARAGE_ENDPOINT"
+
+        echo "ANDROID_GARAGE_PREFLIGHT=PASS"
+
+    when:
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "staging"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "production"'
+
   - name: android-quality
     image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
     pull: false
@@ -50,7 +128,120 @@ steps:
 
         echo
         echo "===== ANDROID QUALITY ====="
-        bun run quality:android
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        QUALITY_ENV="$BUILD_ANDROID"
+
+        if [ -z "$QUALITY_ENV" ]; then
+          QUALITY_ENV="production"
+        fi
+
+
+        echo "ANDROID_QUALITY_ENV=$QUALITY_ENV"
+
+        ANDROID_QUALITY_ENV="$QUALITY_ENV" \
+          bun run quality:android
 
         echo
         echo "ANDROID_PIPELINE_GATE=PASS"
+
+  - name: android-build
+    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    pull: false
+
+    environment:
+      CI: "true"
+      GRADLE_USER_HOME: /cache/gradle
+      BUN_INSTALL_CACHE_DIR: /cache/bun
+
+    volumes:
+      - /opt/ci-cache/app-react-native/gradle:/cache/gradle
+      - /opt/ci-cache/app-react-native/bun:/cache/bun
+
+    commands:
+      - |
+        set -e
+
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        echo "===== ANDROID MANUAL BUILD ====="
+        echo "BUILD_ANDROID=$BUILD_ANDROID"
+        echo "ARTIFACT_BASENAME=$ARTIFACT_BASENAME"
+
+        APP_ENV="$BUILD_ANDROID" \
+        EXPO_PUBLIC_APP_ENV="$BUILD_ANDROID" \
+        ANDROID_SKIP_PREBUILD=1 \
+          bun run build:apk
+
+        ARTIFACT="$ARTIFACT_BASENAME-$BUILD_ANDROID.apk"
+
+        test -s "$ARTIFACT"
+        ls -lh "$ARTIFACT"
+
+        echo "ANDROID_MANUAL_BUILD=PASS"
+
+    when:
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "staging"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "production"'
+
+  - name: android-garage-upload
+    image: public.ecr.aws/aws-cli/aws-cli@sha256:f42bf088cb1456ba9e179ce71fdeb22cc46ff64ea1e3aeae8251ff81391f5bb1
+
+    environment:
+      GARAGE_ENDPOINT:
+        from_secret: garage_app_react_native_endpoint
+      AWS_ACCESS_KEY_ID:
+        from_secret: garage_app_react_native_access_key
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: garage_app_react_native_secret_key
+      AWS_EC2_METADATA_DISABLED: "true"
+
+    commands:
+      - |
+        set -eu
+
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        export AWS_REGION="$GARAGE_REGION"
+        export AWS_DEFAULT_REGION="$GARAGE_REGION"
+
+        ARTIFACT="$ARTIFACT_BASENAME-$BUILD_ANDROID.apk"
+        OBJECT_KEY="$GARAGE_ANDROID_PREFIX/$BUILD_ANDROID/$ARTIFACT"
+
+        echo "===== ANDROID GARAGE UPLOAD ====="
+        echo "ARTIFACT=$ARTIFACT"
+        echo "OBJECT_KEY=$OBJECT_KEY"
+
+        test -s "$ARTIFACT"
+        ls -lh "$ARTIFACT"
+
+        aws s3 cp \
+          "$ARTIFACT" \
+          "s3://$GARAGE_BUCKET/$OBJECT_KEY" \
+          --endpoint-url "$GARAGE_ENDPOINT" \
+          --only-show-errors
+
+        echo
+        echo "===== UPLOADED OBJECT ====="
+
+        aws s3api head-object \
+          --bucket "$GARAGE_BUCKET" \
+          --key "$OBJECT_KEY" \
+          --endpoint-url "$GARAGE_ENDPOINT"
+
+        echo
+        echo "ANDROID_GARAGE_UPLOAD=PASS"
+
+    when:
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "staging"'
+      - event: manual
+        evaluate: 'BUILD_ANDROID == "production"'

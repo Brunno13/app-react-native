@@ -1,0 +1,278 @@
+when:
+  - event: manual
+    evaluate: '(BUILD_IOS ?? "") != ""'
+
+labels:
+  platform: darwin/arm64
+
+steps:
+  # =========================================================
+  # REQUEST / PREFLIGHT
+  # =========================================================
+  - name: ios-preflight
+    image: bash
+
+    environment:
+      GARAGE_ENDPOINT:
+        from_secret: garage_app_react_native_endpoint
+      GARAGE_ACCESS_KEY:
+        from_secret: garage_app_react_native_access_key
+      GARAGE_SECRET_KEY:
+        from_secret: garage_app_react_native_secret_key
+
+    commands:
+      - |
+        set -e
+
+        echo "===== IOS MANUAL REQUEST ====="
+        echo "BUILD_IOS=$BUILD_IOS"
+
+        if [ -n "$BUILD_ANDROID" ]; then
+          echo "ERROR: BUILD_ANDROID e BUILD_IOS não podem ser usados simultaneamente."
+          exit 1
+        fi
+
+        case "$BUILD_IOS" in
+          staging|production)
+            ;;
+          *)
+            echo "ERROR: BUILD_IOS deve ser staging ou production."
+            exit 1
+            ;;
+        esac
+
+        echo
+        echo "===== SOURCE ====="
+        git rev-parse --abbrev-ref HEAD
+        git rev-parse --short HEAD
+
+        echo
+        echo "===== PLATFORM ====="
+        uname -a
+        uname -m
+        sw_vers
+
+        echo
+        echo "===== XCODE ====="
+        xcodebuild -version
+        xcode-select -p
+
+        echo
+        echo "===== BUN ====="
+        command -v bun
+        bun --version
+
+        echo
+        echo "===== NODE 22 ====="
+        BUN_BIN="$(command -v bun)"
+        USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
+        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
+
+        test -x "$NODE22_DIR/node"
+        export PATH="$NODE22_DIR:$PATH"
+        export NODE_BINARY="$NODE22_DIR/node"
+
+        command -v node
+        node --version
+
+        echo
+        echo "===== ARTIFACT CONFIG ====="
+
+        test -f ci/artifacts.env
+
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        printf 'GARAGE_REGION=%s\n' "$GARAGE_REGION"
+        printf 'GARAGE_BUCKET=%s\n' "$GARAGE_BUCKET"
+        printf 'GARAGE_IOS_PREFIX=%s\n' "$GARAGE_IOS_PREFIX"
+        printf 'ARTIFACT_BASENAME=%s\n' "$ARTIFACT_BASENAME"
+
+        test -n "$GARAGE_ENDPOINT"
+        test -n "$GARAGE_ACCESS_KEY"
+        test -n "$GARAGE_SECRET_KEY"
+        test -n "$GARAGE_REGION"
+        test -n "$GARAGE_BUCKET"
+        test -n "$GARAGE_IOS_PREFIX"
+        test -n "$ARTIFACT_BASENAME"
+
+        echo
+        echo "===== CURL AWS SIGV4 ====="
+        /usr/bin/curl --version
+
+        if ! /usr/bin/curl --help all | grep -q -- '--aws-sigv4'; then
+          echo "ERROR: curl sem suporte a --aws-sigv4."
+          exit 1
+        fi
+
+        echo
+        echo "===== GARAGE PREFLIGHT ====="
+
+        GARAGE_ENDPOINT_CLEAN="$(printf '%s' "$GARAGE_ENDPOINT" | sed 's:/*$::')"
+
+        /usr/bin/curl \
+          -fsSI \
+          --aws-sigv4 "aws:amz:$GARAGE_REGION:s3" \
+          --user "$GARAGE_ACCESS_KEY:$GARAGE_SECRET_KEY" \
+          "$GARAGE_ENDPOINT_CLEAN/$GARAGE_BUCKET"
+
+        echo
+        echo "IOS_PREFLIGHT=PASS"
+
+  # =========================================================
+  # QUALITY
+  # =========================================================
+  - name: ios-quality
+    image: bash
+
+    commands:
+      - |
+        set -e
+
+        BUN_BIN="$(command -v bun)"
+        USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
+        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
+
+        test -x "$NODE22_DIR/node"
+        export PATH="$NODE22_DIR:$PATH"
+        export NODE_BINARY="$NODE22_DIR/node"
+
+        echo "===== NODE 22 ====="
+        command -v node
+        node --version
+
+        echo
+        echo "===== INSTALL ====="
+        bun install --frozen-lockfile
+
+        echo
+        echo "===== ESLINT ====="
+        bun run lint
+
+        echo
+        echo "===== TYPESCRIPT ====="
+        bunx tsc --noEmit
+
+        echo
+        echo "===== JEST ====="
+        bun run test
+
+        echo
+        echo "IOS_QUALITY_GATE=PASS"
+
+  # =========================================================
+  # BUILD
+  # =========================================================
+  - name: ios-build
+    image: bash
+
+    environment:
+      CI: "true"
+      DETOX_ENABLED: ""
+
+    commands:
+      - |
+        set -e
+
+        BUN_BIN="$(command -v bun)"
+        USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
+        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
+
+        test -x "$NODE22_DIR/node"
+        export PATH="$NODE22_DIR:$PATH"
+        export NODE_BINARY="$NODE22_DIR/node"
+
+        echo "===== NODE 22 ====="
+        command -v node
+        node --version
+
+        echo
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        export APP_ENV="$BUILD_IOS"
+        export EXPO_PUBLIC_APP_ENV="$BUILD_IOS"
+        export DETOX_ENABLED=""
+
+        ARTIFACT_FILE="$ARTIFACT_BASENAME-ios-$BUILD_IOS.zip"
+
+        echo "===== IOS BUILD ====="
+        echo "APP_ENV=$APP_ENV"
+        echo "ARTIFACT_FILE=$ARTIFACT_FILE"
+
+        rm -rf ios_build
+        rm -f "$ARTIFACT_FILE"
+
+        bun run build:ios
+
+        echo
+        echo "===== ARTIFACT ====="
+        test -s "$ARTIFACT_FILE"
+        ls -lah "$ARTIFACT_FILE"
+
+        echo
+        echo "===== ZIP VALIDATION ====="
+
+        unzip -tq "$ARTIFACT_FILE"
+
+        echo "IOS_ARTIFACT_ZIP=PASS"
+
+        echo
+        echo "IOS_BUILD=PASS"
+
+  # =========================================================
+  # GARAGE
+  # =========================================================
+  - name: ios-garage-upload
+    image: bash
+
+    environment:
+      GARAGE_ENDPOINT:
+        from_secret: garage_app_react_native_endpoint
+      GARAGE_ACCESS_KEY:
+        from_secret: garage_app_react_native_access_key
+      GARAGE_SECRET_KEY:
+        from_secret: garage_app_react_native_secret_key
+
+    commands:
+      - |
+        set -e
+
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        ARTIFACT_FILE="$ARTIFACT_BASENAME-ios-$BUILD_IOS.zip"
+        OBJECT_KEY="$GARAGE_IOS_PREFIX/$BUILD_IOS/$ARTIFACT_FILE"
+
+        GARAGE_ENDPOINT_CLEAN="$(printf '%s' "$GARAGE_ENDPOINT" | sed 's:/*$::')"
+        OBJECT_URL="$GARAGE_ENDPOINT_CLEAN/$GARAGE_BUCKET/$OBJECT_KEY"
+
+        echo "===== IOS GARAGE UPLOAD ====="
+        echo "FILE=$ARTIFACT_FILE"
+        echo "KEY=$OBJECT_KEY"
+
+        test -s "$ARTIFACT_FILE"
+
+        /usr/bin/curl \
+          -fsS \
+          --aws-sigv4 "aws:amz:$GARAGE_REGION:s3" \
+          --user "$GARAGE_ACCESS_KEY:$GARAGE_SECRET_KEY" \
+          -H "Content-Type: application/zip" \
+          --upload-file "$ARTIFACT_FILE" \
+          "$OBJECT_URL"
+
+        echo
+        echo "===== VERIFY OBJECT ====="
+
+        /usr/bin/curl \
+          -fsSI \
+          --aws-sigv4 "aws:amz:$GARAGE_REGION:s3" \
+          --user "$GARAGE_ACCESS_KEY:$GARAGE_SECRET_KEY" \
+          "$OBJECT_URL"
+
+        echo
+        echo "IOS_GARAGE_UPLOAD=PASS"
+        echo "IOS_OBJECT_KEY=$OBJECT_KEY"

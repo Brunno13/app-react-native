@@ -3,14 +3,28 @@ import { readdir } from "node:fs/promises";
 const root = process.cwd();
 const androidDir = root + "/android";
 
-const productionEnv = {
+const qualityEnvName =
+  Bun.env.ANDROID_QUALITY_ENV || "production";
+
+if (
+  qualityEnvName !== "staging" &&
+  qualityEnvName !== "production"
+) {
+  console.error(
+    "ANDROID_QUALITY_ENV must be staging or production."
+  );
+  process.exit(1);
+}
+
+const qualityEnv = {
   ...Bun.env,
-  APP_ENV: "production",
-  EXPO_PUBLIC_APP_ENV: "production",
+  APP_ENV: qualityEnvName,
+  EXPO_PUBLIC_APP_ENV: qualityEnvName,
   NODE_ENV: "production",
   CI: "1",
   DETOX_ENABLED: "",
 };
+
 
 function fail(message: string): never {
   console.error("");
@@ -29,7 +43,7 @@ async function runCommand(
   label: string,
   command: string[],
   cwd = root,
-  env = productionEnv
+  env = qualityEnv
 ): Promise<number> {
   console.log("");
   console.log("===== " + label + " =====");
@@ -114,6 +128,7 @@ console.log("===== ANDROID QUALITY ENVIRONMENT =====");
 console.log("PLATFORM=" + process.platform);
 console.log("ARCH=" + process.arch);
 console.log("BUN=" + Bun.version);
+console.log("ANDROID_QUALITY_ENV=" + qualityEnvName);
 
 const sdkDir =
   Bun.env.ANDROID_HOME ||
@@ -258,7 +273,10 @@ const networkMatches = await findMatches(
   /networkSecurityConfig|cleartextTrafficPermitted|usesCleartextTraffic/
 );
 
-if (networkMatches.length > 0) {
+if (
+  qualityEnvName === "production" &&
+  networkMatches.length > 0
+) {
   console.error("");
   console.error(
     "===== PRODUCTION NETWORK SECURITY REFERENCES ====="
@@ -393,8 +411,15 @@ const forbiddenWarnings = [
   "GradleDynamicVersion",
 ];
 
+const effectiveForbiddenWarnings =
+  qualityEnvName === "production"
+    ? forbiddenWarnings
+    : forbiddenWarnings.filter(
+        (id) => id !== "InsecureBaseConfiguration"
+      );
+
 const forbiddenFound =
-  forbiddenWarnings.filter(
+  effectiveForbiddenWarnings.filter(
     (id) =>
       (warningCounts.get(id) ?? 0) > 0
   );
