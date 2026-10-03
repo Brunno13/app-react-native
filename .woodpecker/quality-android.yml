@@ -125,50 +125,31 @@ steps:
 
         echo
         echo "===== ANDROID QUALITY ====="
-        bun run quality:android
-
-        echo
-        echo "ANDROID_PIPELINE_GATE=PASS"
-
-  - name: android-build
-    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
-    pull: false
-
-    environment:
-      CI: "true"
-      GRADLE_USER_HOME: /cache/gradle
-      BUN_INSTALL_CACHE_DIR: /cache/bun
-
-    volumes:
-      - /opt/ci-cache/app-react-native/gradle:/cache/gradle
-      - /opt/ci-cache/app-react-native/bun:/cache/bun
-
-    commands:
-      - |
-        set -e
-
         set -a
         . ./ci/artifacts.env
         set +a
 
-        echo "===== ANDROID MANUAL BUILD ====="
-        echo "BUILD_ANDROID=$BUILD_ANDROID"
-        echo "ARTIFACT_BASENAME=$ARTIFACT_BASENAME"
+        QUALITY_ENV="$BUILD_ANDROID"
 
-        APP_ENV="$BUILD_ANDROID" \
-        EXPO_PUBLIC_APP_ENV="$BUILD_ANDROID" \
-          bun run build:apk
+        if [ -z "$QUALITY_ENV" ]; then
+          QUALITY_ENV="production"
+        fi
 
-        ARTIFACT="$ARTIFACT_BASENAME-$BUILD_ANDROID.apk"
+        if [ -n "$BUILD_ANDROID" ]; then
+          ASSEMBLE_RELEASE=1
+        else
+          ASSEMBLE_RELEASE=0
+        fi
 
-        test -s "$ARTIFACT"
-        ls -lh "$ARTIFACT"
+        echo "ANDROID_QUALITY_ENV=$QUALITY_ENV"
+        echo "ANDROID_ASSEMBLE_RELEASE=$ASSEMBLE_RELEASE"
 
-        echo "ANDROID_MANUAL_BUILD=PASS"
+        ANDROID_QUALITY_ENV="$QUALITY_ENV" \
+        ANDROID_ASSEMBLE_RELEASE="$ASSEMBLE_RELEASE" \
+          bun run quality:android
 
-    when:
-      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "staging"'
-      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "production"'
+        echo
+        echo "ANDROID_PIPELINE_GATE=PASS"
 
   - name: android-garage-upload
     image: public.ecr.aws/aws-cli/aws-cli@sha256:f42bf088cb1456ba9e179ce71fdeb22cc46ff64ea1e3aeae8251ff81391f5bb1

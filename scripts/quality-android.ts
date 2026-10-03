@@ -3,14 +3,30 @@ import { readdir } from "node:fs/promises";
 const root = process.cwd();
 const androidDir = root + "/android";
 
-const productionEnv = {
+const qualityEnvName =
+  Bun.env.ANDROID_QUALITY_ENV || "production";
+
+if (
+  qualityEnvName !== "staging" &&
+  qualityEnvName !== "production"
+) {
+  console.error(
+    "ANDROID_QUALITY_ENV must be staging or production."
+  );
+  process.exit(1);
+}
+
+const qualityEnv = {
   ...Bun.env,
-  APP_ENV: "production",
-  EXPO_PUBLIC_APP_ENV: "production",
+  APP_ENV: qualityEnvName,
+  EXPO_PUBLIC_APP_ENV: qualityEnvName,
   NODE_ENV: "production",
   CI: "1",
   DETOX_ENABLED: "",
 };
+
+const assembleRelease =
+  Bun.env.ANDROID_ASSEMBLE_RELEASE === "1";
 
 function fail(message: string): never {
   console.error("");
@@ -29,7 +45,7 @@ async function runCommand(
   label: string,
   command: string[],
   cwd = root,
-  env = productionEnv
+  env = qualityEnv
 ): Promise<number> {
   console.log("");
   console.log("===== " + label + " =====");
@@ -114,6 +130,11 @@ console.log("===== ANDROID QUALITY ENVIRONMENT =====");
 console.log("PLATFORM=" + process.platform);
 console.log("ARCH=" + process.arch);
 console.log("BUN=" + Bun.version);
+console.log("ANDROID_QUALITY_ENV=" + qualityEnvName);
+console.log(
+  "ANDROID_ASSEMBLE_RELEASE=" +
+    (assembleRelease ? "1" : "0")
+);
 
 const sdkDir =
   Bun.env.ANDROID_HOME ||
@@ -258,7 +279,10 @@ const networkMatches = await findMatches(
   /networkSecurityConfig|cleartextTrafficPermitted|usesCleartextTraffic/
 );
 
-if (networkMatches.length > 0) {
+if (
+  qualityEnvName === "production" &&
+  networkMatches.length > 0
+) {
   console.error("");
   console.error(
     "===== PRODUCTION NETWORK SECURITY REFERENCES ====="
@@ -297,13 +321,21 @@ const gradleCommand =
     ? androidDir + "/gradlew.bat"
     : "./gradlew";
 
+const gradleTasks = [
+  gradleCommand,
+  "--no-daemon",
+  ":app:lintRelease",
+];
+
+if (assembleRelease) {
+  gradleTasks.push(":app:assembleRelease");
+}
+
 const lintRc = await runCommand(
-  "ANDROID LINT RELEASE",
-  [
-    gradleCommand,
-    "--no-daemon",
-    ":app:lintRelease",
-  ],
+  assembleRelease
+    ? "ANDROID LINT AND ASSEMBLE RELEASE"
+    : "ANDROID LINT RELEASE",
+  gradleTasks,
   androidDir
 );
 
@@ -393,8 +425,15 @@ const forbiddenWarnings = [
   "GradleDynamicVersion",
 ];
 
+const effectiveForbiddenWarnings =
+  qualityEnvName === "production"
+    ? forbiddenWarnings
+    : forbiddenWarnings.filter(
+        (id) => id !== "InsecureBaseConfiguration"
+      );
+
 const forbiddenFound =
-  forbiddenWarnings.filter(
+  effectiveForbiddenWarnings.filter(
     (id) =>
       (warningCounts.get(id) ?? 0) > 0
   );
@@ -439,5 +478,39 @@ if (forbiddenFound.length > 0) {
 }
 
 console.log("");
+if (assembleRelease) {
+  const artifactBasename =
+    Bun.env.ARTIFACT_BASENAME ||
+    "app-react-native";
+
+  const apkSource =
+    androidDir +
+    "/app/build/outputs/apk/release/app-release.apk";
+
+  const apkName =
+    artifactBasename +
+    "-" +
+    qualityEnvName +
+    ".apk";
+
+  const apkSourceFile = Bun.file(apkSource);
+
+  if (!(await apkSourceFile.exists())) {
+    fail(
+      "Release APK was not generated: " +
+        apkSource
+    );
+  }
+
+  await Bun.write(
+    root + "/" + apkName,
+    apkSourceFile
+  );
+
+  console.log("");
+  console.log("ANDROID_ARTIFACT=" + apkName);
+  console.log("ANDROID_ASSEMBLE_RELEASE=PASS");
+}
+
 console.log("ANDROID_LINT=PASS");
 console.log("ANDROID_QUALITY_GATE=PASS");
