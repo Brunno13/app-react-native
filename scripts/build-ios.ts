@@ -84,25 +84,85 @@ export CI="true"
   console.log(`✅ Projeto Xcode localizado: ${workspaceName} (Scheme: ${schemeName})`);
 
   console.log('\n🔨 Passo 2: Compilando o aplicativo via xcodebuild (Modo Release)...');
-  
+
+  console.log('\n===== XCODE NODE ENV =====');
+  console.log(`NODE_BINARY=${nodeFullPath}`);
+  console.log(`PATH=${process.env.PATH ?? ''}`);
+
+  console.log('\n===== .xcode.env.local =====');
+  console.log(await Bun.file(xcodeEnvLocalPath).text());
+
+  const xcodeLogPath = `${currentDir}/ios_build/xcodebuild.log`;
+
+  const xcodeCommand = [
+    'set -o pipefail',
+    `mkdir -p "${currentDir}/ios_build"`,
+    '&&',
+    'xcodebuild',
+    `-workspace "${iosDir}/${workspaceName}"`,
+    `-scheme "${schemeName}"`,
+    '-configuration Release',
+    '-sdk iphonesimulator',
+    `-derivedDataPath "${currentDir}/ios_build"`,
+    '2>&1',
+    `| tee "${xcodeLogPath}"`,
+  ].join(' ');
+
   const xcodebuild = Bun.spawnSync(
-    [
-      'xcodebuild',
-      '-workspace', `${iosDir}/${workspaceName}`,
-      '-scheme', schemeName,
-      '-configuration', 'Release',
-      '-sdk', 'iphonesimulator',
-      '-derivedDataPath', `${currentDir}/ios_build`
-    ],
+    ['bash', '-c', xcodeCommand],
     {
       stdin: 'inherit',
       stdout: 'inherit',
       stderr: 'inherit',
+      env: {
+        ...process.env,
+        APP_ENV: appEnv,
+        EXPO_PUBLIC_APP_ENV: appEnv,
+        CI: 'true',
+      },
     }
   );
 
   if (xcodebuild.exitCode !== 0) {
-    throw new Error('Falha crítica durante a compilação nativa no xcodebuild.');
+    console.error('\n===== XCODE FAILURE DIAGNOSTICS =====');
+
+    Bun.spawnSync(
+      [
+        'bash',
+        '-c',
+        `
+          if [ -f "${xcodeLogPath}" ]; then
+            echo
+            echo "===== RELEVANT ERRORS ====="
+
+            grep -n -i -E 'error:|commanderror|exception|failed|cannot|not found|enoent|expo-updates|exupdates|node:|NODE_BINARY' \
+              "${xcodeLogPath}" | tail -n 160 || true
+
+            echo
+            echo "===== EXPO-UPDATES CONTEXT ====="
+
+            grep -n -i -B 20 -A 40 \
+              -E 'Generate updates resources|expo-updates|EXUpdates' \
+              "${xcodeLogPath}" | tail -n 240 || true
+
+            echo
+            echo "===== LAST 300 LINES ====="
+
+            tail -n 300 "${xcodeLogPath}"
+          else
+            echo "XCODE_LOG_NOT_FOUND=${xcodeLogPath}"
+          fi
+        `,
+      ],
+      {
+        stdout: 'inherit',
+        stderr: 'inherit',
+      }
+    );
+
+    throw new Error(
+      `Falha crítica durante a compilação nativa no xcodebuild. Log: ${xcodeLogPath}`
+    );
   }
 
   console.log('\n📦 Passo 3: Localizando o binário e compactando para distribuição...');
