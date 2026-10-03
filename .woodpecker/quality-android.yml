@@ -43,6 +43,49 @@ steps:
     when:
       - event: manual
 
+  - name: android-garage-preflight
+    image: public.ecr.aws/aws-cli/aws-cli@sha256:f42bf088cb1456ba9e179ce71fdeb22cc46ff64ea1e3aeae8251ff81391f5bb1
+
+    environment:
+      GARAGE_ENDPOINT:
+        from_secret: garage_app_react_native_endpoint
+      AWS_ACCESS_KEY_ID:
+        from_secret: garage_app_react_native_access_key
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: garage_app_react_native_secret_key
+      AWS_EC2_METADATA_DISABLED: "true"
+
+    commands:
+      - |
+        set -eu
+
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        export AWS_REGION="$GARAGE_REGION"
+        export AWS_DEFAULT_REGION="$GARAGE_REGION"
+
+        test -n "$GARAGE_ENDPOINT"
+        test -n "$AWS_ACCESS_KEY_ID"
+        test -n "$AWS_SECRET_ACCESS_KEY"
+
+        echo "===== GARAGE PREFLIGHT ====="
+        echo "GARAGE_BUCKET=$GARAGE_BUCKET"
+        echo "GARAGE_REGION=$GARAGE_REGION"
+
+        aws --version
+
+        aws s3api head-bucket \
+          --bucket "$GARAGE_BUCKET" \
+          --endpoint-url "$GARAGE_ENDPOINT"
+
+        echo "ANDROID_GARAGE_PREFLIGHT=PASS"
+
+    when:
+      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "staging"'
+      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "production"'
+
   - name: android-quality
     image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
     pull: false
@@ -122,6 +165,60 @@ steps:
         ls -lh "$ARTIFACT"
 
         echo "ANDROID_MANUAL_BUILD=PASS"
+
+    when:
+      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "staging"'
+      - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "production"'
+
+  - name: android-garage-upload
+    image: public.ecr.aws/aws-cli/aws-cli@sha256:f42bf088cb1456ba9e179ce71fdeb22cc46ff64ea1e3aeae8251ff81391f5bb1
+
+    environment:
+      GARAGE_ENDPOINT:
+        from_secret: garage_app_react_native_endpoint
+      AWS_ACCESS_KEY_ID:
+        from_secret: garage_app_react_native_access_key
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: garage_app_react_native_secret_key
+      AWS_EC2_METADATA_DISABLED: "true"
+
+    commands:
+      - |
+        set -eu
+
+        set -a
+        . ./ci/artifacts.env
+        set +a
+
+        export AWS_REGION="$GARAGE_REGION"
+        export AWS_DEFAULT_REGION="$GARAGE_REGION"
+
+        ARTIFACT="$ARTIFACT_BASENAME-$BUILD_ANDROID.apk"
+        OBJECT_KEY="$GARAGE_ANDROID_PREFIX/$BUILD_ANDROID/$ARTIFACT"
+
+        echo "===== ANDROID GARAGE UPLOAD ====="
+        echo "ARTIFACT=$ARTIFACT"
+        echo "OBJECT_KEY=$OBJECT_KEY"
+
+        test -s "$ARTIFACT"
+        ls -lh "$ARTIFACT"
+
+        aws s3 cp \
+          "$ARTIFACT" \
+          "s3://$GARAGE_BUCKET/$OBJECT_KEY" \
+          --endpoint-url "$GARAGE_ENDPOINT" \
+          --only-show-errors
+
+        echo
+        echo "===== UPLOADED OBJECT ====="
+
+        aws s3api head-object \
+          --bucket "$GARAGE_BUCKET" \
+          --key "$OBJECT_KEY" \
+          --endpoint-url "$GARAGE_ENDPOINT"
+
+        echo
+        echo "ANDROID_GARAGE_UPLOAD=PASS"
 
     when:
       - evaluate: 'CI_PIPELINE_EVENT == "manual" && BUILD_ANDROID == "staging"'
