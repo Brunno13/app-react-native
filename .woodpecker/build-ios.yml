@@ -212,7 +212,12 @@ steps:
         test -s "$ARTIFACT_FILE"
         ls -lah "$ARTIFACT_FILE"
 
-        unzip -l "$ARTIFACT_FILE" | head -n 40
+        echo
+        echo "===== ZIP VALIDATION ====="
+
+        unzip -tq "$ARTIFACT_FILE"
+
+        echo "IOS_ARTIFACT_ZIP=PASS"
 
         echo
         echo "IOS_BUILD=PASS"

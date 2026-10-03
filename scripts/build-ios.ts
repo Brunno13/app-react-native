@@ -98,17 +98,13 @@ export CI="true"
 
   console.log('\n🔨 Passo 2: Compilando o aplicativo via xcodebuild (Modo Release)...');
 
-  console.log('\n===== XCODE NODE ENV =====');
-  console.log(`NODE_BINARY=${nodeFullPath}`);
-  console.log(`PATH=${process.env.PATH ?? ''}`);
-
-  console.log('\n===== .xcode.env.local =====');
-  console.log(await Bun.file(xcodeEnvLocalPath).text());
+  console.log(
+    `\n🧩 Xcode Node: ${nodeFullPath} (${nodeVersion})`
+  );
 
   const xcodeLogPath = `${currentDir}/xcodebuild-ios.log`;
 
   const xcodeCommand = [
-    'set -o pipefail',
     `mkdir -p "${currentDir}/ios_build"`,
     '&&',
     'xcodebuild',
@@ -117,8 +113,8 @@ export CI="true"
     '-configuration Release',
     '-sdk iphonesimulator',
     `-derivedDataPath "${currentDir}/ios_build"`,
+    `> "${xcodeLogPath}"`,
     '2>&1',
-    `| tee "${xcodeLogPath}"`,
   ].join(' ');
 
   const xcodebuild = Bun.spawnSync(
@@ -150,20 +146,13 @@ export CI="true"
             echo
             echo "===== RELEVANT ERRORS ====="
 
-            grep -n -i -E 'error:|commanderror|exception|failed|cannot|not found|enoent|expo-updates|exupdates|node:|NODE_BINARY' \
-              "${xcodeLogPath}" | tail -n 160 || true
+            grep -n -i -E 'error:|commanderror|exception|failed|cannot|not found|enoent|ERR_|PhaseScriptExecution' \
+              "${xcodeLogPath}" | tail -n 120 || true
 
             echo
-            echo "===== EXPO-UPDATES CONTEXT ====="
+            echo "===== LAST 160 LINES ====="
 
-            grep -n -i -B 20 -A 40 \
-              -E 'Generate updates resources|expo-updates|EXUpdates' \
-              "${xcodeLogPath}" | tail -n 240 || true
-
-            echo
-            echo "===== LAST 300 LINES ====="
-
-            tail -n 300 "${xcodeLogPath}"
+            tail -n 160 "${xcodeLogPath}"
           else
             echo "XCODE_LOG_NOT_FOUND=${xcodeLogPath}"
           fi
@@ -178,6 +167,16 @@ export CI="true"
     throw new Error(
       `Falha crítica durante a compilação nativa no xcodebuild. Log: ${xcodeLogPath}`
     );
+  }
+
+  console.log('\n** BUILD SUCCEEDED **');
+
+  const removeXcodeLog = Bun.spawnSync(
+    ['rm', '-f', xcodeLogPath]
+  );
+
+  if (removeXcodeLog.exitCode !== 0) {
+    console.warn(`⚠️ Não foi possível remover o log temporário: ${xcodeLogPath}`);
   }
 
   console.log('\n📦 Passo 3: Localizando o binário e compactando para distribuição...');
@@ -215,7 +214,7 @@ export CI="true"
   }
 
   const zipProcess = Bun.spawnSync(
-    ['zip', '-r', zipDestPath, appDirName],
+    ['zip', '-qr', zipDestPath, appDirName],
     { cwd: releaseDir }
   );
 
