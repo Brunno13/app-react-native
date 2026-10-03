@@ -63,13 +63,14 @@ steps:
         bun --version
 
         echo
-        echo "===== NODE 21 ====="
+        echo "===== NODE 22 ====="
         BUN_BIN="$(command -v bun)"
         USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
-        NODE21_DIR="$USER_HOME/.nvm/versions/node/v21.7.3/bin"
+        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
 
-        test -x "$NODE21_DIR/node"
-        export PATH="$NODE21_DIR:$PATH"
+        test -x "$NODE22_DIR/node"
+        export PATH="$NODE22_DIR:$PATH"
+        export NODE_BINARY="$NODE22_DIR/node"
 
         command -v node
         node --version
@@ -131,12 +132,13 @@ steps:
 
         BUN_BIN="$(command -v bun)"
         USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
-        NODE21_DIR="$USER_HOME/.nvm/versions/node/v21.7.3/bin"
+        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
 
-        test -x "$NODE21_DIR/node"
-        export PATH="$NODE21_DIR:$PATH"
+        test -x "$NODE22_DIR/node"
+        export PATH="$NODE22_DIR:$PATH"
+        export NODE_BINARY="$NODE22_DIR/node"
 
-        echo "===== NODE 21 ====="
+        echo "===== NODE 22 ====="
         command -v node
         node --version
 
@@ -175,12 +177,13 @@ steps:
 
         BUN_BIN="$(command -v bun)"
         USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
-        NODE21_DIR="$USER_HOME/.nvm/versions/node/v21.7.3/bin"
+        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
 
-        test -x "$NODE21_DIR/node"
-        export PATH="$NODE21_DIR:$PATH"
+        test -x "$NODE22_DIR/node"
+        export PATH="$NODE22_DIR:$PATH"
+        export NODE_BINARY="$NODE22_DIR/node"
 
-        echo "===== NODE 21 ====="
+        echo "===== NODE 22 ====="
         command -v node
         node --version
 
