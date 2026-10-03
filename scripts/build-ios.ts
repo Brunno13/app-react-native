@@ -41,18 +41,31 @@ try {
   const currentDir = process.cwd();
   const iosDir = `${currentDir}/ios`;
 
-  console.log('\n🔗 Passo 1.5: Bypass Supremo para NVM e Variáveis no Xcode...');
-  
-  const nvmCheck = Bun.spawnSync([
-    'bash', '-c', 
-    'export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"; nvm use 21 > /dev/null 2>&1; which node'
-  ]);
-  
-  const nodeFullPath = nvmCheck.stdout.toString().trim() || Bun.which('node');
+  console.log('\n🔗 Passo 1.5: Configurando Node para o Xcode...');
+
+  const nodeFullPath =
+    Bun.env.NODE_BINARY ||
+    Bun.which('node');
 
   if (!nodeFullPath) {
-    throw new Error('❌ Node.js não foi encontrado nem no PATH e nem no NVM.');
+    throw new Error('❌ Node.js não foi encontrado no ambiente.');
   }
+
+  const nodeVersionCheck = Bun.spawnSync(
+    [nodeFullPath, '--version']
+  );
+
+  if (nodeVersionCheck.exitCode !== 0) {
+    throw new Error(
+      `❌ Não foi possível executar o Node configurado: ${nodeFullPath}`
+    );
+  }
+
+  const nodeVersion = nodeVersionCheck.stdout
+    .toString()
+    .trim();
+
+  console.log(`✅ Node selecionado: ${nodeFullPath} (${nodeVersion})`);
 
   const bunFullPath = Bun.which('bun') || '';
   
@@ -71,7 +84,7 @@ export CI="true"
   `;
   
   await Bun.write(xcodeEnvLocalPath, envContent.trim() + '\n');
-  console.log(`✅ Xcode mapeado! Node 21 localizado em: ${nodeFullPath}`);
+  console.log(`✅ Xcode mapeado! Node ${nodeVersion} localizado em: ${nodeFullPath}`);
 
   const files = await readdir(iosDir);
   const workspaceName = files.find(file => file.endsWith('.xcworkspace'));
@@ -92,7 +105,7 @@ export CI="true"
   console.log('\n===== .xcode.env.local =====');
   console.log(await Bun.file(xcodeEnvLocalPath).text());
 
-  const xcodeLogPath = `${currentDir}/ios_build/xcodebuild.log`;
+  const xcodeLogPath = `${currentDir}/xcodebuild-ios.log`;
 
   const xcodeCommand = [
     'set -o pipefail',
@@ -116,6 +129,8 @@ export CI="true"
       stderr: 'inherit',
       env: {
         ...process.env,
+        NODE_BINARY: nodeFullPath,
+        PATH: `${nodeDir}:${bunDir}:${process.env.PATH ?? ''}`,
         APP_ENV: appEnv,
         EXPO_PUBLIC_APP_ENV: appEnv,
         CI: 'true',
