@@ -25,8 +25,6 @@ const qualityEnv = {
   DETOX_ENABLED: "",
 };
 
-const assembleRelease =
-  Bun.env.ANDROID_ASSEMBLE_RELEASE === "1";
 
 function fail(message: string): never {
   console.error("");
@@ -131,10 +129,6 @@ console.log("PLATFORM=" + process.platform);
 console.log("ARCH=" + process.arch);
 console.log("BUN=" + Bun.version);
 console.log("ANDROID_QUALITY_ENV=" + qualityEnvName);
-console.log(
-  "ANDROID_ASSEMBLE_RELEASE=" +
-    (assembleRelease ? "1" : "0")
-);
 
 const sdkDir =
   Bun.env.ANDROID_HOME ||
@@ -321,21 +315,13 @@ const gradleCommand =
     ? androidDir + "/gradlew.bat"
     : "./gradlew";
 
-const gradleTasks = [
-  gradleCommand,
-  "--no-daemon",
-  ":app:lintRelease",
-];
-
-if (assembleRelease) {
-  gradleTasks.push(":app:assembleRelease");
-}
-
 const lintRc = await runCommand(
-  assembleRelease
-    ? "ANDROID LINT AND ASSEMBLE RELEASE"
-    : "ANDROID LINT RELEASE",
-  gradleTasks,
+  "ANDROID LINT RELEASE",
+  [
+    gradleCommand,
+    "--no-daemon",
+    ":app:lintRelease",
+  ],
   androidDir
 );
 
@@ -478,39 +464,5 @@ if (forbiddenFound.length > 0) {
 }
 
 console.log("");
-if (assembleRelease) {
-  const artifactBasename =
-    Bun.env.ARTIFACT_BASENAME ||
-    "app-react-native";
-
-  const apkSource =
-    androidDir +
-    "/app/build/outputs/apk/release/app-release.apk";
-
-  const apkName =
-    artifactBasename +
-    "-" +
-    qualityEnvName +
-    ".apk";
-
-  const apkSourceFile = Bun.file(apkSource);
-
-  if (!(await apkSourceFile.exists())) {
-    fail(
-      "Release APK was not generated: " +
-        apkSource
-    );
-  }
-
-  await Bun.write(
-    root + "/" + apkName,
-    apkSourceFile
-  );
-
-  console.log("");
-  console.log("ANDROID_ARTIFACT=" + apkName);
-  console.log("ANDROID_ASSEMBLE_RELEASE=PASS");
-}
-
 console.log("ANDROID_LINT=PASS");
 console.log("ANDROID_QUALITY_GATE=PASS");
