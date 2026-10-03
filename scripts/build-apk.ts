@@ -94,7 +94,8 @@ try {
 
   console.log('\n📦 Passo 4: Movendo o APK para a raiz...');
   const apkSource = `${currentDir}/android/app/build/outputs/apk/release/app-release.apk`;
-  const apkDestName = `app-react-native-${appEnv}.apk`;
+  const artifactBasename = Bun.env.ARTIFACT_BASENAME || "app-react-native";
+  const apkDestName = `${artifactBasename}-${appEnv}.apk`;
   const apkDest = `${currentDir}/${apkDestName}`;
 
   const apkFile = Bun.file(apkSource);

@@ -121,7 +121,8 @@ export CI="true"
   console.log(`🎯 Pacote .app localizado com sucesso: ${appDirName}`);
   console.log('🤐 Compactando o pacote em um arquivo .zip seguro para a Apple...');
   
-  const zipDestName = `app-react-native-ios-${appEnv}.zip`;
+  const artifactBasename = Bun.env.ARTIFACT_BASENAME || "app-react-native";
+  const zipDestName = `${artifactBasename}-ios-${appEnv}.zip`;
   const zipDestPath = `${currentDir}/${zipDestName}`;
 
   const zipProcess = Bun.spawnSync(
