@@ -69,7 +69,8 @@
     "jest-expo": "~56.0.5",
     "jscpd": "5.3.1",
     "typescript": "~6.0.3",
-    "typescript-eslint": "8.62.1"
+    "typescript-eslint": "8.62.1",
+    "commander": "7.2.0"
   },
   "scripts": {
     "start": "bun run start:staging",
