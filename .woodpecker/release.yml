@@ -32,7 +32,7 @@ steps:
           || true
 
   # =========================================================
-  # FASE 1: TESTES E BUILD DOS ARTEFATOS
+  # FASE 1: TESTES, E2E E BUILD DOS ARTEFATOS
   # =========================================================
 
   - name: build-artifacts
@@ -46,25 +46,95 @@ steps:
 
     commands:
       - echo "📦 Instalando dependências do projeto..."
-      - bun install
+      - >
+        bun install
+        --frozen-lockfile
+        --registry https://registry.npmjs.org
+        --network-concurrency 8
 
       - echo "🧹 Verificando Arquitetura FSD e Linter..."
       - bun run lint
 
-      - echo "🧪 Executando a suíte de testes..."
+      - echo "🔎 Validando TypeScript..."
+      - ./node_modules/.bin/tsc --noEmit
+
+      - echo "🧪 Executando a suíte de testes unitários..."
       - bun run test
+
+      # =====================================================
+      # ANDROID
+      # =====================================================
 
       - echo "🤖 Compilando o APK Android de Produção..."
       - bun run build:apk:prod
 
-      - echo "🍎 Compilando o pacote iOS de Produção..."
+      # =====================================================
+      # IOS E2E / DETOX
+      # =====================================================
+
+      - echo "⚔️ Preparando ambiente do Detox no macOS..."
+      - export PATH="/opt/homebrew/bin:$PATH"
+
+      - echo "⚔️ Compilando aplicativo iOS instrumentado para Detox..."
+      - >
+        ./node_modules/.bin/detox
+        build
+        --configuration ios.sim.release
+
+      - echo "⚔️ Executando testes E2E no Simulador iOS..."
+      - >
+        ./node_modules/.bin/detox
+        test
+        --configuration ios.sim.release
+        --cleanup
+
+      # =====================================================
+      # IOS FINAL
+      #
+      # O build do Detox utiliza DETOX_ENABLED=true.
+      # Os artefatos gerados acima não devem ser publicados.
+      # Após o E2E, removemos os artefatos instrumentados
+      # e geramos novamente o pacote iOS de produção.
+      # =====================================================
+
+      - echo "🧹 Removendo artefatos temporários do Detox..."
+      - rm -rf ios_build
+      - rm -f app-react-native-ios-production.zip
+
+      - echo "🍎 Compilando o pacote iOS final de Produção..."
       - bun run build:ios:prod
 
-      - echo "⚔️ Executando testes de automação E2E no Simulador iOS..."
+      # =====================================================
+      # VALIDAÇÃO DOS ARTEFATOS FINAIS
+      # =====================================================
 
-      # Reativar quando os testes E2E estiverem prontos.
-      # - export PATH="/opt/homebrew/bin:$PATH"
-      # - bunx detox test --configuration ios.sim.release --cleanup
+      - echo "🔎 Validando artefatos finais..."
+      - |
+        set -e
+
+        test -f \
+          ./app-react-native-production.apk
+
+        test -f \
+          ./app-react-native-ios-production.zip
+
+        echo "===== ANDROID ====="
+        ls -lah \
+          ./app-react-native-production.apk
+
+        echo
+        echo "===== IOS ====="
+        ls -lah \
+          ./app-react-native-ios-production.zip
+
+        echo
+        echo "===== VALIDANDO ZIP IOS ====="
+
+        unzip -tq \
+          ./app-react-native-ios-production.zip
+
+        echo
+        echo "✅ Artefatos finais validados."
 
   # =========================================================
   # FASE 2: ATUALIZAÇÃO OTA DE PRODUÇÃO

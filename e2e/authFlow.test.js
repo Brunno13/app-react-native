@@ -41,5 +41,5 @@ describe('Fluxo Circular de Alteração de Senha', () => {
 
     // 7. Logar novamente com a senha original
     await performLogin(testEmail, originalPassword);
-  });
+  }, 180000);
 });

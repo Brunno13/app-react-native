@@ -1,6 +1,7 @@
 jest.mock('@/shared/config/env', () => ({
   ENV: {
     API_URL: 'https://api.meuappseguro.com',
+    APP_SCHEME: 'app-react-native-staging',
   },
 }));
 
@@ -39,7 +40,7 @@ describe('Auth Library Configuration', () => {
     const expoOptions = expoClient.mock.calls[0]?.[0];
 
     expect(expoOptions).toBeDefined();
-    expect(expoOptions?.scheme).toBe('app-react-native');
+    expect(expoOptions?.scheme).toBe('app-react-native-staging');
     expect(expoOptions?.storage).toMatchObject({
       getItemAsync: secureStoreModule.getItemAsync,
       setItemAsync: secureStoreModule.setItemAsync,
