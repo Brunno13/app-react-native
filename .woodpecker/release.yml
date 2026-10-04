@@ -45,12 +45,93 @@ steps:
       EXPO_PUBLIC_APP_ENV: "production"
 
     commands:
+      # =====================================================
+      # AMBIENTE NATIVO MACOS
+      # =====================================================
+
+      - echo "🔧 Preparando ambiente nativo do macOS..."
+
+      - |
+        export PATH="/Users/brunno/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/bin:$PATH"
+        export NODE_BINARY="/Users/brunno/.nvm/versions/node/v22.22.2/bin/node"
+
+        echo
+        echo "===== NODE ====="
+
+        which node
+        node --version
+
+        if [ ! -x "$NODE_BINARY" ]; then
+          echo "❌ Node esperado não encontrado:"
+          echo "$NODE_BINARY"
+          exit 1
+        fi
+
+        if [ "$(node --version)" != "v22.22.2" ]; then
+          echo "❌ Node incorreto."
+          echo "Esperado: v22.22.2"
+          echo "Atual: $(node --version)"
+          exit 1
+        fi
+
+        node -e "
+          if (
+            typeof Array.prototype.toReversed !== 'function'
+          ) {
+            console.error(
+              '❌ Array.prototype.toReversed não disponível.'
+            );
+            process.exit(1);
+          }
+
+          console.log(
+            '✅ Node suporta Array.prototype.toReversed.'
+          );
+        "
+
+        echo
+        echo "===== BUN ====="
+
+        which bun
+        bun --version
+
+        echo
+        echo "===== JAVA ====="
+
+        which java
+        java -version
+
+        echo
+        echo "===== XCODE ====="
+
+        xcodebuild -version
+
+        echo
+        echo "===== DISCO ====="
+
+        df -h /
+
+        echo
+        echo "===== DISCO TEMP ====="
+
+        df -h /private/var/folders \
+          || true
+
+      # =====================================================
+      # DEPENDÊNCIAS
+      # =====================================================
+
       - echo "📦 Instalando dependências do projeto..."
+
       - >
         bun install
         --frozen-lockfile
         --registry https://registry.npmjs.org
         --network-concurrency 8
+
+      # =====================================================
+      # QUALITY GATE
+      # =====================================================
 
       - echo "🧹 Verificando Arquitetura FSD e Linter..."
       - bun run lint
@@ -66,42 +147,88 @@ steps:
       # =====================================================
 
       - echo "🤖 Compilando o APK Android de Produção..."
+
+      - |
+        echo
+        echo "===== NODE ANTES DO ANDROID ====="
+
+        which node
+        node --version
+
+        echo
+        echo "NODE_BINARY=$NODE_BINARY"
+
+        echo
+        echo "===== DISCO ANTES DO ANDROID ====="
+
+        df -h /
+
       - bun run build:apk:prod
+
+      - |
+        echo
+        echo "===== DISCO APÓS ANDROID ====="
+
+        df -h /
+
+        echo
+        echo "===== APK ANDROID ====="
+
+        ls -lah \
+          ./app-react-native-production.apk
 
       # =====================================================
       # IOS E2E / DETOX
       # =====================================================
 
-      - echo "⚔️ Preparando ambiente do Detox no macOS..."
-      - export PATH="/opt/homebrew/bin:$PATH"
-
       - echo "⚔️ Compilando aplicativo iOS instrumentado para Detox..."
+
+      - |
+        echo
+        echo "===== NODE ANTES DO DETOX ====="
+
+        which node
+        node --version
+
+        echo
+        echo "NODE_BINARY=$NODE_BINARY"
+
       - >
         ./node_modules/.bin/detox
         build
         --configuration ios.sim.release
 
       - echo "⚔️ Executando testes E2E no Simulador iOS..."
+
       - >
         ./node_modules/.bin/detox
         test
         --configuration ios.sim.release
         --cleanup
 
+      - |
+        echo
+        echo "===== DISCO APÓS DETOX ====="
+
+        df -h /
+
       # =====================================================
       # IOS FINAL
       #
       # O build do Detox utiliza DETOX_ENABLED=true.
       # Os artefatos gerados acima não devem ser publicados.
+      #
       # Após o E2E, removemos os artefatos instrumentados
       # e geramos novamente o pacote iOS de produção.
       # =====================================================
 
       - echo "🧹 Removendo artefatos temporários do Detox..."
+
       - rm -rf ios_build
       - rm -f app-react-native-ios-production.zip
 
       - echo "🍎 Compilando o pacote iOS final de Produção..."
+
       - bun run build:ios:prod
 
       # =====================================================
@@ -109,6 +236,7 @@ steps:
       # =====================================================
 
       - echo "🔎 Validando artefatos finais..."
+
       - |
         set -e
 
@@ -118,12 +246,15 @@ steps:
         test -f \
           ./app-react-native-ios-production.zip
 
+        echo
         echo "===== ANDROID ====="
+
         ls -lah \
           ./app-react-native-production.apk
 
         echo
         echo "===== IOS ====="
+
         ls -lah \
           ./app-react-native-ios-production.zip
 
@@ -132,6 +263,11 @@ steps:
 
         unzip -tq \
           ./app-react-native-ios-production.zip
+
+        echo
+        echo "===== DISCO FINAL ====="
+
+        df -h /
 
         echo
         echo "✅ Artefatos finais validados."
@@ -260,12 +396,14 @@ steps:
           exit 1
         fi
 
+        echo
         echo "=== VERIFICANDO ARTEFATOS ==="
 
         ls -lah \
           ./app-react-native-production.apk \
           ./app-react-native-ios-production.zip
 
+        echo
         echo "=== INICIANDO UPLOAD DOS ARTEFATOS PARA O GITEA ==="
 
         curl \
@@ -282,6 +420,7 @@ steps:
           -H "Authorization: token $GITEA_TOKEN" \
           -F "attachment=@./app-react-native-ios-production.zip"
 
+        echo
         echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
 
   # =========================================================
@@ -397,6 +536,7 @@ steps:
           exit 1
         fi
 
+        echo
         echo "=== INICIANDO UPLOAD DOS ARTEFATOS NO GITHUB ==="
 
         GH_UPLOAD_URL="https://uploads.github.com/repos/${GITHUB_USER}/${CI_REPO_NAME}/releases/${RELEASE_ID}/assets"
@@ -419,6 +559,7 @@ steps:
           --data-binary \
           "@./app-react-native-ios-production.zip"
 
+        echo
         echo "✅ RELEASE NO GITHUB CRIADA COM SUCESSO!"
 
   # =========================================================
