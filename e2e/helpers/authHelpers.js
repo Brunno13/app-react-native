@@ -201,7 +201,9 @@ export const performPasswordChange = async (currentPass, newPass) => {
   if (device.getPlatform() === 'android') {
     await device.pressBack();
   } else {
-    await element(by.id('security-screen')).swipe('right', 'fast', 0.05);
+      await device.openURL({
+        url: 'app-react-native://profile',
+      });
   }
   
   await waitFor(element(by.id('profile-scroll-view')))
