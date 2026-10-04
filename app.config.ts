@@ -4,6 +4,7 @@ import {
   withAndroidManifest,
   withDangerousMod,
   withGradleProperties,
+  withAndroidStyles,
 } from 'expo/config-plugins';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -409,6 +410,48 @@ const withNetworkSecurityConfig = (
 // EXPO CONFIG
 // ============================================================
 
+const withSplashScreenBehaviorTargetApi = (
+  config: ExpoConfig,
+) => {
+  return withAndroidStyles(
+    config,
+    (configProps) => {
+      const styles =
+        configProps.modResults.resources.style ??
+        [];
+
+      for (const style of styles) {
+        if (
+          style.$?.name !==
+          'Theme.App.SplashScreen'
+        ) {
+          continue;
+        }
+
+        for (const item of style.item ?? []) {
+          if (
+            item.$?.name ===
+            'android:windowSplashScreenBehavior'
+          ) {
+            item.$ = {
+              ...item.$,
+              'tools:targetApi': '33',
+            };
+          }
+        }
+      }
+
+      configProps.modResults.resources.$ = {
+        ...configProps.modResults.resources.$,
+        'xmlns:tools':
+          'http://schemas.android.com/tools',
+      };
+
+      return configProps;
+    },
+  );
+};
+
 export default ({
   config,
 }: ConfigContext): ExpoConfig => {
@@ -526,6 +569,11 @@ export default ({
 
   finalConfig =
     withLegacyStoragePermissionBounds(
+      finalConfig,
+    );
+    
+  finalConfig =
+    withSplashScreenBehaviorTargetApi(
       finalConfig,
     );
 
