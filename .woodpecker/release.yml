@@ -353,9 +353,18 @@ steps:
       GITEA_TOKEN:
         from_secret: gitea_token
 
+      GITEA_API_BASE:
+        from_secret: gitea_api_base
+
     commands:
       - |
         set -e
+
+        test -n "$GITEA_TOKEN"
+        test -n "$GITEA_API_BASE"
+
+        # Aceita o secret com ou sem "/" no final.
+        GITEA_API_BASE="$${GITEA_API_BASE%/}"
 
         git config \
           remote.origin.fetch \
@@ -415,9 +424,10 @@ steps:
 
         RESPONSE=$(
           curl \
-            -s \
+            --silent \
+            --show-error \
             -X POST \
-            "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases" \
+            "$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases" \
             -H "Accept: application/json" \
             -H "Authorization: token $GITEA_TOKEN" \
             -H "Content-Type: application/json" \
@@ -437,31 +447,28 @@ steps:
           exit 1
         fi
 
-        echo
         echo "=== VERIFICANDO ARTEFATOS ==="
 
         ls -lah \
           ./app-react-native-production.apk \
           ./app-react-native-ios-production.zip
 
-        echo
         echo "=== INICIANDO UPLOAD DOS ARTEFATOS PARA O GITEA ==="
 
         curl \
           -fsS \
           -X POST \
-          "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/${RELEASE_ID}/assets?name=app-react-native-production.apk" \
+          "$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/${RELEASE_ID}/assets?name=app-react-native-production.apk" \
           -H "Authorization: token $GITEA_TOKEN" \
           -F "attachment=@./app-react-native-production.apk"
 
         curl \
           -fsS \
           -X POST \
-          "http://192.168.31.215:3099/api/v1/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/${RELEASE_ID}/assets?name=app-react-native-ios-production.zip" \
+          "$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/${RELEASE_ID}/assets?name=app-react-native-ios-production.zip" \
           -H "Authorization: token $GITEA_TOKEN" \
           -F "attachment=@./app-react-native-ios-production.zip"
 
-        echo
         echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
 
   # =========================================================
