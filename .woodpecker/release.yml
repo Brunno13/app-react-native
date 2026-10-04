@@ -513,38 +513,55 @@ steps:
         from_secret: github_token
 
     commands:
-      - echo "=== SINCRONIZANDO REPOSITÓRIO COM O GITHUB ==="
+      - |
+        set -eu
 
-      - >
-        git config
-        --global
-        --add
-        safe.directory
-        "*"
+        echo "===== GITHUB MIRROR ====="
 
-      - >
-        git config
-        --global
-        http.postBuffer
-        524288000
+        test -n "$$GITHUB_USER"
+        test -n "$$GITHUB_TOKEN"
 
-      - >
-        GIT_TERMINAL_PROMPT=0
-        git
-        -c credential.helper=
-        push
-        https://$${GITHUB_TOKEN}@github.com/$${GITHUB_USER}/${CI_REPO_NAME}.git
-        HEAD:main
-        --force
+        git config \
+          --global \
+          --add \
+          safe.directory \
+          "*"
 
-      - >
-        GIT_TERMINAL_PROMPT=0
-        git
-        -c credential.helper=
-        push
-        https://$${GITHUB_TOKEN}@github.com/$${GITHUB_USER}/${CI_REPO_NAME}.git
-        ${CI_COMMIT_TAG}
-        --force
+        git config \
+          --global \
+          http.postBuffer \
+          524288000
+
+        GITHUB_REPO_URL="https://x-access-token:$$GITHUB_TOKEN@github.com/$$GITHUB_USER/${CI_REPO_NAME}.git"
+
+        echo
+        echo "===== PUSH MAIN ====="
+
+        GIT_TERMINAL_PROMPT=0 \
+          git \
+            -c credential.helper= \
+            push \
+            "$$GITHUB_REPO_URL" \
+            HEAD:main \
+            --force
+
+        echo "GITHUB_MAIN_MIRROR=PASS"
+
+        echo
+        echo "===== PUSH TAG ====="
+
+        GIT_TERMINAL_PROMPT=0 \
+          git \
+            -c credential.helper= \
+            push \
+            "$$GITHUB_REPO_URL" \
+            "${CI_COMMIT_TAG}" \
+            --force
+
+        echo "GITHUB_TAG_MIRROR=PASS"
+
+        echo
+        echo "GITHUB_MIRROR=PASS"
 
   # =========================================================
   # FASE 5: RELEASE NO GITHUB
@@ -561,82 +578,100 @@ steps:
 
     commands:
       - |
-        set -e
+        set -eu
 
-        echo "=== CRIANDO RELEASE NO GITHUB ==="
+        echo "===== GITHUB RELEASE ====="
 
-        GITHUB_API_URL="https://api.github.com/repos/${GITHUB_USER}/${CI_REPO_NAME}/releases"
+        test -n "$$GITHUB_USER"
+        test -n "$$GITHUB_TOKEN"
+
+        GITHUB_API_URL="https://api.github.com/repos/$$GITHUB_USER/${CI_REPO_NAME}/releases"
 
         if [ -f .release_body.txt ]; then
-          RELEASE_BODY=$(
-            cat .release_body.txt
-          )
+          RELEASE_BODY="$$(cat .release_body.txt)"
         else
           RELEASE_BODY="🚀 Lançamento automatizado sincronizado a partir do servidor Gitea interno."
         fi
 
-        JSON_PAYLOAD=$(
+        JSON_PAYLOAD="$$( \
           jq \
             -n \
             --arg tag "${CI_COMMIT_TAG}" \
             --arg name "Versão ${CI_COMMIT_TAG}" \
-            --arg body "$RELEASE_BODY" \
+            --arg body "$$RELEASE_BODY" \
             '{
               tag_name: $tag,
               name: $name,
               body: $body
-            }'
-        )
+            }' \
+        )"
 
-        RESPONSE=$(
+        echo
+        echo "===== CREATE GITHUB RELEASE ====="
+
+        RESPONSE="$$( \
           curl \
-            -s \
+            --silent \
+            --show-error \
             -X POST \
-            "$GITHUB_API_URL" \
+            "$$GITHUB_API_URL" \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Authorization: Bearer $$GITHUB_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD"
-        )
+            -d "$$JSON_PAYLOAD" \
+        )"
 
-        RELEASE_ID=$(
-          printf '%s' "$RESPONSE" \
-          | jq -r '.id'
-        )
+        RELEASE_ID="$$( \
+          printf '%s' "$$RESPONSE" \
+            | jq -r '.id' \
+        )"
 
-        if [ "$RELEASE_ID" = "null" ] \
-          || [ -z "$RELEASE_ID" ]; then
+        if [ "$$RELEASE_ID" = "null" ] || \
+           [ -z "$$RELEASE_ID" ]; then
 
-          echo "❌ ERRO: O GitHub não retornou um ID válido."
-          echo "Resposta recebida: $RESPONSE"
+          echo "GITHUB_RELEASE_CREATE=FAIL"
+          echo "Resposta recebida:"
+          printf '%s\n' "$$RESPONSE"
           exit 1
         fi
 
+        echo "GITHUB_RELEASE_ID=$$RELEASE_ID"
+        echo "GITHUB_RELEASE_CREATE=PASS"
+
+        GH_UPLOAD_URL="https://uploads.github.com/repos/$$GITHUB_USER/${CI_REPO_NAME}/releases/$$RELEASE_ID/assets"
+
         echo
-        echo "=== INICIANDO UPLOAD DOS ARTEFATOS NO GITHUB ==="
+        echo "===== UPLOAD GITHUB ARTIFACTS ====="
 
-        GH_UPLOAD_URL="https://uploads.github.com/repos/${GITHUB_USER}/${CI_REPO_NAME}/releases/${RELEASE_ID}/assets"
-
-        curl \
-          -fsS \
+        curl -fsS \
           -X POST \
-          "${GH_UPLOAD_URL}?name=app-react-native-production.apk" \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          "$$GH_UPLOAD_URL?name=app-react-native-production.apk" \
+          -H "Authorization: Bearer $$GITHUB_TOKEN" \
           -H "Content-Type: application/vnd.android.package-archive" \
-          --data-binary \
-          "@./app-react-native-production.apk"
+          --data-binary "@./app-react-native-production.apk"
 
-        curl \
-          -fsS \
+        echo "GITHUB_ANDROID_UPLOAD=PASS"
+
+        curl -fsS \
           -X POST \
-          "${GH_UPLOAD_URL}?name=app-react-native-ios-production.zip" \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          "$$GH_UPLOAD_URL?name=app-react-native-ios-production.zip" \
+          -H "Authorization: Bearer $$GITHUB_TOKEN" \
           -H "Content-Type: application/zip" \
-          --data-binary \
-          "@./app-react-native-ios-production.zip"
+          --data-binary "@./app-react-native-ios-production.zip"
+
+        echo "GITHUB_IOS_UPLOAD=PASS"
 
         echo
-        echo "✅ RELEASE NO GITHUB CRIADA COM SUCESSO!"
+        echo "============================================================"
+        echo " GITHUB RELEASE SUMMARY"
+        echo "============================================================"
+        printf '%-32s %s\n' "Main mirror" "PASS"
+        printf '%-32s %s\n' "Tag mirror" "PASS"
+        printf '%-32s %s\n' "Release creation" "PASS"
+        printf '%-32s %s\n' "Android artifact" "PASS"
+        printf '%-32s %s\n' "iOS artifact" "PASS"
+        echo "============================================================"
+        echo "GITHUB_RELEASE=PASS"
 
   # =========================================================
   # NOTIFICAÇÕES FINAIS
