@@ -358,118 +358,146 @@ steps:
 
     commands:
       - |
-        set -e
+        set -eu
 
-        test -n "$GITEA_TOKEN"
-        test -n "$GITEA_API_BASE"
+        echo "===== GITEA RELEASE ====="
+
+        test -n "$$GITEA_TOKEN"
+        test -n "$$GITEA_API_BASE"
 
         # Aceita o secret com ou sem "/" no final.
         GITEA_API_BASE="$${GITEA_API_BASE%/}"
+
+        echo
+        echo "===== RELEASE HISTORY ====="
 
         git config \
           remote.origin.fetch \
           "+refs/heads/*:refs/remotes/origin/*"
 
-        git fetch --all --unshallow \
-          || git fetch --all
+        if [ "$$(git rev-parse --is-shallow-repository)" = "true" ]; then
+          git fetch --all --unshallow
+        else
+          git fetch --all
+        fi
 
         git fetch --tags
 
-        PREV_TAG=$(
+        PREV_TAG="$$( \
           git describe \
             --tags \
             --abbrev=0 \
             HEAD^ \
             2>/dev/null \
-          || echo ""
-        )
+            || true \
+        )"
 
-        if [ -z "$PREV_TAG" ]; then
-          CHANGELOG=$(
-            git log \
-              --pretty=format:"- %h %s"
-          )
-        else
-          CHANGELOG=$(
+        if [ -z "$$PREV_TAG" ]; then
+          CHANGELOG="$$( \
             git log \
               --pretty=format:"- %h %s" \
-              "${PREV_TAG}..HEAD"
-          )
+          )"
+        else
+          CHANGELOG="$$( \
+            git log \
+              --pretty=format:"- %h %s" \
+              "$$PREV_TAG..HEAD" \
+          )"
         fi
 
-        RELEASE_BODY=$(
+        RELEASE_BODY="$$( \
           printf \
             '🚀 Deploy automático multiplataforma Android e iOS realizado nativamente pelo Apple Silicon M1.\n\n---\n\n%s' \
-            "$CHANGELOG"
-        )
+            "$$CHANGELOG" \
+        )"
 
         printf '%s\n' \
-          "$RELEASE_BODY" \
+          "$$RELEASE_BODY" \
           > .release_body.txt
 
-        JSON_PAYLOAD=$(
+        JSON_PAYLOAD="$$( \
           jq \
             -n \
             --arg tag "${CI_COMMIT_TAG}" \
             --arg name "Versão ${CI_COMMIT_TAG}" \
-            --arg body "$RELEASE_BODY" \
+            --arg body "$$RELEASE_BODY" \
             '{
               tag_name: $tag,
               name: $name,
               body: $body
-            }'
-        )
+            }' \
+        )"
 
-        echo "=== ENVIANDO RELEASE PARA O GITEA ==="
+        echo
+        echo "===== CREATE GITEA RELEASE ====="
 
-        RESPONSE=$(
+        RESPONSE="$$( \
           curl \
             --silent \
             --show-error \
             -X POST \
-            "$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases" \
+            "$$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases" \
             -H "Accept: application/json" \
-            -H "Authorization: token $GITEA_TOKEN" \
+            -H "Authorization: token $$GITEA_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD"
-        )
+            -d "$$JSON_PAYLOAD" \
+        )"
 
-        RELEASE_ID=$(
-          printf '%s' "$RESPONSE" \
-          | jq -r '.id'
-        )
+        RELEASE_ID="$$( \
+          printf '%s' "$$RESPONSE" \
+            | jq -r '.id' \
+        )"
 
-        if [ "$RELEASE_ID" = "null" ] \
-          || [ -z "$RELEASE_ID" ]; then
+        if [ "$$RELEASE_ID" = "null" ] || \
+           [ -z "$$RELEASE_ID" ]; then
 
-          echo "❌ ERRO: O Gitea não retornou um ID válido."
-          echo "Resposta recebida: $RESPONSE"
+          echo "GITEA_RELEASE_CREATE=FAIL"
+          echo "Resposta recebida:"
+          printf '%s\n' "$$RESPONSE"
           exit 1
         fi
 
-        echo "=== VERIFICANDO ARTEFATOS ==="
+        echo "GITEA_RELEASE_ID=$$RELEASE_ID"
+        echo "GITEA_RELEASE_CREATE=PASS"
+
+        echo
+        echo "===== VERIFICANDO ARTEFATOS ====="
+
+        test -s ./app-react-native-production.apk
+        test -s ./app-react-native-ios-production.zip
 
         ls -lah \
           ./app-react-native-production.apk \
           ./app-react-native-ios-production.zip
 
-        echo "=== INICIANDO UPLOAD DOS ARTEFATOS PARA O GITEA ==="
+        echo
+        echo "===== UPLOAD GITEA ARTIFACTS ====="
 
-        curl \
-          -fsS \
+        curl -fsS \
           -X POST \
-          "$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/${RELEASE_ID}/assets?name=app-react-native-production.apk" \
-          -H "Authorization: token $GITEA_TOKEN" \
+          "$$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/$$RELEASE_ID/assets?name=app-react-native-production.apk" \
+          -H "Authorization: token $$GITEA_TOKEN" \
           -F "attachment=@./app-react-native-production.apk"
 
-        curl \
-          -fsS \
+        echo "GITEA_ANDROID_UPLOAD=PASS"
+
+        curl -fsS \
           -X POST \
-          "$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/${RELEASE_ID}/assets?name=app-react-native-ios-production.zip" \
-          -H "Authorization: token $GITEA_TOKEN" \
+          "$$GITEA_API_BASE/repos/${CI_REPO_OWNER}/${CI_REPO_NAME}/releases/$$RELEASE_ID/assets?name=app-react-native-ios-production.zip" \
+          -H "Authorization: token $$GITEA_TOKEN" \
           -F "attachment=@./app-react-native-ios-production.zip"
 
-        echo "✅ DEPLOY FINALIZADO COM SUCESSO NO GITEA!"
+        echo "GITEA_IOS_UPLOAD=PASS"
+
+        echo
+        echo "============================================================"
+        echo " GITEA RELEASE SUMMARY"
+        echo "============================================================"
+        printf '%-32s %s\n' "Release creation" "PASS"
+        printf '%-32s %s\n' "Android artifact" "PASS"
+        printf '%-32s %s\n' "iOS artifact" "PASS"
+        echo "============================================================"
+        echo "GITEA_RELEASE=PASS"
 
   # =========================================================
   # FASE 4: ESPELHAMENTO PARA O GITHUB
