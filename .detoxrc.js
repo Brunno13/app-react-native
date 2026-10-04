@@ -41,7 +41,7 @@ module.exports = {
     emulator: {
       type: 'android.emulator',
       device: {
-        avdName: 'Pixel_9a',
+        avdName: 'Pixel_10',
       },
     },
     simulator: {

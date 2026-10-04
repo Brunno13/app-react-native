@@ -1,5 +1,18 @@
-import { lazy, Suspense, useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useState,
+} from 'react';
+import {
+  View,
+} from 'react-native';
+import {
+  Stack,
+  useRouter,
+  useSegments,
+} from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import '../shared/config/i18n';
@@ -8,42 +21,109 @@ import { useGlobalAuth } from '@/features/auth';
 import { AppProvider } from './_providers/_AppProvider';
 import { STORYBOOK_ENABLED } from '../shared/config/storybook.config';
 
+void SplashScreen.preventAutoHideAsync();
+
 const StorybookUIRoot = STORYBOOK_ENABLED
   ? lazy(() => import('../../.rnstorybook'))
   : null;
 
 function AppNavigation() {
   const { session, isPending } = useGlobalAuth();
+
   const segments = useSegments();
   const router = useRouter();
 
-  useEffect(() => {
-    if (isPending) return;
+  const [rootLayoutReady, setRootLayoutReady] =
+    useState(false);
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const isAtRoot = !segments[0];
+  const inAuthGroup =
+    segments[0] === '(auth)';
+
+  const inMainGroup =
+    segments[0] === '(main)';
+
+  useEffect(() => {
+    if (isPending) {
+      return;
+    }
 
     if (!session) {
       if (!inAuthGroup) {
         router.replace('/(auth)/login');
       }
-    } else {
-      if (isAtRoot || inAuthGroup) {
-        router.replace('/(main)/(tabs)/home');
-      }
+
+      return;
     }
-  }, [session, isPending, segments]);
+
+    if (!inMainGroup) {
+      router.replace('/(main)/(tabs)/home');
+    }
+  }, [
+    session,
+    isPending,
+    inAuthGroup,
+    inMainGroup,
+    router,
+  ]);
+
+  const navigationReady =
+    !isPending &&
+    (
+      (!session && inAuthGroup) ||
+      (session && inMainGroup)
+    );
+
+  useEffect(() => {
+    if (
+      !navigationReady ||
+      !rootLayoutReady
+    ) {
+      return;
+    }
+
+    void SplashScreen.hideAsync();
+  }, [
+    navigationReady,
+    rootLayoutReady,
+  ]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(main)" />
-    </Stack>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#ffffff',
+      }}
+      onLayout={() => {
+        setRootLayoutReady(true);
+      }}
+    >
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: 'none',
+          contentStyle: {
+            backgroundColor: '#ffffff',
+          },
+        }}
+      >
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(main)" />
+      </Stack>
+    </View>
   );
 }
 
 export default function RootLayout() {
-  if (STORYBOOK_ENABLED && StorybookUIRoot) {
+  useEffect(() => {
+    if (STORYBOOK_ENABLED) {
+      void SplashScreen.hideAsync();
+    }
+  }, []);
+
+  if (
+    STORYBOOK_ENABLED &&
+    StorybookUIRoot
+  ) {
     return (
       <Suspense fallback={null}>
         <StorybookUIRoot />
@@ -52,7 +132,9 @@ export default function RootLayout() {
   }
 
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+    >
       <AppProvider>
         <AppNavigation />
       </AppProvider>

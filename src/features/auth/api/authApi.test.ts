@@ -1,6 +1,13 @@
 import { AuthApi } from './authApi';
 import { authClient } from '@/shared/lib/auth';
 
+jest.mock('@/shared/config/env', () => ({
+  ENV: {
+    API_URL: 'https://api.meuappseguro.com',
+    APP_SCHEME: 'app-react-native-staging',
+  },
+}));
+
 jest.mock('@/shared/lib/auth', () => ({
   authClient: {
     signIn: {
@@ -18,7 +25,7 @@ jest.mock('@/shared/lib/auth', () => ({
     getSession: jest.fn(),
     signOut: jest.fn(),
     useSession: jest.fn(),
-  }
+  },
 }));
 
 describe('AuthApi (Camada de Rede de Autenticação)', () => {
@@ -27,65 +34,111 @@ describe('AuthApi (Camada de Rede de Autenticação)', () => {
   });
 
   it('deve realizar login por email repassando os parâmetros corretos', async () => {
-    await AuthApi.signInWithEmail('brunno@teste.com', 'senha123');
+    await AuthApi.signInWithEmail(
+      'brunno@teste.com',
+      'senha123',
+    );
 
-    expect(authClient.signIn.email).toHaveBeenCalledTimes(1);
-    expect(authClient.signIn.email).toHaveBeenCalledWith({
+    expect(
+      authClient.signIn.email,
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      authClient.signIn.email,
+    ).toHaveBeenCalledWith({
       email: 'brunno@teste.com',
       password: 'senha123',
     });
   });
 
   it('deve realizar cadastro por email repassando nome, email e senha', async () => {
-    await AuthApi.signUpWithEmail('brunno@teste.com', 'senha123', 'Brunno');
+    await AuthApi.signUpWithEmail(
+      'brunno@teste.com',
+      'senha123',
+      'Brunno',
+    );
 
-    expect(authClient.signUp.email).toHaveBeenCalledWith({
+    expect(
+      authClient.signUp.email,
+    ).toHaveBeenCalledWith({
       email: 'brunno@teste.com',
       password: 'senha123',
       name: 'Brunno',
     });
   });
 
-  it('deve formatar a requisição de esqueci a senha com o link de redirecionamento (Deep Link)', async () => {
-    await AuthApi.forgetPassword('brunno@teste.com');
+  it('deve formatar a requisição de esqueci a senha com o link de redirecionamento do ambiente', async () => {
+    await AuthApi.forgetPassword(
+      'brunno@teste.com',
+    );
 
-    expect(authClient.requestPasswordReset).toHaveBeenCalledWith({
+    expect(
+      authClient.requestPasswordReset,
+    ).toHaveBeenCalledWith({
       email: 'brunno@teste.com',
-      redirectTo: 'app-react-native://reset-password',
+      redirectTo:
+        'app-react-native-staging://reset-password',
     });
   });
 
   it('deve realizar login social corretamente', async () => {
-    await AuthApi.signInWithSocial('github');
+    await AuthApi.signInWithSocial(
+      'github',
+    );
 
-    expect(authClient.signIn.social).toHaveBeenCalledWith({
-      provider: 'github'
+    expect(
+      authClient.signIn.social,
+    ).toHaveBeenCalledWith({
+      provider: 'github',
     });
   });
 
   it('deve alterar a senha garantindo a revogação de outras sessões ativas', async () => {
-    await AuthApi.changePassword('NovaSenha!123', 'SenhaAntiga!123');
+    await AuthApi.changePassword(
+      'NovaSenha!123',
+      'SenhaAntiga!123',
+    );
 
-    expect(authClient.changePassword).toHaveBeenCalledWith(
+    expect(
+      authClient.changePassword,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
-        newPassword: 'NovaSenha!123',
-        currentPassword: 'SenhaAntiga!123',
+        newPassword:
+          'NovaSenha!123',
+        currentPassword:
+          'SenhaAntiga!123',
         revokeOtherSessions: true,
-      })
+      }),
     );
   });
 
   it('deve chamar os métodos de gerenciamento de sessão corretamente', async () => {
     await AuthApi.listSessions();
-    expect(authClient.listSessions).toHaveBeenCalledTimes(1);
 
-    await AuthApi.revokeSession('token-xyz');
-    expect(authClient.revokeSession).toHaveBeenCalledWith({ token: 'token-xyz' });
+    expect(
+      authClient.listSessions,
+    ).toHaveBeenCalledTimes(1);
+
+    await AuthApi.revokeSession(
+      'token-xyz',
+    );
+
+    expect(
+      authClient.revokeSession,
+    ).toHaveBeenCalledWith({
+      token: 'token-xyz',
+    });
 
     await AuthApi.getSession();
-    expect(authClient.getSession).toHaveBeenCalledTimes(1);
+
+    expect(
+      authClient.getSession,
+    ).toHaveBeenCalledTimes(1);
 
     await AuthApi.signOut();
-    expect(authClient.signOut).toHaveBeenCalledTimes(1);
+
+    expect(
+      authClient.signOut,
+    ).toHaveBeenCalledTimes(1);
   });
 });
