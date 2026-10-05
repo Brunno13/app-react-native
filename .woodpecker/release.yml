@@ -499,7 +499,7 @@ steps:
         echo "============================================================"
         echo "GITEA_RELEASE=PASS"
 
-  # =========================================================
+    # =========================================================
   # FASE 4: ESPELHAMENTO PARA O GITHUB
   # =========================================================
 
@@ -521,6 +521,77 @@ steps:
         test -n "$$GITHUB_USER"
         test -n "$$GITHUB_TOKEN"
 
+        echo
+        echo "===== GITHUB TOKEN CHECK ====="
+
+        HTTP_STATUS="$$( \
+          curl \
+            --silent \
+            --show-error \
+            --output /tmp/github-user.json \
+            --write-out '%{http_code}' \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $$GITHUB_TOKEN" \
+            https://api.github.com/user \
+        )"
+
+        if [ "$$HTTP_STATUS" != "200" ]; then
+          echo "GITHUB_TOKEN_CHECK=FAIL"
+          echo "HTTP_STATUS=$$HTTP_STATUS"
+
+          jq -r \
+            '.message // "Unknown GitHub API error"' \
+            /tmp/github-user.json \
+            2>/dev/null \
+            || true
+
+          exit 1
+        fi
+
+        AUTHENTICATED_USER="$$( \
+          jq -r '.login' \
+            /tmp/github-user.json \
+        )"
+
+        echo "GITHUB_AUTHENTICATED_USER=$$AUTHENTICATED_USER"
+        echo "GITHUB_TOKEN_CHECK=PASS"
+
+        if [ "$$AUTHENTICATED_USER" != "$$GITHUB_USER" ]; then
+          echo "GITHUB_USER_CHECK=FAIL"
+          echo "Expected=$$GITHUB_USER"
+          echo "Authenticated=$$AUTHENTICATED_USER"
+          exit 1
+        fi
+
+        echo
+        echo "===== GITHUB REPOSITORY CHECK ====="
+
+        REPO_STATUS="$$( \
+          curl \
+            --silent \
+            --show-error \
+            --output /tmp/github-repo.json \
+            --write-out '%{http_code}' \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $$GITHUB_TOKEN" \
+            "https://api.github.com/repos/$$GITHUB_USER/${CI_REPO_NAME}" \
+        )"
+
+        if [ "$$REPO_STATUS" != "200" ]; then
+          echo "GITHUB_REPOSITORY_CHECK=FAIL"
+          echo "HTTP_STATUS=$$REPO_STATUS"
+
+          jq -r \
+            '.message // "Unknown GitHub repository error"' \
+            /tmp/github-repo.json \
+            2>/dev/null \
+            || true
+
+          exit 1
+        fi
+
+        echo "GITHUB_REPOSITORY_CHECK=PASS"
+
         git config \
           --global \
           --add \
@@ -532,7 +603,7 @@ steps:
           http.postBuffer \
           524288000
 
-        GITHUB_REPO_URL="https://x-access-token:$$GITHUB_TOKEN@github.com/$$GITHUB_USER/${CI_REPO_NAME}.git"
+        GITHUB_REPO_URL="https://$$GITHUB_USER:$$GITHUB_TOKEN@github.com/$$GITHUB_USER/${CI_REPO_NAME}.git"
 
         echo
         echo "===== PUSH MAIN ====="
