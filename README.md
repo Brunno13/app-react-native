@@ -308,7 +308,7 @@ The Woodpecker CI pipeline (`.woodpecker/release.yml`) automates APK/package gen
 
 ---
 
-## 🔐 Security and Local Traffic
+## 🔐 Security and Local Traffic 
  
 * **In Staging:** The app allows cleartext HTTP traffic (`usesCleartextTraffic: true`) for local API communication.
 * **In Production:** Builds require secure HTTPS connections.
