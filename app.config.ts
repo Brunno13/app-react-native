@@ -5,6 +5,7 @@ import {
   withDangerousMod,
   withGradleProperties,
   withAndroidStyles,
+  withPodfile,
 } from 'expo/config-plugins';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -452,6 +453,58 @@ const withSplashScreenBehaviorTargetApi = (
   );
 };
 
+
+const withIosPodsMinimumDeploymentTarget = (
+  config: ExpoConfig,
+): ExpoConfig => {
+  return withPodfile(config, (configProps) => {
+    const marker =
+      '# app-react-native: minimum iOS deployment target';
+
+    const contents = configProps.modResults.contents;
+
+    if (contents.includes(marker)) {
+      return configProps;
+    }
+
+    const postInstallPattern =
+      /(^  post_install do \|installer\|\r?\n)([\s\S]*?)(^  end[ \t]*$)/m;
+
+    if (!postInstallPattern.test(contents)) {
+      throw new Error(
+        'Não foi possível localizar post_install no Podfile.',
+      );
+    }
+
+    configProps.modResults.contents = contents.replace(
+      postInstallPattern,
+      (
+        _match: string,
+        start: string,
+        body: string,
+        end: string,
+      ) => `${start}${body}
+    ${marker}
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |build_configuration|
+        current_target = build_configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+
+        next unless current_target && Gem::Version.correct?(current_target.to_s)
+
+        if Gem::Version.new(current_target.to_s) < Gem::Version.new('16.4')
+          build_configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.4'
+        end
+      end
+    end
+
+${end}`,
+    );
+
+    return configProps;
+  });
+};
+
+
 export default ({
   config,
 }: ConfigContext): ExpoConfig => {
@@ -486,6 +539,8 @@ export default ({
       },
     ]);
   }
+
+  plugins.push('./plugins/with-ios-scene-lifecycle');
 
   const baseConfig: ExpoConfig = {
     ...config,
@@ -524,6 +579,7 @@ export default ({
     ios: {
       supportsTablet: true,
       bundleIdentifier: IOS_BUNDLE_ID,
+      deploymentTarget: '16.4',
     },
 
     android: {
@@ -571,7 +627,7 @@ export default ({
     withLegacyStoragePermissionBounds(
       finalConfig,
     );
-    
+
   finalConfig =
     withSplashScreenBehaviorTargetApi(
       finalConfig,
@@ -583,6 +639,11 @@ export default ({
         finalConfig,
       );
   }
+
+  finalConfig =
+    withIosPodsMinimumDeploymentTarget(
+      finalConfig,
+    );
 
   return finalConfig;
 };
