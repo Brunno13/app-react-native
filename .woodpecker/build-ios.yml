@@ -64,9 +64,11 @@ steps:
 
         echo
         echo "===== NODE 22 ====="
-        BUN_BIN="$(command -v bun)"
-        USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
-        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
+        NODE22_DIR="$(dirname "$(command -v node)")"
+        case "$("$NODE22_DIR/node" --version)" in
+          v22.*) ;;
+          *) echo "NODE22=FAIL: esperado Node 22.x"; exit 1 ;;
+        esac
 
         test -x "$NODE22_DIR/node"
         export PATH="$NODE22_DIR:$PATH"
@@ -130,9 +132,11 @@ steps:
       - |
         set -e
 
-        BUN_BIN="$(command -v bun)"
-        USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
-        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
+        NODE22_DIR="$(dirname "$(command -v node)")"
+        case "$("$NODE22_DIR/node" --version)" in
+          v22.*) ;;
+          *) echo "NODE22=FAIL: esperado Node 22.x"; exit 1 ;;
+        esac
 
         test -x "$NODE22_DIR/node"
         export PATH="$NODE22_DIR:$PATH"
@@ -175,9 +179,11 @@ steps:
       - |
         set -e
 
-        BUN_BIN="$(command -v bun)"
-        USER_HOME="$(cd "$(dirname "$BUN_BIN")/../.." && pwd)"
-        NODE22_DIR="$USER_HOME/.nvm/versions/node/v22.22.2/bin"
+        NODE22_DIR="$(dirname "$(command -v node)")"
+        case "$("$NODE22_DIR/node" --version)" in
+          v22.*) ;;
+          *) echo "NODE22=FAIL: esperado Node 22.x"; exit 1 ;;
+        esac
 
         test -x "$NODE22_DIR/node"
         export PATH="$NODE22_DIR:$PATH"
