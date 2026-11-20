@@ -52,8 +52,8 @@ steps:
       - echo "🔧 Preparando ambiente nativo do macOS..."
 
       - |
-        export PATH="/Users/brunno/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/bin:$PATH"
-        export NODE_BINARY="/Users/brunno/.nvm/versions/node/v22.22.2/bin/node"
+        export PATH="$PATH:/opt/homebrew/bin"
+        export NODE_BINARY="$(command -v node)"
 
         echo
         echo "===== NODE ====="
@@ -67,9 +67,9 @@ steps:
           exit 1
         fi
 
-        if [ "$(node --version)" != "v22.22.2" ]; then
+        if ! node --version | grep -Eq '^v22\.'; then
           echo "❌ Node incorreto."
-          echo "Esperado: v22.22.2"
+          echo "Esperado: Node v22.x"
           echo "Atual: $(node --version)"
           exit 1
         fi
@@ -296,8 +296,8 @@ steps:
       - |
         set -e
 
-        export PATH="/Users/brunno/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/bin:$PATH"
-        export NODE_BINARY="/Users/brunno/.nvm/versions/node/v22.22.2/bin/node"
+        export PATH="$PATH:/opt/homebrew/bin"
+        export NODE_BINARY="$(command -v node)"
 
         echo
         echo "===== OTA ENVIRONMENT ====="
@@ -307,9 +307,9 @@ steps:
         which node
         node --version
 
-        if [ "$(node --version)" != "v22.22.2" ]; then
+        if ! node --version | grep -Eq '^v22\.'; then
           echo "❌ Node incorreto na etapa OTA."
-          echo "Esperado: v22.22.2"
+          echo "Esperado: Node v22.x"
           echo "Atual: $(node --version)"
           exit 1
         fi
