@@ -10,7 +10,7 @@ const URLS = {
     'https://api-bun.brunnoserver.duckdns.org',
 
   staging:
-    'http://api-bun-staging.brunnoserver.duckdns.org',
+    'https://api-bun-staging.brunnoserver.duckdns.org',
 } as const;
 
 const DEFAULT_SCHEMES = {
