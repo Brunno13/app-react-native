@@ -23,7 +23,13 @@ export const uploadAvatarImage = async (
   try {
     const filename = localUri.split('/').pop() || 'avatar.jpg';
     const match = /\.(\w+)$/.exec(filename);
-    const fileType = match ? `image/${match[1]}` : 'image/jpeg';
+    const extension = match?.[1]?.toLowerCase();
+    const fileType =
+      extension === 'jpg' || extension === 'jpeg'
+        ? 'image/jpeg'
+        : extension
+          ? `image/${extension}`
+          : 'image/jpeg';
     const endpoint = `${ENV.API_URL}${API_ENDPOINTS.UPLOAD_AVATAR}`;
 
     console.log(`📤 Enviando JSON para: ${endpoint}`);
