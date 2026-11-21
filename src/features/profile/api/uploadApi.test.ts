@@ -49,6 +49,42 @@ describe('Profile API - uploadAvatarImage', () => {
     expect(result).toEqual({ success: true, url: 'https://cdn.meuapp.com/avatar123.jpg' });
   });
 
+  it.each([
+    ['foto.jpg', 'image/jpeg'],
+    ['foto.jpeg', 'image/jpeg'],
+    ['foto.JPG', 'image/jpeg'],
+    ['foto.png', 'image/png'],
+    ['foto', 'image/jpeg'],
+  ])('deve enviar MIME correto para %s', async (filename, mimeType) => {
+    (authClient.$fetch as jest.Mock).mockResolvedValueOnce({
+      data: { success: true, url: 'https://cdn.meuapp.com/avatar123.jpg' },
+      error: null,
+    });
+
+    const result = await uploadAvatarImage(
+      'base64-string-fake',
+      `file:///data/user/fotos/${filename}`
+    );
+
+    expect(authClient.$fetch).toHaveBeenCalledTimes(1);
+    expect(authClient.$fetch).toHaveBeenCalledWith(
+      'https://api.meuapp.com/api/users/avatar',
+      {
+        method: 'POST',
+        body: {
+          avatarBase64: 'base64-string-fake',
+          fileName: filename,
+          mimeType,
+        },
+      }
+    );
+
+    expect(result).toEqual({
+      success: true,
+      url: 'https://cdn.meuapp.com/avatar123.jpg',
+    });
+  });
+
   it('deve retornar erro se a API responder com status de erro', async () => {
     (authClient.$fetch as jest.Mock).mockResolvedValueOnce({
       data: null,
