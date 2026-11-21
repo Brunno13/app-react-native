@@ -1,0 +1,27 @@
+# Aggregate real Gitea commit statuses, not hard-coded PASS strings.
+when:
+  - event: pull_request
+    branch: main
+    status: [success, failure]
+  - event: push
+    branch: main
+    status: [success, failure]
+
+labels:
+  platform: linux/amd64
+  role: build-linux
+
+depends_on:
+  - security-wake-x86
+  - quality-code
+  - quality-cpd
+  - quality-android
+  - security-gitleaks
+  - security-opengrep
+  - security-trivy
+
+steps:
+  - name: final-quality-summary
+    image: python:3.13-alpine
+    commands:
+      - python3 scripts/ci/arn3-quality-summary.py

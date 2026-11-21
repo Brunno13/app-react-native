@@ -1,0 +1,36 @@
+when:
+  - event: pull_request
+    branch: main
+  - event: push
+    branch: main
+
+labels:
+  platform: linux/amd64
+  role: build-linux
+
+depends_on:
+  - security-wake-x86
+
+steps:
+  - name: prepare-verified-trivy
+    # Trusted version 0.69.3; do not consume compromised v0.69.4-0.69.6 images.
+    image: ghcr.io/aquasecurity/trivy:0.69.3@sha256:7228e304ae0f610a1fad937baa463598cadac0c2ac4027cc68f3a8b997115689
+    commands:
+      - |
+        set -eu
+        trap 'rc=$?; echo "===== ARN-3 TRIVY BINARY - SUMMARY ====="; if [ "$rc" -eq 0 ]; then echo "ARN3_TRIVY_BINARY_PREPARE=PASS"; else echo "ARN3_TRIVY_BINARY_PREPARE=FAIL RC=$rc"; fi' EXIT
+        mkdir -p .arn3-bin
+        cp /usr/local/bin/trivy .arn3-bin/trivy
+        chmod +x .arn3-bin/trivy
+        ./.arn3-bin/trivy --version
+
+  - name: trivy-existing-scripts
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
+    pull: false
+    environment:
+      CI: "true"
+      BUN_INSTALL_CACHE_DIR: /cache/bun
+    volumes:
+      - /opt/ci-cache/app-react-native/bun:/cache/bun
+    commands:
+      - sh scripts/ci/arn3-security-trivy.sh

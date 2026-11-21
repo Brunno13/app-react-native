@@ -1,6 +1,8 @@
 when:
   - event: push
     branch: main
+  - event: pull_request
+    branch: main
   - event: manual
     evaluate: '(BUILD_IOS ?? "") == ""'
 
@@ -90,7 +92,7 @@ steps:
         evaluate: 'BUILD_ANDROID == "production"'
 
   - name: android-quality
-    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
     pull: false
 
     environment:
@@ -105,6 +107,7 @@ steps:
     commands:
       - |
         set -e
+        trap 'rc=$?; if [ "$rc" -eq 0 ]; then echo "ARN3_ANDROID_QUALITY_SUMMARY=PASS"; else echo "ARN3_ANDROID_QUALITY_SUMMARY=FAIL RC=$rc"; fi' EXIT
 
         echo "===== ANDROID CI ENVIRONMENT ====="
         uname -m
@@ -148,7 +151,7 @@ steps:
         echo "ANDROID_PIPELINE_GATE=PASS"
 
   - name: android-build
-    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
     pull: false
 
     environment:

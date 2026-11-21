@@ -1,6 +1,8 @@
 when:
   - event: push
     branch: main
+  - event: pull_request
+    branch: main
   - event: manual
     evaluate: '(BUILD_IOS ?? "") == ""'
 
@@ -21,6 +23,7 @@ steps:
     commands:
       - |
         set -eu
+        trap 'rc=$?; if [ "$rc" -eq 0 ]; then echo "SECURITY_WAKE_X86_SUMMARY=PASS"; else echo "SECURITY_WAKE_X86_SUMMARY=FAIL RC=$rc"; fi' EXIT
 
         echo "===== WAKE VM104 ====="
 

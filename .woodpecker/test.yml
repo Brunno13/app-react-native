@@ -7,7 +7,7 @@ labels:
   role: build-linux
 
 depends_on:
-  - quality-android
+  - quality-summary
 
 steps:
   # =========================================================
@@ -41,7 +41,7 @@ steps:
   # =========================================================
 
   - name: testar-codigo
-    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
     pull: false
 
     commands:
@@ -65,7 +65,7 @@ steps:
   # =========================================================
 
   - name: deploy-ota-staging
-    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
     pull: false
 
     environment:

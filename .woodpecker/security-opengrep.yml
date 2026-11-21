@@ -1,0 +1,58 @@
+when:
+  - event: pull_request
+    branch: main
+  - event: push
+    branch: main
+
+labels:
+  platform: linux/amd64
+  role: build-linux
+
+depends_on:
+  - security-wake-x86
+
+steps:
+  - name: opengrep-download-verified
+    image: curlimages/curl:8.22.0
+    commands:
+      - |
+        set -eu
+        mkdir -p .arn3-bin
+        url='https://github.com/opengrep/opengrep/releases/download/v2.0.0/opengrep_linux_x86'
+        expected='37e93f4da5fd04a18c5c1febbdd12f7e98dfccd4d0c9cf2593bcb25eeb462da0'
+        curl --fail --location --silent --show-error \
+          --retry 2 --connect-timeout 10 --max-time 300 \
+          --output .arn3-bin/opengrep.download "$url"
+        printf '%s  %s\n' "$expected" '.arn3-bin/opengrep.download' | sha256sum -c -
+        mv .arn3-bin/opengrep.download .arn3-bin/opengrep
+        chmod 0755 .arn3-bin/opengrep
+        echo 'ARN3_OPENGREP_BINARY_VERIFIED=PASS'
+
+  - name: sast-existing-rules
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
+    pull: false
+    commands:
+      - |
+        set -u
+        start="$(date +%s)"
+        rc=0
+        if [ ! -f .opengrep.yml ]; then
+          echo 'OPENGREP_RULES=FAIL missing .opengrep.yml'
+          rc=2
+        elif [ ! -x .arn3-bin/opengrep ]; then
+          echo 'OPENGREP_TOOL=FAIL verified binary missing or not executable'
+          rc=127
+        else
+          .arn3-bin/opengrep --version
+          .arn3-bin/opengrep scan --config .opengrep.yml --error src scripts || rc=$?
+        fi
+        duration=$(( $(date +%s) - start ))
+        echo '===== ARN-3 OPENGREP - SUMMARY ====='
+        echo "SCAN_EXIT_CODE=$rc"
+        echo "DURATION_SECONDS=$duration"
+        if [ "$rc" -eq 0 ]; then
+          echo 'ARN3_SECURITY_OPENGREP_GATE=PASS'
+        else
+          echo 'ARN3_SECURITY_OPENGREP_GATE=FAIL'
+        fi
+        exit "$rc"
