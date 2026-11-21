@@ -61,6 +61,11 @@ steps:
         echo "===== BUN ====="
         command -v bun
         bun --version
+        if [ "$(bun --version)" != "1.4.4" ]; then
+          echo "ARN5_BUN_VERSION_GATE=FAIL: esperado Bun 1.4.4"
+          exit 1
+        fi
+        echo "ARN5_BUN_VERSION_GATE=PASS"
 
         echo
         echo "===== NODE 22 ====="

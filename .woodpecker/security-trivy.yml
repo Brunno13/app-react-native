@@ -25,7 +25,7 @@ steps:
         ./.arn3-bin/trivy --version
 
   - name: trivy-existing-scripts
-    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
     pull: false
     environment:
       CI: "true"

@@ -92,7 +92,7 @@ steps:
         evaluate: 'BUILD_ANDROID == "production"'
 
   - name: android-quality
-    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
     pull: false
 
     environment:
@@ -151,7 +151,7 @@ steps:
         echo "ANDROID_PIPELINE_GATE=PASS"
 
   - name: android-build
-    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    image: app-react-native-android-ci:36-jdk17-bun1.4.4-v1
     pull: false
 
     environment:
