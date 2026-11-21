@@ -107,5 +107,11 @@
     "storybook:ios": "sb-rn-get-stories && expo start --ios",
     "storybook:android": "sb-rn-get-stories && expo start --android"
   },
-  "private": true
+  "private": true,
+  "patchedDependencies": {
+    "decode-uri-component@0.5.1": "patches/decode-uri-component@0.5.1.patch"
+  },
+  "overrides": {
+    "decode-uri-component": "0.5.1"
+  }
 }
