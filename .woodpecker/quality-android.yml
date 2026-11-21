@@ -1,6 +1,8 @@
 when:
   - event: push
     branch: main
+  - event: pull_request
+    branch: main
   - event: manual
     evaluate: '(BUILD_IOS ?? "") == ""'
 
@@ -105,6 +107,7 @@ steps:
     commands:
       - |
         set -e
+        trap 'rc=$?; if [ "$rc" -eq 0 ]; then echo "ARN3_ANDROID_QUALITY_SUMMARY=PASS"; else echo "ARN3_ANDROID_QUALITY_SUMMARY=FAIL RC=$rc"; fi' EXIT
 
         echo "===== ANDROID CI ENVIRONMENT ====="
         uname -m

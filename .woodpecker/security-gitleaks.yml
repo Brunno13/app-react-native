@@ -1,0 +1,48 @@
+when:
+  - event: pull_request
+    branch: main
+  - event: push
+    branch: main
+
+labels:
+  platform: linux/amd64
+  role: build-linux
+
+depends_on:
+  - security-wake-x86
+
+# Full history is essential for gitleaks git; do not use a shallow checkout.
+clone:
+  git:
+    image: woodpeckerci/plugin-git:2.9.2
+    settings:
+      depth: 0
+      partial: false
+
+steps:
+  - name: git-history-secrets
+    image: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb
+    commands:
+      - |
+        set -u
+        start="$(date +%s)"
+        rc=0
+        if [ ! -f .gitleaks.toml ] || [ ! -f .gitleaksignore ]; then
+          echo 'GITLEAKS_CONFIG=FAIL missing rules/ignore file'
+          rc=2
+        elif ! git rev-parse --is-shallow-repository | grep -qx false; then
+          echo 'GITLEAKS_HISTORY=FAIL shallow repository'
+          rc=2
+        else
+          gitleaks git --redact=100 --config=.gitleaks.toml --gitleaks-ignore-path=.gitleaksignore . || rc=$?
+        fi
+        duration=$(( $(date +%s) - start ))
+        echo '===== ARN-3 GITLEAKS - SUMMARY ====='
+        echo "SCAN_EXIT_CODE=$rc"
+        echo "DURATION_SECONDS=$duration"
+        if [ "$rc" -eq 0 ]; then
+          echo 'ARN3_SECURITY_GITLEAKS_GATE=PASS'
+        else
+          echo 'ARN3_SECURITY_GITLEAKS_GATE=FAIL'
+        fi
+        exit "$rc"

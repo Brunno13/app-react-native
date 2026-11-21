@@ -7,7 +7,7 @@ labels:
   role: build-linux
 
 depends_on:
-  - quality-android
+  - quality-summary
 
 steps:
   # =========================================================

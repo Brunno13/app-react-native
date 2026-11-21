@@ -1,0 +1,44 @@
+when:
+  - event: pull_request
+    branch: main
+  - event: push
+    branch: main
+
+labels:
+  platform: linux/amd64
+  role: build-linux
+
+depends_on:
+  - security-wake-x86
+
+steps:
+  - name: sast-existing-rules
+    # Reuse the already approved CI image. A verified Opengrep binary must be
+    # provisioned in it; an absent tool FAILS, never skips the SAST gate.
+    image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
+    pull: false
+    commands:
+      - |
+        set -u
+        start="$(date +%s)"
+        rc=0
+        if [ ! -f .opengrep.yml ]; then
+          echo 'OPENGREP_RULES=FAIL missing .opengrep.yml'
+          rc=2
+        elif ! command -v opengrep >/dev/null 2>&1; then
+          echo 'OPENGREP_TOOL=FAIL not installed in VM104 CI image'
+          rc=127
+        else
+          opengrep --version
+          opengrep scan --config .opengrep.yml --error src scripts || rc=$?
+        fi
+        duration=$(( $(date +%s) - start ))
+        echo '===== ARN-3 OPENGREP - SUMMARY ====='
+        echo "SCAN_EXIT_CODE=$rc"
+        echo "DURATION_SECONDS=$duration"
+        if [ "$rc" -eq 0 ]; then
+          echo 'ARN3_SECURITY_OPENGREP_GATE=PASS'
+        else
+          echo 'ARN3_SECURITY_OPENGREP_GATE=FAIL'
+        fi
+        exit "$rc"
