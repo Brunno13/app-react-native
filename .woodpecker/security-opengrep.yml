@@ -12,9 +12,23 @@ depends_on:
   - security-wake-x86
 
 steps:
+  - name: opengrep-download-verified
+    image: curlimages/curl:8.22.0
+    commands:
+      - |
+        set -eu
+        mkdir -p .arn3-bin
+        url='https://github.com/opengrep/opengrep/releases/download/v2.0.0/opengrep_linux_x86'
+        expected='37e93f4da5fd04a18c5c1febbdd12f7e98dfccd4d0c9cf2593bcb25eeb462da0'
+        curl --fail --location --silent --show-error \
+          --retry 2 --connect-timeout 10 --max-time 300 \
+          --output .arn3-bin/opengrep.download "$url"
+        printf '%s  %s\n' "$expected" '.arn3-bin/opengrep.download' | sha256sum -c -
+        mv .arn3-bin/opengrep.download .arn3-bin/opengrep
+        chmod 0755 .arn3-bin/opengrep
+        echo 'ARN3_OPENGREP_BINARY_VERIFIED=PASS'
+
   - name: sast-existing-rules
-    # Reuse the already approved CI image. A verified Opengrep binary must be
-    # provisioned in it; an absent tool FAILS, never skips the SAST gate.
     image: app-react-native-android-ci:36-jdk17-bun1.3.14-v3
     pull: false
     commands:
@@ -25,12 +39,12 @@ steps:
         if [ ! -f .opengrep.yml ]; then
           echo 'OPENGREP_RULES=FAIL missing .opengrep.yml'
           rc=2
-        elif ! command -v opengrep >/dev/null 2>&1; then
-          echo 'OPENGREP_TOOL=FAIL not installed in VM104 CI image'
+        elif [ ! -x .arn3-bin/opengrep ]; then
+          echo 'OPENGREP_TOOL=FAIL verified binary missing or not executable'
           rc=127
         else
-          opengrep --version
-          opengrep scan --config .opengrep.yml --error src scripts || rc=$?
+          .arn3-bin/opengrep --version
+          .arn3-bin/opengrep scan --config .opengrep.yml --error src scripts || rc=$?
         fi
         duration=$(( $(date +%s) - start ))
         echo '===== ARN-3 OPENGREP - SUMMARY ====='

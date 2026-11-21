@@ -48,7 +48,7 @@ def report(statuses: dict[str, dict], event: str) -> tuple[bool, str]:
     for name in GATES:
         context = f'ci/woodpecker/{kind}/{name}'
         status = statuses.get(context)
-        state = (status or {}).get('state', 'missing')
+        state = (status or {}).get('status', 'missing')
         if state != 'success':
             good = False
         rows.append(f'{name} | {str(state).upper()} | {context}')
@@ -60,8 +60,8 @@ def report(statuses: dict[str, dict], event: str) -> tuple[bool, str]:
 def fetch_statuses(sha: str) -> list[dict]:
     records = []
     for page in range(1, 11):
-        api = (f'{BASE_URL}/api/v1/repos/{REPO_PATH}/commits/{sha}/statuses'
-               f'?limit=50&page={page}')
+        api = (f'{BASE_URL}/api/v1/repos/{REPO_PATH}/statuses/{sha}'
+               f'?limit=50&page={page}&sort=recentupdate')
         with urllib.request.urlopen(urllib.request.Request(
                 api, headers={'Accept': 'application/json', 'User-Agent': 'ARN3-quality-summary/1'}),
                 timeout=8) as response:
@@ -89,7 +89,7 @@ def main() -> int:
         try:
             by_context = latest_by_context(fetch_statuses(sha))
             good, summary = report(by_context, event)
-            terminal = all((by_context.get(f'ci/woodpecker/{"pr" if event == "pull_request" else "push"}/{name}') or {}).get('state')
+            terminal = all((by_context.get(f'ci/woodpecker/{"pr" if event == "pull_request" else "push"}/{name}') or {}).get('status')
                            not in (None, 'pending') for name in GATES)
             if terminal or attempt == 8:
                 print(summary)
